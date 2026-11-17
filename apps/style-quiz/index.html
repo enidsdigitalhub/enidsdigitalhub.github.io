@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Your Home Style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred column, a question card at a time, result as a palette-led "style card". */
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#26241F; --muted:#6F6A60; --line:#DEDAD1; --accent:#4F5B3A;
+  --accent-ink:#FFFFFF;
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55}
+.wrap{max-width:760px; margin:0 auto; padding:28px 18px 56px; display:flex; flex-direction:column; gap:22px}
+header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
+.brand{font-weight:700; letter-spacing:.08em; text-transform:lowercase; font-size:13px; color:var(--muted)}
+.step{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+.bar{height:4px; background:var(--line); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .3s ease}
+h1,h2,h3{font-family:var(--display); font-weight:600; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,6vw,44px); line-height:1.1}
+h2{font-size:clamp(24px,4.6vw,32px); line-height:1.15}
+h3{font-size:18px}
+p{margin:0; max-width:65ch}
+.lede{color:var(--muted)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:16px}
+.opts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+@media (max-width:520px){ .opts{grid-template-columns:1fr} }
+.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--bg); transition:border-color .15s, transform .15s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex; height:28px; border-radius:6px; overflow:hidden}
+.chips span{flex:1}
+.opt b{font-weight:500}
+.opt small{color:var(--muted); font-size:13.5px; line-height:1.4}
+.nav{display:flex; justify-content:space-between; gap:10px}
+.btn{all:unset; box-sizing:border-box; cursor:pointer; padding:11px 18px; border-radius:999px; font-weight:500; font-size:15px; border:1.5px solid var(--line); color:var(--ink); text-align:center}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.btn[disabled]{opacity:.4; cursor:default}
+/* result */
+.hero{border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--surface)}
+.hero .strip{display:flex; height:120px}
+.hero .strip span{flex:1}
+.hero .body{padding:22px; display:flex; flex-direction:column; gap:12px}
+.kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.words{display:flex; gap:8px; flex-wrap:wrap}
+.pill{border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px}
+.pal{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+@media (max-width:520px){ .pal{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.sw{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
+.sw div{height:58px}
+.sw p{padding:8px 10px; font-size:13px; line-height:1.35}
+.sw code{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:12px}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:560px){ .cols{grid-template-columns:1fr} }
+ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px}
+.match{display:flex; flex-direction:column; gap:8px}
+.mrow{display:grid; grid-template-columns:150px 1fr 44px; gap:10px; align-items:center; font-size:14px}
+@media (max-width:420px){ .mrow{grid-template-columns:110px 1fr 40px} }
+.mrow .t{height:8px; background:var(--line); border-radius:8px; overflow:hidden}
+.mrow .t i{display:block; height:100%; border-radius:8px}
+.mrow span:last-child{text-align:right; font-variant-numeric:tabular-nums; color:var(--muted)}
+.cta{display:flex; flex-direction:column; gap:12px; border-radius:14px; padding:22px; color:#fff}
+.cta p{color:rgba(255,255,255,.9)}
+.cta .row{display:flex; gap:10px; flex-wrap:wrap}
+.cta .btn{border-color:rgba(255,255,255,.6); color:#fff}
+.cta .btn.solid{background:#fff; border-color:#fff}
+.toast{font-size:13px; color:var(--muted); min-height:18px}
+footer{font-size:12.5px; color:var(--muted); text-align:center}
+[hidden]{display:none !important}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand">enidsdigitalhub</span>
+    <span class="step" id="step">8 questions · about 1 minute</span>
+  </header>
+
+  <!-- intro -->
+  <section id="intro" class="card">
+    <div class="kicker">Home style quiz</div>
+    <h1>Which interior style is really yours?</h1>
+    <p class="lede">Answer eight quick questions about how you live and what you love. You'll get your style, its nine-colour palette with HEX codes, the key pieces to look for and the mistakes to avoid.</p>
+    <div class="opts" aria-hidden="true">
+      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#E9E0D2"></span><span style="background:#CFC3B1"></span><span style="background:#B98A5E"></span><span style="background:#8E9B7E"></span><span style="background:#4A3B30"></span></div><b>Warm Modern Organic</b></div>
+      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#EFE8DA"></span><span style="background:#A79C8C"></span><span style="background:#7A5236"></span><span style="background:#6E7A4F"></span><span style="background:#5E5F5A"></span></div><b>Highland Stone Lodge</b></div>
+      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#EFE6D6"></span><span style="background:#D8C3A5"></span><span style="background:#6B7A45"></span><span style="background:#B8643E"></span><span style="background:#5B3A29"></span></div><b>Olive &amp; Terracotta</b></div>
+      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#F4EDE3"></span><span style="background:#E6D7C3"></span><span style="background:#CDB89C"></span><span style="background:#D49A7A"></span><span style="background:#B5603A"></span></div><b>Terracotta &amp; Beige</b></div>
+    </div>
+    <div class="nav"><span></span><button class="btn primary" id="start">Start the quiz</button></div>
+  </section>
+
+  <!-- question -->
+  <section id="quiz" class="card" hidden>
+    <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+    <h2 id="qtext"></h2>
+    <div class="opts" id="opts" role="group"></div>
+    <div class="nav">
+      <button class="btn" id="back">Back</button>
+      <button class="btn primary" id="next" disabled>Next</button>
+    </div>
+  </section>
+
+  <!-- result -->
+  <section id="result" hidden></section>
+
+  <footer>Colours are digital representations. Test a painted sample on your own wall before you buy.<br>© enidsdigitalhub</footer>
+</div>
+
+<script>
+/* ---------- Edit this: paste your Payhip product links here ---------- */
+const SHOP = {
+  WMO: "", HSL: "", OT: "", TB: "", PALETTES: ""
+};
+
+const STYLES = {
+  WMO:{name:"Warm Modern Organic", tag:"Calm, light and tactile", accent:"#6F7C5F",
+    blurb:"You want a home that feels like a deep breath: soft underfoot, light-filled and quiet to the eye. Natural oak, warm stone tones, curves and bouclé do the work, with sage green as the one living colour.",
+    words:["Soft","Natural","Quiet"],
+    pal:[["#E9E0D2","Oat","Main walls, upholstery"],["#CFC3B1","Limestone","Tiles, rugs"],["#F3EEE6","Ivory Bouclé","Sofa, bedding"],["#D9C9B0","Travertine","Floors, worktops"],["#B98A5E","Natural Oak","Floors, joinery"],["#8E9B7E","Sage","Accent wall, plants"],["#4A3B30","Espresso","Frames, lamp bases"],["#B08D57","Brushed Brass","Taps, handles"],["#F8F6F0","Soft White","Ceilings, trims"]],
+    pieces:["Curved bouclé sofa, 2200–2400 mm wide","Oak drum coffee table, about ⅔ the sofa length","Fluted oak media wall","Wool or jute rug, about 2400 × 3400 in a living room","Sheer linen curtains hung from the ceiling"],
+    avoid:["Bright white walls next to oat and oak","High-gloss finishes","More than one strong colour","Cool white (6000 K) bulbs"]},
+  HSL:{name:"Highland Stone Lodge", tag:"Cosy, grounded, fireside", accent:"#5A6640",
+    blurb:"You want shelter: a home that wraps around you on a cold evening. Natural stone, dark timber, cognac leather and wool plaid gather around the fire, with moss green and slate as quiet supporting colours.",
+    words:["Sheltered","Textured","Practical"],
+    pal:[["#EFE8DA","Mist","Main walls"],["#B5A897","Mushroom","Panelling, upholstery"],["#A79C8C","Ledgestone","Fireplace, tiles"],["#7A5236","Cypress","Beams, tables"],["#6B5643","Smoked Oak","Floors, furniture"],["#9A5B32","Cognac","Leather sofa, cushions"],["#6E7A4F","Moss","Kitchen units, walls"],["#5E5F5A","Slate","Floors, worktops"],["#2B2A28","Black Iron","Lights, rods, hardware"]],
+    pieces:["Floor-to-ceiling stone fireplace with a timber mantel","Cognac leather sofa, 2200–2400 mm wide","Two wool wingback chairs angled to the fire","Moss shaker kitchen with a butcher-block island","Wrought-iron chandelier over the dining table"],
+    avoid:["Bright white walls","Glossy or mirrored furniture","Over-theming with antlers and signs","Under-lighting: stone needs warm, low lamps"]},
+  OT:{name:"Olive & Terracotta", tag:"Warm, earthy, never themed", accent:"#5D6B3B",
+    blurb:"You love colour that still feels calm. Earthy olive, sun-baked terracotta, warm cream and walnut give you a grounded, welcoming home with a little Mediterranean warmth.",
+    words:["Grounded","Layered","Warm"],
+    pal:[["#EFE6D6","Warm Cream","Main walls"],["#D8C3A5","Sand","Hallways, blinds, rugs"],["#6B7A45","Olive","Kitchen units, sofa"],["#9EA878","Muted Sage","Cushions, soft accents"],["#B8643E","Burnt Terracotta","Armchairs, splashback"],["#5B3A29","Walnut","Tables, beds, shelving"],["#F8F6F0","Soft White","Ceilings, trims"],["#B08D57","Aged Brass","Taps, lamps, frames"],["#262421","Black Steel","Window frames, outlines"]],
+    pieces:["Olive velvet or canvas sofa, 2200–2400 mm wide","Two terracotta bouclé armchairs","Round walnut coffee table","Olive shaker kitchen with a terracotta splashback","Cane-back dining chairs with sage seat pads"],
+    avoid:["Painting every wall olive or terracotta","Cool white (6000 K) bulbs","Mixing chrome with brass in one room","Filling every shelf"]},
+  TB:{name:"Terracotta & Beige", tag:"Sun-baked warmth, softly layered", accent:"#A4532F",
+    blurb:"You love warmth without heaviness. Layered beige, sand and limed oak make a soft, tonal backdrop, and terracotta and clay bring the glow. Relaxed, generous and a little Mediterranean.",
+    words:["Tonal","Handmade","Relaxed"],
+    pal:[["#F4EDE3","Bone","Ceilings, trim"],["#E6D7C3","Beige","Main walls"],["#D8C8B0","Travertine","Floors, tables"],["#CDB89C","Sand","Timber, weave"],["#D2C0A3","Limed Oak","Furniture, joinery"],["#D49A7A","Clay","Cushions, throws"],["#B5603A","Terracotta","Feature wall, pots"],["#B08D57","Aged Brass","Taps, lamps"],["#49372D","Umber","Frames, dark wood"]],
+    pieces:["Low, deep linen sofa with washable covers","Rattan or cane accent chairs","Travertine coffee table","Terracotta limewash on one wall or an arched niche","Sisal rug with a smaller wool rug layered on top"],
+    avoid:["Pairing with cool grey","High-gloss tiles or furniture","Terracotta on more than one wall per room","Cool white (6000 K) bulbs"]}
+};
+
+const Q = [
+  {q:"It's Sunday evening. Where are you?", o:[
+    ["A tidy, light room with tea and a book","Calm and uncluttered",["#F3EEE6","#E9E0D2","#B98A5E"],{WMO:3,TB:1}],
+    ["By a crackling fire under a wool blanket","Cosy and sheltered",["#7A5236","#9A5B32","#2B2A28"],{HSL:3}],
+    ["Round a long table with friends and food","Lively and warm",["#6B7A45","#B8643E","#5B3A29"],{OT:3,TB:1}],
+    ["On a sunny terrace, barefoot","Slow and relaxed",["#F4EDE3","#D49A7A","#B5603A"],{TB:3,OT:1}]]},
+  {q:"Which wall colour would you live with for years?", o:[
+    ["Soft oat or limestone","A warm, quiet neutral",["#E9E0D2","#CFC3B1","#D9C9B0"],{WMO:3}],
+    ["Warm mist with a stone feature","Pale, with texture",["#EFE8DA","#A79C8C","#B5A897"],{HSL:3}],
+    ["Warm cream with one olive wall","Neutral plus colour",["#EFE6D6","#6B7A45","#D8C3A5"],{OT:3}],
+    ["Beige limewash with a terracotta niche","Tonal and sunny",["#E6D7C3","#B5603A","#F4EDE3"],{TB:3}]]},
+  {q:"Pick the sofa you'd sink into.", o:[
+    ["Curved ivory bouclé","Soft and sculptural",["#F3EEE6","#E9E0D2","#D9C9B0"],{WMO:3}],
+    ["Cognac leather, built to last","Ages beautifully",["#9A5B32","#7A5236","#6B5643"],{HSL:3}],
+    ["Olive velvet with rust cushions","Rich and earthy",["#6B7A45","#B8643E","#9EA878"],{OT:3}],
+    ["Low beige linen with clay cushions","Deep and relaxed",["#E6D7C3","#D49A7A","#CDB89C"],{TB:3}]]},
+  {q:"Which wood do you reach for?", o:[
+    ["Light, matte oak","Natural and clean",["#C49A6C","#B98A5E","#D9C9B0"],{WMO:3,TB:1}],
+    ["Dark, smoked timber and beams","Solid and rustic",["#6B5643","#7A5236","#4A3B30"],{HSL:3}],
+    ["Walnut","Warm and grown-up",["#5B3A29","#7A5236","#B08D57"],{OT:3}],
+    ["Limed oak and rattan","Pale and handmade",["#D2C0A3","#CDB89C","#C49A6C"],{TB:3}]]},
+  {q:"Your favourite texture to touch?", o:[
+    ["Bouclé and washed linen","Gentle and tactile",["#F3EEE6","#E9E0D2","#8E9B7E"],{WMO:3}],
+    ["Wool plaid and rough stone","Rugged and warm",["#A79C8C","#6E7A4F","#9A5B32"],{HSL:3}],
+    ["Velvet, cane and jute","A mix of rich and natural",["#6B7A45","#C49A6C","#B8643E"],{OT:3}],
+    ["Raw linen, sisal and hand-thrown clay","Earthy and imperfect",["#CDB89C","#D49A7A","#B5603A"],{TB:3}]]},
+  {q:"What's your climate and light like?", o:[
+    ["Bright, but I want it calmer","Plenty of daylight",["#F8F6F0","#E9E0D2","#8E9B7E"],{WMO:2,TB:1}],
+    ["Cool, misty, chilly evenings","Highlands or high altitude",["#EFE8DA","#5E5F5A","#7A5236"],{HSL:3}],
+    ["Mild, sunny and open-plan","A bit of everything",["#EFE6D6","#6B7A45","#B8643E"],{OT:2,TB:1}],
+    ["Warm and sunny most of the year","Hot afternoons",["#F4EDE3","#E6D7C3","#B5603A"],{TB:3}]]},
+  {q:"How much stuff do you like on display?", o:[
+    ["Almost none: three objects per shelf","Minimal",["#F3EEE6","#CFC3B1","#B98A5E"],{WMO:3}],
+    ["Books, blankets, a basket of logs","Lived-in",["#7A5236","#B5A897","#9A5B32"],{HSL:2,OT:1}],
+    ["Plants, clay pots and a few good books","Curated",["#6B7A45","#9EA878","#B8643E"],{OT:3}],
+    ["Handmade ceramics and dried grasses","Collected",["#D49A7A","#CDB89C","#B5603A"],{TB:3}]]},
+  {q:"Which finishing touch makes the room?", o:[
+    ["Brushed brass and a sculptural lamp","Quiet luxury",["#B08D57","#F3EEE6","#4A3B30"],{WMO:3}],
+    ["Black iron and a wrought chandelier","Strong lines",["#2B2A28","#5E5F5A","#EFE8DA"],{HSL:3}],
+    ["Aged brass and a big olive tree","Warm and green",["#B08D57","#6B7A45","#EFE6D6"],{OT:3}],
+    ["An arched mirror and terracotta pots","Soft and sunny",["#B5603A","#B08D57","#E6D7C3"],{TB:3}]]}
+];
+
+const $ = id => document.getElementById(id);
+let i = 0; const answers = new Array(Q.length).fill(null);
+
+function chips(cols){ return '<div class="chips">' + cols.map(c=>`<span style="background:${c}"></span>`).join('') + '</div>'; }
+
+function render(){
+  const item = Q[i];
+  $('step').textContent = `Question ${i+1} of ${Q.length}`;
+  $('prog').style.width = ((i)/Q.length*100) + '%';
+  $('qtext').textContent = item.q;
+  $('opts').setAttribute('aria-label', item.q);
+  $('opts').innerHTML = item.o.map((o,k)=>`<button class="opt" id="opt-${k}" aria-pressed="${answers[i]===k}">${chips(o[2])}<b>${o[0]}</b><small>${o[1]}</small></button>`).join('');
+  item.o.forEach((o,k)=> $('opt-'+k).addEventListener('click', ()=>{ answers[i]=k; if(i < Q.length-1){ i++; render(); } else { render(); $('next').focus(); } }));
+  $('back').disabled = i===0;
+  $('next').disabled = answers[i]===null;
+  $('next').textContent = i===Q.length-1 ? 'See my style' : 'Next';
+}
+
+function score(){
+  const s = {WMO:0,HSL:0,OT:0,TB:0};
+  answers.forEach((a,qi)=>{ if(a===null) return; const w = Q[qi].o[a][3]; for(const k in w) s[k]+=w[k]; });
+  return s;
+}
+
+function showResult(){
+  const s = score(); const total = Object.values(s).reduce((a,b)=>a+b,0) || 1;
+  const order = Object.keys(s).sort((a,b)=>s[b]-s[a]);
+  const top = STYLES[order[0]], second = STYLES[order[1]];
+  const link = SHOP[order[0]];
+  $('quiz').hidden = true; $('intro').hidden = true;
+  $('step').textContent = 'Your result';
+  const r = $('result'); r.hidden = false;
+  r.style.display='flex'; r.style.flexDirection='column'; r.style.gap='18px';
+  r.innerHTML = `
+    <div class="hero">
+      <div class="strip">${top.pal.map(p=>`<span style="background:${p[0]}" title="${p[1]}"></span>`).join('')}</div>
+      <div class="body">
+        <div class="kicker">Your home style</div>
+        <h1>${top.name}</h1>
+        <p style="font-family:var(--display);font-size:19px;color:${top.accent}">${top.tag}</p>
+        <p>${top.blurb}</p>
+        <div class="words">${top.words.map(w=>`<span class="pill">${w}</span>`).join('')}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+        <h3>Your 9-colour palette</h3>
+        <button class="btn" id="copy">Copy HEX codes</button>
+      </div>
+      <div class="pal">${top.pal.map(p=>`<div class="sw"><div style="background:${p[0]}"></div><p><b>${p[1]}</b><br><code>${p[0]}</code><br>${p[2]}</p></div>`).join('')}</div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+
+    <div class="card cols">
+      <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${top.pieces.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Avoid</h3><ul>${top.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    </div>
+
+    <div class="card">
+      <h3>How you matched</h3>
+      <div class="match">${order.map(k=>{const pc=Math.round(s[k]/total*100); return `<div class="mrow"><span>${STYLES[k].name}</span><div class="t"><i style="width:${pc}%;background:${STYLES[k].accent}"></i></div><span>${pc}%</span></div>`}).join('')}</div>
+      <p class="lede" style="font-size:14px">Your second style is <b>${second.name}</b>. Borrowing one or two of its pieces is a good way to make the look your own.</p>
+    </div>
+
+    <div class="cta" style="background:${top.accent}">
+      <div class="kicker" style="color:rgba(255,255,255,.75)">Take it further</div>
+      <h2 style="color:#fff">The ${top.name} Home Style Guide</h2>
+      <p>18 pages: the full palette with HEX, RGB and CMYK codes, three material boards, room-by-room styling with real furniture sizes, a lighting guide, a sizing cheat sheet and a shopping checklist.</p>
+      <div class="row">
+        ${link ? `<a class="btn solid" style="color:${top.accent}" href="${link}" target="_blank" rel="noopener">Get the guide</a>` : `<span class="btn solid" style="color:${top.accent};cursor:default">Find it at enidsdigitalhub on Payhip</span>`}
+        <button class="btn" id="again">Retake the quiz</button>
+      </div>
+    </div>`;
+  $('copy').addEventListener('click', async ()=>{
+    const txt = top.name + ' palette\n' + top.pal.map(p=>`${p[1]}: ${p[0]}`).join('\n');
+    try{ await navigator.clipboard.writeText(txt); $('toast').textContent='Copied. Paste the codes into Canva or take them to your paint shop.'; }
+    catch(e){ $('toast').textContent='Your browser blocked copying. Select the codes above and copy them by hand.'; }
+  });
+  $('again').addEventListener('click', ()=>{ answers.fill(null); i=0; r.hidden=true; r.innerHTML=''; $('intro').hidden=false; $('step').textContent='8 questions · about 1 minute'; window.scrollTo(0,0); });
+  window.scrollTo(0,0);
+}
+
+$('start').addEventListener('click', ()=>{ $('intro').hidden=true; $('quiz').hidden=false; render(); $('opt-0').focus(); });
+$('back').addEventListener('click', ()=>{ if(i>0){ i--; render(); } });
+$('next').addEventListener('click', ()=>{ if(answers[i]===null) return; if(i < Q.length-1){ i++; render(); } else { $('prog').style.width='100%'; showResult(); } });
+</script>
+</body>
+</html>
