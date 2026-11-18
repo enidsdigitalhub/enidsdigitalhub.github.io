@@ -4,87 +4,91 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Find Your Home Style</title>
+<meta name="description" content="A 12-question quiz that matches you to one of 16 interior design styles, with its 9-colour palette and HEX codes. By enidsdigitalhub.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-/* Layout: one centred column, a question card at a time, result as a palette-led "style card". */
+/* Layout: one centred column. Intro = 16-style gallery; quiz = one question card at a time; result = palette-led style card. */
 :root{
-  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#26241F; --muted:#6F6A60; --line:#DEDAD1; --accent:#4F5B3A;
-  --accent-ink:#FFFFFF;
+  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#26241F; --muted:#6B665C; --line:#DEDAD1; --accent:#4F5B3A; --accent-ink:#FFFFFF;
   --display:"Fraunces", Georgia, "Times New Roman", serif;
   --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17;
-    color-scheme: dark;
-  }
+  :root:not([data-theme="light"]){ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
 }
-:root[data-theme="dark"]{
-  --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17;
-  color-scheme: dark;
-}
+:root[data-theme="dark"]{ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55}
-.wrap{max-width:760px; margin:0 auto; padding:28px 18px 56px; display:flex; flex-direction:column; gap:22px}
+.wrap{max-width:820px; margin:0 auto; padding:24px 18px 56px; display:flex; flex-direction:column; gap:22px}
 header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
-.brand{font-weight:700; letter-spacing:.08em; text-transform:lowercase; font-size:13px; color:var(--muted)}
+.brand{font-weight:700; letter-spacing:.08em; font-size:13px; color:var(--muted); text-decoration:none}
 .step{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
 .bar{height:4px; background:var(--line); border-radius:4px; overflow:hidden}
 .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .3s ease}
 h1,h2,h3{font-family:var(--display); font-weight:600; text-wrap:balance; margin:0}
-h1{font-size:clamp(30px,6vw,44px); line-height:1.1}
-h2{font-size:clamp(24px,4.6vw,32px); line-height:1.15}
+h1{font-size:clamp(30px,6vw,46px); line-height:1.08}
+h2{font-size:clamp(23px,4.4vw,31px); line-height:1.15}
 h3{font-size:18px}
 p{margin:0; max-width:65ch}
 .lede{color:var(--muted)}
 .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:16px}
+.kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
 .opts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
 @media (max-width:520px){ .opts{grid-template-columns:1fr} }
-.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--bg); transition:border-color .15s, transform .15s}
+.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--bg); transition:border-color .15s}
 .opt:hover{border-color:var(--accent)}
-.opt:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.opt:focus-visible,.btn:focus-visible,.tile:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .opt[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
 .chips{display:flex; height:28px; border-radius:6px; overflow:hidden}
 .chips span{flex:1}
 .opt b{font-weight:500}
 .opt small{color:var(--muted); font-size:13.5px; line-height:1.4}
-.nav{display:flex; justify-content:space-between; gap:10px}
+.nav{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
 .btn{all:unset; box-sizing:border-box; cursor:pointer; padding:11px 18px; border-radius:999px; font-weight:500; font-size:15px; border:1.5px solid var(--line); color:var(--ink); text-align:center}
 .btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
-.btn:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 .btn[disabled]{opacity:.4; cursor:default}
+/* gallery */
+.gallery{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+@media (max-width:640px){ .gallery{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.tile{all:unset; box-sizing:border-box; cursor:pointer; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface); display:flex; flex-direction:column}
+.tile:hover{border-color:var(--accent)}
+.tile .chips{height:34px; border-radius:0}
+.tile span.n{padding:8px 10px; font-size:13px; line-height:1.3; display:flex; gap:6px}
+.tile span.n i{font-style:normal; color:var(--muted); font-variant-numeric:tabular-nums}
+.axis{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
 /* result */
 .hero{border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--surface)}
-.hero .strip{display:flex; height:120px}
+.hero .strip{display:flex; height:110px}
 .hero .strip span{flex:1}
 .hero .body{padding:22px; display:flex; flex-direction:column; gap:12px}
-.kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
 .words{display:flex; gap:8px; flex-wrap:wrap}
 .pill{border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px}
 .pal{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
 @media (max-width:520px){ .pal{grid-template-columns:repeat(2,minmax(0,1fr))} }
 .sw{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
-.sw div{height:58px}
+.sw div{height:56px}
 .sw p{padding:8px 10px; font-size:13px; line-height:1.35}
 .sw code{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:12px}
 .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
 @media (max-width:560px){ .cols{grid-template-columns:1fr} }
 ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px}
 .match{display:flex; flex-direction:column; gap:8px}
-.mrow{display:grid; grid-template-columns:150px 1fr 44px; gap:10px; align-items:center; font-size:14px}
-@media (max-width:420px){ .mrow{grid-template-columns:110px 1fr 40px} }
+.mrow{display:grid; grid-template-columns:170px 1fr 44px; gap:10px; align-items:center; font-size:14px}
+@media (max-width:420px){ .mrow{grid-template-columns:120px 1fr 40px} }
 .mrow .t{height:8px; background:var(--line); border-radius:8px; overflow:hidden}
 .mrow .t i{display:block; height:100%; border-radius:8px}
 .mrow span:last-child{text-align:right; font-variant-numeric:tabular-nums; color:var(--muted)}
 .cta{display:flex; flex-direction:column; gap:12px; border-radius:14px; padding:22px; color:#fff}
-.cta p{color:rgba(255,255,255,.9)}
+.cta p{color:rgba(255,255,255,.92)}
 .cta .row{display:flex; gap:10px; flex-wrap:wrap}
-.cta .btn{border-color:rgba(255,255,255,.6); color:#fff}
+.cta .btn{border-color:rgba(255,255,255,.65); color:#fff}
 .cta .btn.solid{background:#fff; border-color:#fff}
+.sig{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.sig .chips{width:150px; height:40px}
 .toast{font-size:13px; color:var(--muted); min-height:18px}
 footer{font-size:12.5px; color:var(--muted); text-align:center}
 [hidden]{display:none !important}
@@ -94,25 +98,19 @@ footer{font-size:12.5px; color:var(--muted); text-align:center}
 <body>
 <div class="wrap">
   <header>
-    <span class="brand">enidsdigitalhub</span>
-    <span class="step" id="step">8 questions · about 1 minute</span>
+    <a class="brand" href="#">enidsdigitalhub</a>
+    <span class="step" id="step">12 questions · about 2 minutes</span>
   </header>
 
-  <!-- intro -->
   <section id="intro" class="card">
     <div class="kicker">Home style quiz</div>
-    <h1>Which interior style is really yours?</h1>
-    <p class="lede">Answer eight quick questions about how you live and what you love. You'll get your style, its nine-colour palette with HEX codes, the key pieces to look for and the mistakes to avoid.</p>
-    <div class="opts" aria-hidden="true">
-      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#E9E0D2"></span><span style="background:#CFC3B1"></span><span style="background:#B98A5E"></span><span style="background:#8E9B7E"></span><span style="background:#4A3B30"></span></div><b>Warm Modern Organic</b></div>
-      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#EFE8DA"></span><span style="background:#A79C8C"></span><span style="background:#7A5236"></span><span style="background:#6E7A4F"></span><span style="background:#5E5F5A"></span></div><b>Highland Stone Lodge</b></div>
-      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#EFE6D6"></span><span style="background:#D8C3A5"></span><span style="background:#6B7A45"></span><span style="background:#B8643E"></span><span style="background:#5B3A29"></span></div><b>Olive &amp; Terracotta</b></div>
-      <div class="opt" style="cursor:default"><div class="chips"><span style="background:#F4EDE3"></span><span style="background:#E6D7C3"></span><span style="background:#CDB89C"></span><span style="background:#D49A7A"></span><span style="background:#B5603A"></span></div><b>Terracotta &amp; Beige</b></div>
-    </div>
+    <h1>Which of the 16 interior styles is really yours?</h1>
+    <p class="lede">Answer 12 quick questions about how you live and what you love. You'll get your style, its nine-colour palette with HEX codes, the pieces to look for and the mistakes to avoid.</p>
     <div class="nav"><span></span><button class="btn primary" id="start">Start the quiz</button></div>
+    <div class="axis" aria-hidden="true"><span>Neutral &amp; calm</span><span>Bold &amp; expressive</span></div>
+    <div class="gallery" id="gallery" aria-label="Browse all 16 styles"></div>
   </section>
 
-  <!-- question -->
   <section id="quiz" class="card" hidden>
     <div class="bar" aria-hidden="true"><i id="prog"></i></div>
     <h2 id="qtext"></h2>
@@ -123,174 +121,150 @@ footer{font-size:12.5px; color:var(--muted); text-align:center}
     </div>
   </section>
 
-  <!-- result -->
-  <section id="result" hidden></section>
+  <section id="result" hidden style="display:flex;flex-direction:column;gap:18px"></section>
 
-  <footer>Colours are digital representations. Test a painted sample on your own wall before you buy.<br>© enidsdigitalhub</footer>
+  <footer>Colours on screen are a guide. Test a painted sample on your own wall in daylight before you buy.<br>© enidsdigitalhub · Personal use</footer>
 </div>
 
 <script>
-/* ---------- Edit this: paste your Payhip product links here ---------- */
+/* ---------- Paste your Payhip product links here (leave "" until a product is live) ---------- */
 const SHOP = {
-  WMO: "", HSL: "", OT: "", TB: "", PALETTES: ""
+  library: "",          // Complete 16-Style Library bundle
+  palettes: "",         // 16 palette pack
+  guides: {}            // e.g. { "japandi": "https://payhip.com/b/XXXX", ... }
 };
 
-const STYLES = {
-  WMO:{name:"Warm Modern Organic", tag:"Calm, light and tactile", accent:"#6F7C5F",
-    blurb:"You want a home that feels like a deep breath: soft underfoot, light-filled and quiet to the eye. Natural oak, warm stone tones, curves and bouclé do the work, with sage green as the one living colour.",
-    words:["Soft","Natural","Quiet"],
-    pal:[["#E9E0D2","Oat","Main walls, upholstery"],["#CFC3B1","Limestone","Tiles, rugs"],["#F3EEE6","Ivory Bouclé","Sofa, bedding"],["#D9C9B0","Travertine","Floors, worktops"],["#B98A5E","Natural Oak","Floors, joinery"],["#8E9B7E","Sage","Accent wall, plants"],["#4A3B30","Espresso","Frames, lamp bases"],["#B08D57","Brushed Brass","Taps, handles"],["#F8F6F0","Soft White","Ceilings, trims"]],
-    pieces:["Curved bouclé sofa, 2200–2400 mm wide","Oak drum coffee table, about ⅔ the sofa length","Fluted oak media wall","Wool or jute rug, about 2400 × 3400 in a living room","Sheer linen curtains hung from the ceiling"],
-    avoid:["Bright white walls next to oat and oak","High-gloss finishes","More than one strong colour","Cool white (6000 K) bulbs"]},
-  HSL:{name:"Highland Stone Lodge", tag:"Cosy, grounded, fireside", accent:"#5A6640",
-    blurb:"You want shelter: a home that wraps around you on a cold evening. Natural stone, dark timber, cognac leather and wool plaid gather around the fire, with moss green and slate as quiet supporting colours.",
-    words:["Sheltered","Textured","Practical"],
-    pal:[["#EFE8DA","Mist","Main walls"],["#B5A897","Mushroom","Panelling, upholstery"],["#A79C8C","Ledgestone","Fireplace, tiles"],["#7A5236","Cypress","Beams, tables"],["#6B5643","Smoked Oak","Floors, furniture"],["#9A5B32","Cognac","Leather sofa, cushions"],["#6E7A4F","Moss","Kitchen units, walls"],["#5E5F5A","Slate","Floors, worktops"],["#2B2A28","Black Iron","Lights, rods, hardware"]],
-    pieces:["Floor-to-ceiling stone fireplace with a timber mantel","Cognac leather sofa, 2200–2400 mm wide","Two wool wingback chairs angled to the fire","Moss shaker kitchen with a butcher-block island","Wrought-iron chandelier over the dining table"],
-    avoid:["Bright white walls","Glossy or mirrored furniture","Over-theming with antlers and signs","Under-lighting: stone needs warm, low lamps"]},
-  OT:{name:"Olive & Terracotta", tag:"Warm, earthy, never themed", accent:"#5D6B3B",
-    blurb:"You love colour that still feels calm. Earthy olive, sun-baked terracotta, warm cream and walnut give you a grounded, welcoming home with a little Mediterranean warmth.",
-    words:["Grounded","Layered","Warm"],
-    pal:[["#EFE6D6","Warm Cream","Main walls"],["#D8C3A5","Sand","Hallways, blinds, rugs"],["#6B7A45","Olive","Kitchen units, sofa"],["#9EA878","Muted Sage","Cushions, soft accents"],["#B8643E","Burnt Terracotta","Armchairs, splashback"],["#5B3A29","Walnut","Tables, beds, shelving"],["#F8F6F0","Soft White","Ceilings, trims"],["#B08D57","Aged Brass","Taps, lamps, frames"],["#262421","Black Steel","Window frames, outlines"]],
-    pieces:["Olive velvet or canvas sofa, 2200–2400 mm wide","Two terracotta bouclé armchairs","Round walnut coffee table","Olive shaker kitchen with a terracotta splashback","Cane-back dining chairs with sage seat pads"],
-    avoid:["Painting every wall olive or terracotta","Cool white (6000 K) bulbs","Mixing chrome with brass in one room","Filling every shelf"]},
-  TB:{name:"Terracotta & Beige", tag:"Sun-baked warmth, softly layered", accent:"#A4532F",
-    blurb:"You love warmth without heaviness. Layered beige, sand and limed oak make a soft, tonal backdrop, and terracotta and clay bring the glow. Relaxed, generous and a little Mediterranean.",
-    words:["Tonal","Handmade","Relaxed"],
-    pal:[["#F4EDE3","Bone","Ceilings, trim"],["#E6D7C3","Beige","Main walls"],["#D8C8B0","Travertine","Floors, tables"],["#CDB89C","Sand","Timber, weave"],["#D2C0A3","Limed Oak","Furniture, joinery"],["#D49A7A","Clay","Cushions, throws"],["#B5603A","Terracotta","Feature wall, pots"],["#B08D57","Aged Brass","Taps, lamps"],["#49372D","Umber","Frames, dark wood"]],
-    pieces:["Low, deep linen sofa with washable covers","Rattan or cane accent chairs","Travertine coffee table","Terracotta limewash on one wall or an arched niche","Sisal rug with a smaller wool rug layered on top"],
-    avoid:["Pairing with cool grey","High-gloss tiles or furniture","Terracotta on more than one wall per room","Cool white (6000 K) bulbs"]}
-};
+const DATA = {"axes": ["color", "rustic", "decor", "warmth", "era", "mood", "green"], "styles": [{"id": "japandi", "num": 1, "name": "Japandi", "tagline": "Quiet, crafted, uncluttered", "words": ["Serene", "Crafted", "Simple"], "blurb": "Japanese calm meets Scandinavian comfort. Low furniture, pale wood, hand-made ceramics and plenty of empty space make a home that feels like a slow exhale.", "palette": [{"hex": "#F2EEE6", "name": "Rice Paper", "use": "Main walls"}, {"hex": "#E4DCCF", "name": "Washi", "use": "Secondary walls, linen"}, {"hex": "#C8B194", "name": "Ash Oak", "use": "Floors, furniture"}, {"hex": "#B08A62", "name": "Hinoki", "use": "Joinery, slatted screens"}, {"hex": "#A8A196", "name": "Stone", "use": "Tiles, pottery"}, {"hex": "#7C8466", "name": "Moss", "use": "Plants, cushions"}, {"hex": "#8C6B4F", "name": "Roasted Tea", "use": "Leather, ceramics"}, {"hex": "#4A4642", "name": "Charcoal Clay", "use": "Accents, lamp bases"}, {"hex": "#2B2926", "name": "Sumi Ink", "use": "Fine frames, outlines"}], "materials": ["Light ash or oak, matte", "Paper and linen shades", "Hand-thrown stoneware", "Bamboo and rattan", "Tatami-style or jute rugs", "Matte black metal, used sparingly"], "pieces": ["Low-profile sofa, seat height about 380–420 mm", "Low oak coffee table, 350–400 mm high", "Platform bed with a slatted headboard", "Paper lantern pendant, Ø500–600 mm", "Slatted oak screen or room divider"], "dos": ["Leave one wall and one surface completely empty", "Keep furniture low to the ground", "Choose a few hand-made pieces over many bought ones", "Hide storage behind plain, handle-less doors"], "avoid": ["Busy patterns and bright colours", "Glossy or mirrored finishes", "Filling every shelf", "Cool white (6000 K) bulbs"], "best_for": "Small homes, calm minds, anyone who wants less stuff", "profile": {"color": 0.1, "rustic": 0.35, "decor": 0.1, "warmth": 0.55, "era": 0.2, "mood": 0.3, "green": 0.5}}, {"id": "minimalist", "num": 2, "name": "Minimalist", "tagline": "Less, but better", "words": ["Clean", "Calm", "Essential"], "blurb": "Every object earns its place. Clean lines, a tight neutral palette and hidden storage leave a home that is easy to keep tidy and restful to come back to.", "palette": [{"hex": "#F7F6F3", "name": "Pure White", "use": "Walls, ceilings"}, {"hex": "#ECEAE5", "name": "Chalk", "use": "Secondary walls"}, {"hex": "#E6DFD3", "name": "Linen", "use": "Upholstery, curtains"}, {"hex": "#D9C7AC", "name": "Pale Oak", "use": "Floors, joinery"}, {"hex": "#D3D0C9", "name": "Pebble", "use": "Rugs, tiles"}, {"hex": "#A9A69F", "name": "Concrete", "use": "Worktops, floors"}, {"hex": "#8C9093", "name": "Steel", "use": "Hardware, lighting"}, {"hex": "#5E5D5A", "name": "Graphite", "use": "Accents"}, {"hex": "#2A2A29", "name": "Soft Black", "use": "Frames, single statement piece"}], "materials": ["Flat-front handle-less joinery", "Microcement or large-format porcelain", "Pale oak", "Matte white quartz", "Wool and cotton in plain weaves", "Brushed steel"], "pieces": ["Track-arm sofa in a solid neutral, 2000–2200 mm", "Simple rectangular coffee table, about ⅔ the sofa length", "Floor-to-ceiling hidden storage wall", "Platform bed with integrated side ledges", "One sculptural floor lamp"], "dos": ["Plan storage before you buy furniture", "Repeat the same two or three materials room to room", "Use texture so neutral rooms don't feel cold", "Keep worktops completely clear"], "avoid": ["Open shelving full of objects", "More than one accent colour", "Visible cables", "Furniture that is too small for the room"], "best_for": "Busy people, rentals, small apartments, anyone who hates clutter", "profile": {"color": 0.0, "rustic": 0.1, "decor": 0.0, "warmth": 0.35, "era": 0.1, "mood": 0.1, "green": 0.15}}, {"id": "scandinavian", "num": 3, "name": "Scandinavian", "tagline": "Light, simple, hygge", "words": ["Bright", "Cosy", "Practical"], "blurb": "Built for long dark winters, Scandinavian rooms bounce every bit of light around: white walls, pale wood and soft textiles, with a gentle blue or green for calm.", "palette": [{"hex": "#F6F5F1", "name": "Snow", "use": "Walls, ceilings"}, {"hex": "#E8DFD1", "name": "Birch", "use": "Secondary walls"}, {"hex": "#E4DED4", "name": "Wool", "use": "Throws, upholstery"}, {"hex": "#D7C3A3", "name": "Pale Ash", "use": "Floors, furniture"}, {"hex": "#D6D8D6", "name": "Fog", "use": "Rugs, tiles"}, {"hex": "#B9BBB8", "name": "Dove Grey", "use": "Sofa, curtains"}, {"hex": "#A9B8C4", "name": "Fjord Blue", "use": "Accent wall, bedding"}, {"hex": "#A8B59B", "name": "Sage", "use": "Plants, cushions"}, {"hex": "#5C6166", "name": "Slate", "use": "Lamps, frames"}], "materials": ["Pale ash, birch or white-oiled oak", "Wool, sheepskin and knitted throws", "White-painted wood panelling", "Matte ceramic tiles", "Paper and opal-glass lighting", "Black or brass details, small"], "pieces": ["Light grey sofa on wooden legs, 2000–2200 mm", "Round white or ash coffee table, Ø800–900 mm", "Wishbone-style dining chairs", "Wall-mounted shelf with a few books and plants", "Sheepskin on a lounge chair"], "dos": ["Keep windows bare or use sheer white curtains", "Layer several lamps instead of one ceiling light", "Bring in one soft colour: blue, sage or blush", "Use wool and knit textures for warmth"], "avoid": ["Dark heavy curtains", "Ornate or carved furniture", "Too many colours", "Dark wood floors"], "best_for": "Darker homes, families, renters, cool climates", "profile": {"color": 0.15, "rustic": 0.3, "decor": 0.25, "warmth": 0.35, "era": 0.25, "mood": 0.05, "green": 0.4}}, {"id": "modern-organic", "num": 4, "name": "Modern Organic", "tagline": "Calm, light and tactile", "replaces": "Warm Modern Organic", "words": ["Soft", "Natural", "Quiet"], "blurb": "A calm, light-filled home that feels soft underfoot and quiet to the eye. Natural oak, warm stone tones, curves and bouclé do the work, with sage green as the one living colour.", "palette": [{"hex": "#E9E0D2", "name": "Oat", "use": "60% · main walls, upholstery"}, {"hex": "#CFC3B1", "name": "Limestone", "use": "Secondary walls, tiles, rugs"}, {"hex": "#F3EEE6", "name": "Ivory Bouclé", "use": "Sofa, cushions, bedding"}, {"hex": "#D9C9B0", "name": "Travertine", "use": "Floor tiles, coffee table, worktops"}, {"hex": "#B98A5E", "name": "Natural Oak", "use": "30% · floors, joinery, furniture"}, {"hex": "#8E9B7E", "name": "Sage", "use": "10% · limewash wall, zellige, plants"}, {"hex": "#4A3B30", "name": "Espresso", "use": "Fine outlines, frames, lamp bases"}, {"hex": "#B08D57", "name": "Brushed Brass", "use": "Taps, handles, light fittings"}, {"hex": "#F8F6F0", "name": "Soft White", "use": "Ceilings and trims"}], "materials": ["Matte engineered and fluted oak", "Limewash walls", "Travertine-look porcelain", "Bouclé and linen", "Calacatta-look quartz", "Brushed brass"], "pieces": ["Curved bouclé sofa, 2200–2400 mm wide", "Oak drum coffee table, Ø900–1000", "Fluted oak media wall with a linear fire", "Wool or jute rug, about 2400 × 3400", "Sheer linen curtains hung from the ceiling"], "dos": ["Choose curves: a rounded sofa, oval table or arched mirror", "Keep wood tones in one family, light to mid oak", "Use texture instead of pattern", "Display three objects, not ten"], "avoid": ["Bright white next to oat and oak", "High-gloss finishes", "More than one strong colour", "Cool white (6000 K) bulbs"], "best_for": "Homeowners who want calm but warm; small or darker homes", "profile": {"color": 0.2, "rustic": 0.45, "decor": 0.25, "warmth": 0.65, "era": 0.2, "mood": 0.25, "green": 0.6}}, {"id": "contemporary", "num": 5, "name": "Contemporary", "tagline": "Sleek, current, gallery-calm", "words": ["Sleek", "Current", "Refined"], "blurb": "Of-the-moment and crisp: big windows, clean architecture, greige and taupe softened by walnut and a single dramatic black. It's polished without being cold.", "palette": [{"hex": "#F4F3F0", "name": "Gallery White", "use": "Walls"}, {"hex": "#DADADA", "name": "Mist Grey", "use": "Secondary walls, rugs"}, {"hex": "#CFC8BD", "name": "Greige", "use": "Upholstery, curtains"}, {"hex": "#9E9284", "name": "Taupe", "use": "Feature wall, cushions"}, {"hex": "#7A6E63", "name": "Mink", "use": "Accent chairs"}, {"hex": "#C9B48E", "name": "Champagne", "use": "Metal finishes"}, {"hex": "#6B4E3A", "name": "Walnut", "use": "Media unit, dining table"}, {"hex": "#5A5A58", "name": "Smoke", "use": "Tiles, worktops"}, {"hex": "#232323", "name": "Onyx", "use": "Window frames, statement pieces"}], "materials": ["Large-format porcelain or polished concrete", "Walnut veneer", "Smoked glass", "Matte black and champagne metal", "Bouclé, wool and leather", "Quartz with subtle veining"], "pieces": ["Low modular sectional, about 3000 × 1800 L-shape", "Rectangular coffee table in stone or smoked glass", "Floating walnut media unit with hidden storage", "Statement linear pendant over the dining table", "Large abstract artwork, about ⅔ the sofa width"], "dos": ["Keep architecture clean: flush skirtings, hidden tracks", "Use one dramatic black element per room", "Choose large-scale art over many small frames", "Layer greige, taupe and walnut for warmth"], "avoid": ["Fussy ornaments and patterns", "Matching furniture sets", "Too many small accessories", "Mixing many wood tones"], "best_for": "New builds, apartments, open-plan living", "profile": {"color": 0.2, "rustic": 0.1, "decor": 0.3, "warmth": 0.4, "era": 0.0, "mood": 0.5, "green": 0.2}}, {"id": "transitional", "num": 6, "name": "Transitional", "tagline": "Classic comfort, modern lines", "words": ["Timeless", "Balanced", "Welcoming"], "blurb": "The bridge between traditional and modern: classic shapes, mouldings and a fireplace, kept fresh with soft neutrals and one confident navy.", "palette": [{"hex": "#F5F1EA", "name": "Warm White", "use": "Walls, trims"}, {"hex": "#E3DDD2", "name": "Oyster", "use": "Secondary walls"}, {"hex": "#C9C0B2", "name": "Greige", "use": "Sofa, curtains"}, {"hex": "#A8998A", "name": "Mushroom", "use": "Rugs, cushions"}, {"hex": "#9A9A96", "name": "Pewter", "use": "Tiles, accents"}, {"hex": "#B7B8B4", "name": "Brushed Nickel", "use": "Taps, lighting"}, {"hex": "#B98E5F", "name": "Honey Oak", "use": "Floors, dining table"}, {"hex": "#2F3E55", "name": "Navy", "use": "Accent chairs, kitchen island"}, {"hex": "#3D3C3A", "name": "Charcoal", "use": "Frames, details"}], "materials": ["Wall panelling and simple mouldings", "Mid-tone oak floors", "Marble-look porcelain", "Performance linen and velvet", "Brushed nickel or aged brass", "Glass and crystal lighting, kept simple"], "pieces": ["Rolled-arm or track-arm sofa, 2200–2400 mm", "Pair of upholstered armchairs facing the sofa", "Fireplace with a simple surround as the focal point", "Round or oval pedestal dining table", "Classic chandelier with a modern shape"], "dos": ["Arrange seating symmetrically around a focal point", "Mix one classic shape with one modern shape", "Use navy as the single colour", "Pick lined, floor-length curtains"], "avoid": ["Heavily carved or ornate pieces", "Too many trends at once", "Bright, saturated colours", "Cluttered surfaces"], "best_for": "Family homes, people who like classic but not old-fashioned", "profile": {"color": 0.2, "rustic": 0.2, "decor": 0.4, "warmth": 0.5, "era": 0.55, "mood": 0.25, "green": 0.25}}, {"id": "coastal", "num": 7, "name": "Coastal", "tagline": "Breezy, bright, by the sea", "words": ["Breezy", "Fresh", "Relaxed"], "blurb": "Sun, salt and sea in a home: sandy neutrals, driftwood, sea-glass greens and harbour blues, with linen that moves in the breeze.", "palette": [{"hex": "#F4F2EC", "name": "Sea Salt", "use": "Walls"}, {"hex": "#EDE3D6", "name": "Shell", "use": "Secondary walls, linen"}, {"hex": "#DCCBAE", "name": "Sand Dune", "use": "Rugs, upholstery"}, {"hex": "#B8A68C", "name": "Driftwood", "use": "Floors, furniture"}, {"hex": "#C9A97A", "name": "Rope", "use": "Woven baskets, lighting"}, {"hex": "#A9C6C1", "name": "Sea Glass", "use": "Cushions, tiles"}, {"hex": "#B9CCD6", "name": "Sky", "use": "Accent wall, bedding"}, {"hex": "#4F7184", "name": "Harbour Blue", "use": "Kitchen island, accents"}, {"hex": "#23384F", "name": "Navy", "use": "Stripes, frames"}], "materials": ["Whitewashed or driftwood timber", "Linen and cotton slipcovers", "Rattan, rope and seagrass", "Shiplap or tongue-and-groove panelling", "Glazed handmade tiles in blue-green", "Weathered brass or nickel"], "pieces": ["Slipcovered sofa in white or sand, 2200–2400 mm", "Whitewashed coffee table or a woven ottoman", "Rattan or wicker accent chairs", "Woven pendant light over the dining table", "Striped or flat-weave rug, about 2400 × 3400"], "dos": ["Keep windows open and curtains sheer", "Mix two or three blues, not more", "Use natural fibres for texture", "Keep accessories few and natural (glass, wood)"], "avoid": ["Themed décor: anchors, 'beach' signs, shells everywhere", "Heavy dark furniture", "Busy patterns", "Dark wall colours"], "best_for": "Coastal and warm homes, holiday homes, Airbnbs", "profile": {"color": 0.4, "rustic": 0.35, "decor": 0.4, "warmth": 0.3, "era": 0.35, "mood": 0.0, "green": 0.3}}, {"id": "farmhouse", "num": 8, "name": "Farmhouse", "tagline": "Simple, sturdy, country warmth", "words": ["Homely", "Sturdy", "Unfussy"], "blurb": "Country living with clean modern lines: beams, shaker cabinets, a big farmhouse table, sage and olive greens and black iron details.", "palette": [{"hex": "#F2ECE0", "name": "Cream", "use": "Walls"}, {"hex": "#E7DFD0", "name": "Linen", "use": "Curtains, upholstery"}, {"hex": "#DCCDB6", "name": "Oatmeal", "use": "Rugs, secondary walls"}, {"hex": "#A57C55", "name": "Barn Oak", "use": "Beams, table, floors"}, {"hex": "#9C978E", "name": "Weathered Grey", "use": "Tiles, painted furniture"}, {"hex": "#8F9A73", "name": "Sage Green", "use": "Kitchen units, cabinets"}, {"hex": "#6C7348", "name": "Olive", "use": "Accent wall, cushions"}, {"hex": "#9C5A44", "name": "Brick", "use": "Pots, accents"}, {"hex": "#2C2B29", "name": "Black Iron", "use": "Lights, hardware, frames"}], "materials": ["Shaker-style painted cabinets", "Reclaimed or wire-brushed oak", "Butcher-block worktops", "Subway or zellige-look tiles", "Linen, cotton and plaid", "Black iron and aged brass"], "pieces": ["Long plank dining table, 2000 × 950 for six to eight", "Slipcovered or linen sofa with deep seats", "Farmhouse (Belfast) sink with a bridge tap", "Open shelving for everyday dishes", "Black iron or lantern pendants"], "dos": ["Make the kitchen table the heart of the home", "Pair painted cabinets with wood worktops", "Use black iron as your fine line", "Keep patterns simple: checks, stripes"], "avoid": ["Over-theming with signs and roosters", "Too many distressed pieces", "Glossy finishes", "Cool grey palettes"], "best_for": "Family homes, country and peri-urban plots, cooks", "profile": {"color": 0.3, "rustic": 0.7, "decor": 0.45, "warmth": 0.65, "era": 0.6, "mood": 0.2, "green": 0.4}}, {"id": "bohemian", "num": 9, "name": "Bohemian", "tagline": "Free-spirited, layered, well-travelled", "words": ["Layered", "Collected", "Free"], "blurb": "A home that tells stories: kilim rugs, rust and mustard textiles, rattan, macramé and a jungle of plants, all layered with love.", "palette": [{"hex": "#EFE6D8", "name": "Bone", "use": "Walls"}, {"hex": "#CDB28A", "name": "Jute", "use": "Rugs, baskets"}, {"hex": "#C0704B", "name": "Terracotta", "use": "Pots, cushions"}, {"hex": "#B5562F", "name": "Rust", "use": "Sofa throws, textiles"}, {"hex": "#C9962E", "name": "Mustard", "use": "Accent chair, cushions"}, {"hex": "#6E7445", "name": "Olive", "use": "Velvet, plants"}, {"hex": "#1F5E63", "name": "Deep Teal", "use": "Accent wall, pouffes"}, {"hex": "#6B3A4B", "name": "Plum", "use": "Textiles, glassware"}, {"hex": "#5A3E2B", "name": "Walnut", "use": "Furniture, frames"}], "materials": ["Kilim, Persian-style and flat-weave rugs", "Rattan, cane and wicker", "Macramé and woven wall hangings", "Velvet and embroidered textiles", "Hand-painted tiles", "Brass and hammered metal"], "pieces": ["Low sofa layered with throws and floor cushions", "Rattan peacock or egg chair", "Layered rugs: a large jute plus a smaller kilim", "Moroccan-style pouffes", "Plant shelf or hanging planters"], "dos": ["Layer rugs, throws and cushions in a shared colour family", "Mix vintage, handmade and travel finds", "Go big with plants", "Keep walls light so the layers can shine"], "avoid": ["Matching furniture sets", "Sleek, shiny surfaces", "Too many colours outside your family", "Clutter without breathing room"], "best_for": "Creatives, renters, collectors, plant lovers", "profile": {"color": 0.7, "rustic": 0.55, "decor": 0.85, "warmth": 0.75, "era": 0.5, "mood": 0.4, "green": 0.85}}, {"id": "mid-century-modern", "num": 10, "name": "Mid-Century Modern", "tagline": "Retro shapes, warm wood, happy colour", "words": ["Retro", "Graphic", "Optimistic"], "blurb": "1950s and '60s optimism: tapered legs, teak and walnut, sunburst mirrors and confident mustard, olive, orange and teal.", "palette": [{"hex": "#F3EEE4", "name": "Warm White", "use": "Walls"}, {"hex": "#E6D9BF", "name": "Cream", "use": "Upholstery, rugs"}, {"hex": "#D3A232", "name": "Mustard", "use": "Accent chair, cushions"}, {"hex": "#C4632D", "name": "Burnt Orange", "use": "Lamp, art, cushions"}, {"hex": "#6F7A3A", "name": "Olive", "use": "Sofa, accent wall"}, {"hex": "#2F6F73", "name": "Teal", "use": "Bedding, glass"}, {"hex": "#9A5E34", "name": "Teak", "use": "Sideboard, furniture"}, {"hex": "#5A3B26", "name": "Walnut", "use": "Floors, dining table"}, {"hex": "#333130", "name": "Charcoal", "use": "Lamps, frames"}], "materials": ["Teak and walnut veneers", "Tapered wooden legs", "Moulded plywood and fibreglass", "Wool tweed and leather", "Terrazzo", "Brass and globe glass"], "pieces": ["Low sofa on tapered legs, 2000–2200 mm", "Lounge chair and ottoman in leather", "Long, low teak sideboard", "Tulip or round pedestal dining table", "Sputnik or globe pendant"], "dos": ["Keep furniture low and leggy so the floor shows", "Repeat one hero colour three times", "Choose graphic art and sunburst shapes", "Mix one or two genuine vintage pieces"], "avoid": ["Bulky, overstuffed furniture", "Too many reproduction pieces in one room", "Fussy patterns", "Cool grey walls"], "best_for": "Design lovers, apartments, anyone who likes colour with order", "profile": {"color": 0.65, "rustic": 0.3, "decor": 0.45, "warmth": 0.7, "era": 0.75, "mood": 0.45, "green": 0.5}}, {"id": "industrial", "num": 11, "name": "Industrial", "tagline": "Raw, urban, warehouse-cool", "words": ["Raw", "Urban", "Honest"], "blurb": "Exposed brick, concrete, steel and reclaimed timber, softened by cognac leather and warm Edison light: loft living with character.", "palette": [{"hex": "#D9D2C4", "name": "Canvas", "use": "Walls, curtains"}, {"hex": "#B8B5AF", "name": "Concrete", "use": "Floors, walls"}, {"hex": "#8E8B86", "name": "Cement", "use": "Tiles, worktops"}, {"hex": "#9A4E35", "name": "Brick", "use": "Feature wall"}, {"hex": "#8E5733", "name": "Cognac", "use": "Leather sofa, chairs"}, {"hex": "#7A5A3E", "name": "Reclaimed Oak", "use": "Tables, shelving"}, {"hex": "#C8913F", "name": "Edison Amber", "use": "Bulbs, glass, accents"}, {"hex": "#5D6063", "name": "Raw Steel", "use": "Frames, shelving"}, {"hex": "#2B2B2B", "name": "Soot", "use": "Metalwork, windows"}], "materials": ["Exposed brick or brick slips", "Polished concrete or microcement", "Black steel and pipework", "Reclaimed timber", "Distressed leather", "Clear-glass Edison bulbs"], "pieces": ["Cognac or charcoal leather sofa, 2200–2400 mm", "Reclaimed wood and steel coffee table", "Steel-frame open bookshelf", "Factory-style pendants over the island", "Crittall-style black glass partition"], "dos": ["Leave one surface raw: brick, concrete or ductwork", "Warm it up with leather, wood and rugs", "Use metal as a frame, not everywhere", "Light with warm 2700 K bulbs"], "avoid": ["Too much metal and no softness", "Pastel colours", "Cold white light", "Small, delicate furniture"], "best_for": "Lofts, apartments, studios, men's and shared spaces", "profile": {"color": 0.35, "rustic": 0.85, "decor": 0.35, "warmth": 0.4, "era": 0.45, "mood": 0.75, "green": 0.3}}, {"id": "rustic", "num": 12, "name": "Rustic", "tagline": "Cosy, grounded, fireside", "replaces": "Highland Stone Lodge", "words": ["Sheltered", "Textured", "Practical"], "blurb": "A cosy retreat for cool evenings: natural stone, dark timber, leather and wool gathered around the fire, with moss green and slate as quiet supporting colours.", "palette": [{"hex": "#EFE8DA", "name": "Mist", "use": "60% · main walls"}, {"hex": "#B5A897", "name": "Mushroom", "use": "Board-and-batten, upholstery"}, {"hex": "#A79C8C", "name": "Ledgestone", "use": "Fireplace, feature walls, tiles"}, {"hex": "#7A5236", "name": "Cypress", "use": "30% · beams, tables, shelving"}, {"hex": "#6B5643", "name": "Smoked Oak", "use": "Floors and furniture"}, {"hex": "#9A5B32", "name": "Cognac", "use": "10% · leather sofa, cushions"}, {"hex": "#6E7A4F", "name": "Moss", "use": "Kitchen units, bedroom walls"}, {"hex": "#5E5F5A", "name": "Slate", "use": "Floors, worktops, accents"}, {"hex": "#2B2A28", "name": "Black Iron", "use": "Lights, rods, hardware"}], "materials": ["Natural stacked stone", "Cypress beams, smoked brushed oak", "Cognac leather", "Wool plaid and kilim", "Honed granite", "Matte black iron"], "pieces": ["Floor-to-ceiling stone fireplace with a timber mantel", "Cognac leather sofa, 2200–2400 mm", "Two wool wingback chairs angled to the fire", "Chunky solid-wood coffee table", "Wrought-iron chandelier over the dining table"], "dos": ["Make the fireplace or one stone wall the hero", "Use two timbers at most", "Layer wool, leather and plaid", "Use matte black iron for fittings"], "avoid": ["Bright white walls", "Glossy or mirrored furniture", "Antlers and signs everywhere", "Under-lighting the room"], "best_for": "Cool climates, highland homes, cabins, families", "profile": {"color": 0.4, "rustic": 0.95, "decor": 0.55, "warmth": 0.75, "era": 0.65, "mood": 0.6, "green": 0.3}}, {"id": "tropical", "num": 13, "name": "Tropical", "tagline": "Lush, warm, holiday every day", "words": ["Lush", "Vibrant", "Laid-back"], "blurb": "Bring the outdoors in: palm greens, rattan, teak and pops of coral and mango, with big leafy plants and botanical prints.", "palette": [{"hex": "#F3EDE1", "name": "Coconut", "use": "Walls"}, {"hex": "#C9A46C", "name": "Rattan", "use": "Furniture, lighting"}, {"hex": "#8A5A34", "name": "Teak", "use": "Tables, floors"}, {"hex": "#2F5D3A", "name": "Palm", "use": "Accent wall, velvet"}, {"hex": "#4C7A47", "name": "Monstera", "use": "Cushions, prints"}, {"hex": "#7FA36B", "name": "Fern", "use": "Bedding, glass"}, {"hex": "#3E8C8C", "name": "Lagoon", "use": "Tiles, accents"}, {"hex": "#E07A5F", "name": "Coral", "use": "Cushions, art"}, {"hex": "#E3A23B", "name": "Mango", "use": "Accents, ceramics"}], "materials": ["Rattan, cane and bamboo", "Teak and iroko", "Botanical wallpaper or prints", "Linen and cotton in leafy prints", "Terrazzo and glazed tiles", "Brass and woven pendants"], "pieces": ["Rattan or cane-back sofa with green cushions", "Teak coffee table", "Banana-leaf or palm wallpaper on one wall", "Large woven pendant lights", "Big floor plants: monstera, bird of paradise, palm"], "dos": ["Use plants as furniture: go big", "Pick one leafy print and repeat its colours", "Keep it breezy with ceiling fans and sheers", "Mix rattan with solid wood"], "avoid": ["Heavy dark fabrics", "Too many prints fighting each other", "Plastic plants", "Cold metal finishes"], "best_for": "Warm climates, coastal Kenya, Airbnbs, plant lovers", "profile": {"color": 0.85, "rustic": 0.5, "decor": 0.75, "warmth": 0.7, "era": 0.4, "mood": 0.4, "green": 1.0}}, {"id": "mediterranean", "num": 14, "name": "Mediterranean", "tagline": "Sun-washed, arched, timeless", "words": ["Sunny", "Rustic-elegant", "Inviting"], "blurb": "Whitewashed walls, arches, terracotta floors and Aegean blue: the easy warmth of a Greek or Spanish village house, with olive trees at the door.", "palette": [{"hex": "#F5F0E6", "name": "Whitewash", "use": "Walls, arches"}, {"hex": "#E3D5BE", "name": "Limestone", "use": "Floors, worktops"}, {"hex": "#CDB48E", "name": "Sand", "use": "Upholstery, rugs"}, {"hex": "#B9603A", "name": "Terracotta", "use": "Floor tiles, pots"}, {"hex": "#6F7445", "name": "Olive", "use": "Plants, cushions, shutters"}, {"hex": "#2F5F8A", "name": "Aegean Blue", "use": "Doors, tiles, accents"}, {"hex": "#8FB3CF", "name": "Sky Blue", "use": "Bedding, glassware"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Lighting, hardware"}, {"hex": "#5A3E2B", "name": "Walnut", "use": "Beams, furniture"}], "materials": ["Limewash and plaster walls", "Terracotta and patterned cement tiles", "Wood beams and shutters", "Wrought iron", "Linen and cotton", "Hand-painted ceramics"], "pieces": ["Built-in plaster bench or banquette with cushions", "Rustic wood dining table with rush-seat chairs", "Arched doorways, niches or mirrors", "Wrought-iron lanterns and pendants", "Olive or lemon trees in terracotta pots"], "dos": ["Use arches and curves wherever you can", "Pair terracotta floors with white walls", "Bring blue in through tiles, doors or textiles", "Let the outdoor terrace be a room too"], "avoid": ["Cool grey", "Glossy modern finishes", "Too many patterned tiles in one view", "Heavy, dark curtains"], "best_for": "Sunny homes, outdoor living, people who love colour with calm", "profile": {"color": 0.55, "rustic": 0.6, "decor": 0.5, "warmth": 0.85, "era": 0.55, "mood": 0.2, "green": 0.55}}, {"id": "art-deco", "num": 15, "name": "Art Deco", "tagline": "Glamorous, geometric, jewel-toned", "words": ["Glamorous", "Bold", "Polished"], "blurb": "1920s luxury: emerald and peacock velvet, black lacquer, gold, marble and fan-shaped geometry. A home that feels like a grand hotel bar.", "palette": [{"hex": "#EFE8DA", "name": "Ivory", "use": "Ceilings, trims"}, {"hex": "#C9C6C0", "name": "Marble Grey", "use": "Floors, worktops"}, {"hex": "#D9C39A", "name": "Champagne", "use": "Walls, upholstery"}, {"hex": "#B8934A", "name": "Gold", "use": "Metal, mirrors, lights"}, {"hex": "#D8A7A0", "name": "Blush", "use": "Accent chairs"}, {"hex": "#1F4D43", "name": "Emerald", "use": "Velvet sofa, walls"}, {"hex": "#12505A", "name": "Peacock", "use": "Accent wall, cushions"}, {"hex": "#5C1F2B", "name": "Burgundy", "use": "Textiles, glass"}, {"hex": "#161616", "name": "Black Lacquer", "use": "Furniture, panelling"}], "materials": ["Velvet in jewel tones", "Marble and terrazzo", "Black lacquer and high-gloss veneers", "Polished brass and gold", "Fluted glass and mirror", "Geometric tiles and wallpaper"], "pieces": ["Channel-tufted velvet sofa, 2200–2400 mm", "Round marble and brass coffee table", "Fan or scalloped headboard", "Statement tiered or globe chandelier", "Mirrored or lacquered sideboard"], "dos": ["Choose one jewel tone and commit to it", "Repeat geometric shapes: fans, arches, chevrons", "Mix velvet with marble and brass", "Light with dimmers for drama"], "avoid": ["Rustic or distressed finishes", "Too many metals (stick to gold/brass)", "Pale, washed-out colours", "Clutter: glamour needs space"], "best_for": "Apartments, entertainers, lovers of drama and polish", "profile": {"color": 0.85, "rustic": 0.05, "decor": 0.75, "warmth": 0.5, "era": 0.9, "mood": 0.85, "green": 0.2}}, {"id": "eclectic-maximalist", "num": 16, "name": "Eclectic Maximalist", "tagline": "More is more, with intent", "words": ["Bold", "Personal", "Joyful"], "blurb": "Colour, pattern and collections, layered with confidence: a gallery wall, a raspberry sofa, cobalt walls and everything you love on show.", "palette": [{"hex": "#F1E8D8", "name": "Cream", "use": "Ceilings, breathing space"}, {"hex": "#E0A22F", "name": "Saffron", "use": "Cushions, lamps"}, {"hex": "#E07B62", "name": "Coral", "use": "Accent chair, art"}, {"hex": "#B0305A", "name": "Raspberry", "use": "Sofa, textiles"}, {"hex": "#5A2E5A", "name": "Plum", "use": "Velvet, glass"}, {"hex": "#2E8A86", "name": "Teal", "use": "Accent wall, tiles"}, {"hex": "#1F6B4A", "name": "Emerald", "use": "Plants, cushions"}, {"hex": "#23407A", "name": "Cobalt", "use": "Walls, cabinetry"}, {"hex": "#1E2433", "name": "Ink", "use": "Frames, contrast"}], "materials": ["Patterned wallpaper", "Velvet, chintz and embroidered fabrics", "Layered Persian and kilim rugs", "Lacquered and painted furniture", "Collections: books, ceramics, art", "Mixed metals"], "pieces": ["Statement velvet sofa in a strong colour", "Gallery wall of mixed frames, edge to edge", "Patterned wallpaper on one or more walls", "Pair of mismatched accent chairs", "Display cabinet for collections"], "dos": ["Pick one anchor colour and pull the rest from it", "Repeat colours in at least three places", "Mix pattern scales: one large, one medium, one small", "Leave one calm surface for the eye to rest"], "avoid": ["Random colours with no anchor", "All patterns the same size", "Cheap filler accessories", "Poor lighting: layers need light"], "best_for": "Collectors, creatives, confident colour lovers", "profile": {"color": 1.0, "rustic": 0.4, "decor": 1.0, "warmth": 0.65, "era": 0.6, "mood": 0.7, "green": 0.6}}, {"id": "olive-terracotta", "num": 17, "name": "Olive & Terracotta", "signature": true, "tagline": "Warm, earthy, never themed", "words": ["Grounded", "Layered", "Warm"], "blurb": "Earthy olive, sun-baked terracotta, warm cream and walnut: a grounded, welcoming home with a little Mediterranean warmth.", "palette": [{"hex": "#EFE6D6", "name": "Warm Cream", "use": "Main walls"}, {"hex": "#D8C3A5", "name": "Sand", "use": "Hallways, blinds, rugs"}, {"hex": "#6B7A45", "name": "Olive", "use": "Kitchen units, sofa"}, {"hex": "#9EA878", "name": "Muted Sage", "use": "Cushions, soft accents"}, {"hex": "#B8643E", "name": "Burnt Terracotta", "use": "Armchairs, splashback"}, {"hex": "#5B3A29", "name": "Walnut", "use": "Tables, beds, shelving"}, {"hex": "#F8F6F0", "name": "Soft White", "use": "Ceilings, trims"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Taps, lamps, frames"}, {"hex": "#262421", "name": "Black Steel", "use": "Window frames, outlines"}], "materials": ["Walnut and mid oak", "Velvet, bouclé and cane", "Terracotta zellige-look tiles", "Jute and wool rugs", "Aged brass", "Black steel frames"], "pieces": ["Olive velvet or canvas sofa, 2200–2400 mm", "Two terracotta bouclé armchairs", "Round walnut coffee table", "Olive shaker kitchen with a terracotta splashback", "Cane-back dining chairs with sage seat pads"], "dos": ["Keep walls cream; let olive and terracotta live in furniture", "Repeat terracotta three times per room", "Use brass for warmth", "Layer jute and wool"], "avoid": ["Painting every wall olive or terracotta", "Cool white bulbs", "Mixing chrome with brass", "Filling every shelf"], "best_for": "Lovers of warm colour that still feels calm", "pair_with": ["mediterranean", "farmhouse", "bohemian", "modern-organic"], "profile": {"color": 0.5, "rustic": 0.5, "decor": 0.45, "warmth": 0.8, "era": 0.4, "mood": 0.35, "green": 0.6}}, {"id": "terracotta-beige", "num": 18, "name": "Terracotta & Beige", "signature": true, "replaces": "Terracotta & Beige", "tagline": "Sun-baked warmth, softly layered", "words": ["Tonal", "Handmade", "Relaxed"], "blurb": "Layered beige, sand and limed oak make a soft, tonal backdrop, and terracotta and clay bring the glow. Warm without being heavy.", "palette": [{"hex": "#F4EDE3", "name": "Bone", "use": "Ceilings and trim"}, {"hex": "#E6D7C3", "name": "Beige", "use": "60% · main walls"}, {"hex": "#D8C8B0", "name": "Travertine", "use": "Floors, tables, worktops"}, {"hex": "#CDB89C", "name": "Sand", "use": "30% · timber, weave, upholstery"}, {"hex": "#D2C0A3", "name": "Limed Oak", "use": "Furniture and joinery"}, {"hex": "#D49A7A", "name": "Clay", "use": "Soft furnishings, cushions"}, {"hex": "#B5603A", "name": "Terracotta", "use": "10% · feature wall, tiles, pots"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Taps, handles, lamps"}, {"hex": "#49372D", "name": "Umber", "use": "Fine outlines, frames, dark wood"}], "materials": ["Limewash and travertine", "Limed oak", "Linen, jute and sisal", "Rattan and cane", "Hand-thrown clay", "Aged brass"], "pieces": ["Low, deep linen sofa with washable covers", "Rattan or cane accent chairs", "Travertine coffee table", "Terracotta limewash on one wall or an arched niche", "Sisal rug with a smaller wool rug on top"], "dos": ["Layer three or four shades of beige", "Use limewash for soft, cloudy walls", "Repeat terracotta three times", "Choose arches and rounded shapes"], "avoid": ["Cool grey", "High-gloss tiles or furniture", "Terracotta on more than one wall per room", "Cool white bulbs"], "best_for": "Lovers of warm neutrals and earthy minimal homes", "pair_with": ["mediterranean", "modern-organic", "japandi", "bohemian"], "profile": {"color": 0.35, "rustic": 0.5, "decor": 0.4, "warmth": 0.85, "era": 0.4, "mood": 0.2, "green": 0.45}}]};
+const QUESTIONS = [{"q": "It's Sunday evening. Where are you?", "o": [{"label": "A tidy, light room with tea and a book", "sub": "Calm and uncluttered", "chips": ["#F2EEE6", "#C8B194", "#7C8466"], "tags": ["japandi", "minimalist", "scandinavian"], "v": {"color": 0.1, "decor": 0.1, "mood": 0.1, "rustic": 0.3}}, {"label": "By a crackling fire under a wool blanket", "sub": "Cosy and sheltered", "chips": ["#7A5236", "#9A5B32", "#2B2A28"], "tags": ["rustic", "farmhouse"], "v": {"rustic": 0.9, "mood": 0.7, "warmth": 0.8}}, {"label": "Round a long table with friends and food", "sub": "Lively and warm", "chips": ["#6B7A45", "#B8643E", "#5B3A29"], "tags": ["farmhouse", "mediterranean", "transitional"], "v": {"warmth": 0.8, "decor": 0.5, "color": 0.5}}, {"label": "On a sunny terrace surrounded by plants", "sub": "Slow and outdoorsy", "chips": ["#F3EDE1", "#4C7A47", "#E3A23B"], "tags": [], "v": {"green": 0.9, "mood": 0.1, "warmth": 0.7}}], "tags": ["tropical", "mediterranean", "bohemian", "coastal"]}, {"q": "Which walls would you live with for years?", "o": [{"label": "Crisp white or soft off-white", "sub": "Bright and clean", "chips": ["#F7F6F3", "#ECEAE5", "#D3D0C9"], "tags": ["minimalist", "scandinavian", "coastal", "contemporary"], "v": {"color": 0, "mood": 0}}, {"label": "Warm oat, greige or mushroom", "sub": "A quiet, warm neutral", "chips": ["#E9E0D2", "#CFC8BD", "#9E9284"], "tags": ["modern-organic", "japandi", "contemporary", "transitional"], "v": {"color": 0.2, "warmth": 0.6, "mood": 0.25}}, {"label": "Limewash with a terracotta or blue wall", "sub": "Sunny and textured", "chips": ["#F5F0E6", "#B9603A", "#2F5F8A"], "tags": ["mediterranean", "bohemian"], "v": {"color": 0.55, "warmth": 0.8, "era": 0.5}}, {"label": "Deep emerald, navy or cobalt", "sub": "Dramatic and enveloping", "chips": ["#1F4D43", "#23407A", "#2F3E55"], "tags": [], "v": {"color": 0.9, "mood": 0.85}}], "tags": ["art-deco", "eclectic-maximalist"]}, {"q": "Pick the sofa you'd sink into.", "o": [{"label": "Curved, cream bouclé", "sub": "Soft and sculptural", "chips": ["#F3EEE6", "#E9E0D2", "#D9C9B0"], "tags": ["modern-organic", "contemporary", "japandi"], "v": {"decor": 0.25, "rustic": 0.4, "era": 0.2, "color": 0.15}}, {"label": "Worn cognac leather", "sub": "Built to last", "chips": ["#8E5733", "#7A5236", "#6B5643"], "tags": ["industrial", "rustic", "mid-century-modern"], "v": {"rustic": 0.85, "mood": 0.65, "era": 0.55}}, {"label": "Jewel-toned velvet", "sub": "Rich and glamorous", "chips": ["#1F4D43", "#B0305A", "#B8934A"], "tags": ["art-deco", "eclectic-maximalist"], "v": {"color": 0.9, "era": 0.8, "decor": 0.75, "rustic": 0.1}}, {"label": "Low linen with loose covers", "sub": "Relaxed and easy", "chips": ["#EDE3D6", "#DCCBAE", "#A9C6C1"], "tags": [], "v": {"rustic": 0.4, "color": 0.3, "mood": 0.1, "decor": 0.35}}], "tags": ["coastal", "farmhouse", "scandinavian", "mediterranean"]}, {"q": "Which wood or metal do you reach for?", "o": [{"label": "Pale oak or ash", "sub": "Light and natural", "chips": ["#D7C3A3", "#C8B194", "#F6F5F1"], "tags": ["scandinavian", "japandi", "minimalist", "coastal"], "v": {"rustic": 0.3, "mood": 0.05, "era": 0.2}}, {"label": "Teak or walnut on tapered legs", "sub": "Warm and retro", "chips": ["#9A5E34", "#5A3B26", "#D3A232"], "tags": ["mid-century-modern", "contemporary"], "v": {"era": 0.75, "warmth": 0.7, "rustic": 0.3}}, {"label": "Reclaimed timber and black steel", "sub": "Raw and honest", "chips": ["#7A5A3E", "#5D6063", "#2B2B2B"], "tags": ["industrial", "rustic", "farmhouse"], "v": {"rustic": 0.9, "mood": 0.7, "warmth": 0.4}}, {"label": "Lacquer, marble and polished brass", "sub": "Polished and luxe", "chips": ["#161616", "#C9C6C0", "#B8934A"], "tags": [], "v": {"rustic": 0.05, "era": 0.9, "mood": 0.8}}], "tags": ["art-deco", "transitional"]}, {"q": "How do you feel about pattern?", "o": [{"label": "None, texture is enough", "sub": "Plain weaves, no prints", "chips": ["#E6DFD3", "#D3D0C9", "#A9A69F"], "tags": ["minimalist", "japandi", "modern-organic", "contemporary"], "v": {"color": 0.1, "decor": 0.1}}, {"label": "A few subtle ones", "sub": "Stripes, checks, a quiet rug", "chips": ["#F5F1EA", "#2F3E55", "#C9C0B2"], "tags": ["transitional", "farmhouse", "coastal", "scandinavian"], "v": {"decor": 0.4, "color": 0.35, "era": 0.5}}, {"label": "One bold print I love", "sub": "Leafy, graphic or Moroccan", "chips": ["#2F5D3A", "#E07A5F", "#C9962E"], "tags": ["tropical", "mid-century-modern", "bohemian", "mediterranean"], "v": {"decor": 0.7, "color": 0.75, "green": 0.8}}, {"label": "Pattern on pattern", "sub": "The more the merrier", "chips": ["#B0305A", "#2E8A86", "#E0A22F"], "tags": [], "v": {"decor": 1, "color": 1}}], "tags": ["eclectic-maximalist", "bohemian"]}, {"q": "How many plants?", "o": [{"label": "One or two, max", "sub": "Low-maintenance", "chips": ["#F7F6F3", "#8C9093", "#A8B59B"], "tags": ["minimalist", "contemporary", "industrial", "art-deco"], "v": {"green": 0.2}}, {"label": "A few statement plants", "sub": "An olive tree, a fiddle leaf", "chips": ["#E9E0D2", "#6F7445", "#B98A5E"], "tags": ["modern-organic", "japandi", "mediterranean", "mid-century-modern"], "v": {"green": 0.5}}, {"label": "Lots. Bring on the jungle", "sub": "Hanging, trailing, everywhere", "chips": ["#2F5D3A", "#7FA36B", "#C9A46C"], "tags": ["tropical", "bohemian"], "v": {"green": 1}}, {"label": "I prefer flowers and branches", "sub": "Cut stems in a vase", "chips": ["#F5F1EA", "#D8A7A0", "#A8998A"], "tags": [], "v": {"green": 0.35, "era": 0.5}}], "tags": ["transitional", "farmhouse", "coastal", "scandinavian"]}, {"q": "Your dream getaway?", "o": [{"label": "A quiet retreat in Kyoto or Copenhagen", "sub": "Simple, beautiful, calm", "chips": ["#F2EEE6", "#B08A62", "#4A4642"], "tags": ["japandi", "scandinavian", "minimalist"], "v": {"color": 0.1, "mood": 0.2, "decor": 0.1, "warmth": 0.45}}, {"label": "A beach house with the doors open", "sub": "Sun, salt and breeze", "chips": ["#F4F2EC", "#A9C6C1", "#4F7184"], "tags": ["coastal", "tropical"], "v": {"warmth": 0.3, "mood": 0, "color": 0.4, "green": 0.3}}, {"label": "A Greek island or Spanish village", "sub": "Whitewash and blue doors", "chips": ["#F5F0E6", "#2F5F8A", "#B9603A"], "tags": ["mediterranean"], "v": {"warmth": 0.85, "color": 0.55, "era": 0.55}}, {"label": "A mountain lodge with a fire", "sub": "Stone, timber and wool", "chips": ["#A79C8C", "#7A5236", "#6E7A4F"], "tags": [], "v": {"rustic": 0.95, "mood": 0.6, "warmth": 0.75}}], "tags": ["rustic", "farmhouse"]}, {"q": "Which hotel would you book?", "o": [{"label": "A sleek design hotel", "sub": "Clean, gallery-like", "chips": ["#F4F3F0", "#5A5A58", "#232323"], "tags": ["contemporary", "minimalist", "modern-organic"], "v": {"era": 0, "mood": 0.5, "rustic": 0.1, "color": 0.2}}, {"label": "A converted warehouse loft", "sub": "Brick, steel, big windows", "chips": ["#9A4E35", "#B8B5AF", "#2B2B2B"], "tags": ["industrial"], "v": {"rustic": 0.85, "mood": 0.75}}, {"label": "A 1920s grand hotel", "sub": "Velvet, marble, chandeliers", "chips": ["#12505A", "#B8934A", "#161616"], "tags": ["art-deco", "transitional", "eclectic-maximalist"], "v": {"era": 0.9, "mood": 0.85, "color": 0.85}}, {"label": "A jungle lodge or safari tent", "sub": "Canvas, rattan, greenery", "chips": ["#4C7A47", "#C9A46C", "#8A5A34"], "tags": [], "v": {"green": 1, "rustic": 0.5, "color": 0.7, "warmth": 0.7}}], "tags": ["tropical", "bohemian"]}, {"q": "Choose the finishing touch.", "o": [{"label": "Brushed brass and a sculptural lamp", "sub": "Quiet luxury", "chips": ["#B08D57", "#F3EEE6", "#4A3B30"], "tags": ["modern-organic", "contemporary", "mid-century-modern", "transitional"], "v": {"era": 0.3, "warmth": 0.65, "rustic": 0.3}}, {"label": "Black iron and an Edison bulb", "sub": "Strong lines, warm glow", "chips": ["#2B2A28", "#C8913F", "#5D6063"], "tags": ["industrial", "farmhouse", "rustic"], "v": {"rustic": 0.85, "mood": 0.7}}, {"label": "Gold, mirrors and a chandelier", "sub": "Sparkle and drama", "chips": ["#B8934A", "#D9C39A", "#5C1F2B"], "tags": ["art-deco", "eclectic-maximalist"], "v": {"era": 0.9, "mood": 0.75}}, {"label": "Rattan, rope and woven lights", "sub": "Natural and handmade", "chips": ["#C9A46C", "#CDB28A", "#6E7445"], "tags": [], "v": {"green": 0.8, "rustic": 0.5, "warmth": 0.7, "color": 0.5}}], "tags": ["bohemian", "coastal", "tropical", "mediterranean"]}, {"q": "Which era feels like you?", "o": [{"label": "Brand new and current", "sub": "Latest, cleanest lines", "chips": ["#F4F3F0", "#CFC8BD", "#232323"], "tags": ["contemporary", "minimalist"], "v": {"era": 0}}, {"label": "Classic, but fresh", "sub": "Mouldings and modern art", "chips": ["#F5F1EA", "#C9C0B2", "#2F3E55"], "tags": ["transitional", "farmhouse"], "v": {"era": 0.55, "decor": 0.4}}, {"label": "Retro '50s and '60s", "sub": "Tapered legs, sunbursts", "chips": ["#D3A232", "#C4632D", "#2F6F73"], "tags": ["mid-century-modern"], "v": {"era": 0.75, "color": 0.65}}, {"label": "Old and collected over time", "sub": "Vintage finds, family pieces", "chips": ["#5A3E2B", "#B5562F", "#CDB28A"], "tags": [], "v": {"era": 0.65, "decor": 0.8, "rustic": 0.6}}], "tags": ["eclectic-maximalist", "bohemian", "rustic"]}, {"q": "Which colours are you drawn to?", "o": [{"label": "Soft whites, greys and pale wood", "sub": "Light and airy", "chips": ["#F6F5F1", "#D6D8D6", "#D7C3A3"], "tags": ["scandinavian", "minimalist", "japandi"], "v": {"color": 0.1, "warmth": 0.35, "mood": 0.05}}, {"label": "Sand and sea blues", "sub": "Fresh and breezy", "chips": ["#DCCBAE", "#B9CCD6", "#23384F"], "tags": ["coastal"], "v": {"color": 0.4, "warmth": 0.3, "mood": 0}}, {"label": "Rust, olive and terracotta", "sub": "Earthy and warm", "chips": ["#B5562F", "#6E7445", "#C0704B"], "tags": ["bohemian", "mediterranean", "mid-century-modern", "farmhouse"], "v": {"warmth": 0.85, "color": 0.55}}, {"label": "Emerald, sapphire and ruby", "sub": "Jewel tones", "chips": ["#1F6B4A", "#23407A", "#B0305A"], "tags": [], "v": {"color": 0.9, "mood": 0.8}}], "tags": ["art-deco", "eclectic-maximalist"]}, {"q": "Pick a word for your home.", "o": [{"label": "Calm", "sub": "A place to switch off", "chips": ["#F2EEE6", "#E4DCCF", "#A8A196"], "tags": ["japandi", "minimalist", "modern-organic", "scandinavian", "coastal"], "v": {"color": 0.1, "mood": 0.15, "decor": 0.15}}, {"label": "Cosy", "sub": "A place to curl up", "chips": ["#9A5B32", "#EFE8DA", "#6E7A4F"], "tags": ["rustic", "farmhouse", "scandinavian"], "v": {"warmth": 0.8, "mood": 0.6, "rustic": 0.7}}, {"label": "Lively", "sub": "A place full of life", "chips": ["#E07A5F", "#4C7A47", "#E3A23B"], "tags": ["bohemian", "tropical", "eclectic-maximalist", "mid-century-modern"], "v": {"color": 0.75, "decor": 0.7, "green": 0.7}}, {"label": "Glamorous", "sub": "A place to impress", "chips": ["#161616", "#B8934A", "#1F4D43"], "tags": [], "v": {"era": 0.85, "mood": 0.85, "color": 0.8, "rustic": 0.05}}], "tags": ["art-deco", "contemporary", "transitional"]}];
+const W_TAG = 0.75;
 
-const Q = [
-  {q:"It's Sunday evening. Where are you?", o:[
-    ["A tidy, light room with tea and a book","Calm and uncluttered",["#F3EEE6","#E9E0D2","#B98A5E"],{WMO:3,TB:1}],
-    ["By a crackling fire under a wool blanket","Cosy and sheltered",["#7A5236","#9A5B32","#2B2A28"],{HSL:3}],
-    ["Round a long table with friends and food","Lively and warm",["#6B7A45","#B8643E","#5B3A29"],{OT:3,TB:1}],
-    ["On a sunny terrace, barefoot","Slow and relaxed",["#F4EDE3","#D49A7A","#B5603A"],{TB:3,OT:1}]]},
-  {q:"Which wall colour would you live with for years?", o:[
-    ["Soft oat or limestone","A warm, quiet neutral",["#E9E0D2","#CFC3B1","#D9C9B0"],{WMO:3}],
-    ["Warm mist with a stone feature","Pale, with texture",["#EFE8DA","#A79C8C","#B5A897"],{HSL:3}],
-    ["Warm cream with one olive wall","Neutral plus colour",["#EFE6D6","#6B7A45","#D8C3A5"],{OT:3}],
-    ["Beige limewash with a terracotta niche","Tonal and sunny",["#E6D7C3","#B5603A","#F4EDE3"],{TB:3}]]},
-  {q:"Pick the sofa you'd sink into.", o:[
-    ["Curved ivory bouclé","Soft and sculptural",["#F3EEE6","#E9E0D2","#D9C9B0"],{WMO:3}],
-    ["Cognac leather, built to last","Ages beautifully",["#9A5B32","#7A5236","#6B5643"],{HSL:3}],
-    ["Olive velvet with rust cushions","Rich and earthy",["#6B7A45","#B8643E","#9EA878"],{OT:3}],
-    ["Low beige linen with clay cushions","Deep and relaxed",["#E6D7C3","#D49A7A","#CDB89C"],{TB:3}]]},
-  {q:"Which wood do you reach for?", o:[
-    ["Light, matte oak","Natural and clean",["#C49A6C","#B98A5E","#D9C9B0"],{WMO:3,TB:1}],
-    ["Dark, smoked timber and beams","Solid and rustic",["#6B5643","#7A5236","#4A3B30"],{HSL:3}],
-    ["Walnut","Warm and grown-up",["#5B3A29","#7A5236","#B08D57"],{OT:3}],
-    ["Limed oak and rattan","Pale and handmade",["#D2C0A3","#CDB89C","#C49A6C"],{TB:3}]]},
-  {q:"Your favourite texture to touch?", o:[
-    ["Bouclé and washed linen","Gentle and tactile",["#F3EEE6","#E9E0D2","#8E9B7E"],{WMO:3}],
-    ["Wool plaid and rough stone","Rugged and warm",["#A79C8C","#6E7A4F","#9A5B32"],{HSL:3}],
-    ["Velvet, cane and jute","A mix of rich and natural",["#6B7A45","#C49A6C","#B8643E"],{OT:3}],
-    ["Raw linen, sisal and hand-thrown clay","Earthy and imperfect",["#CDB89C","#D49A7A","#B5603A"],{TB:3}]]},
-  {q:"What's your climate and light like?", o:[
-    ["Bright, but I want it calmer","Plenty of daylight",["#F8F6F0","#E9E0D2","#8E9B7E"],{WMO:2,TB:1}],
-    ["Cool, misty, chilly evenings","Highlands or high altitude",["#EFE8DA","#5E5F5A","#7A5236"],{HSL:3}],
-    ["Mild, sunny and open-plan","A bit of everything",["#EFE6D6","#6B7A45","#B8643E"],{OT:2,TB:1}],
-    ["Warm and sunny most of the year","Hot afternoons",["#F4EDE3","#E6D7C3","#B5603A"],{TB:3}]]},
-  {q:"How much stuff do you like on display?", o:[
-    ["Almost none: three objects per shelf","Minimal",["#F3EEE6","#CFC3B1","#B98A5E"],{WMO:3}],
-    ["Books, blankets, a basket of logs","Lived-in",["#7A5236","#B5A897","#9A5B32"],{HSL:2,OT:1}],
-    ["Plants, clay pots and a few good books","Curated",["#6B7A45","#9EA878","#B8643E"],{OT:3}],
-    ["Handmade ceramics and dried grasses","Collected",["#D49A7A","#CDB89C","#B5603A"],{TB:3}]]},
-  {q:"Which finishing touch makes the room?", o:[
-    ["Brushed brass and a sculptural lamp","Quiet luxury",["#B08D57","#F3EEE6","#4A3B30"],{WMO:3}],
-    ["Black iron and a wrought chandelier","Strong lines",["#2B2A28","#5E5F5A","#EFE8DA"],{HSL:3}],
-    ["Aged brass and a big olive tree","Warm and green",["#B08D57","#6B7A45","#EFE6D6"],{OT:3}],
-    ["An arched mirror and terracotta pots","Soft and sunny",["#B5603A","#B08D57","#E6D7C3"],{TB:3}]]}
-];
-
+const AXES = DATA.axes, ALL = DATA.styles;
+const CORE = ALL.filter(s => !s.signature), SIG = ALL.filter(s => s.signature);
+const byId = Object.fromEntries(ALL.map(s => [s.id, s]));
 const $ = id => document.getElementById(id);
-let i = 0; const answers = new Array(Q.length).fill(null);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let i = 0; const answers = new Array(QUESTIONS.length).fill(null);
 
-function chips(cols){ return '<div class="chips">' + cols.map(c=>`<span style="background:${c}"></span>`).join('') + '</div>'; }
+function chips(cols){ return '<div class="chips" aria-hidden="true">' + cols.map(c=>`<span style="background:${c}"></span>`).join('') + '</div>'; }
+function accent(s){ // darkest mid-tone from the palette, readable with white text
+  const lum = h => { const n=parseInt(h.slice(1),16), r=(n>>16)/255, g=(n>>8&255)/255, b=(n&255)/255; return .2126*r+.7152*g+.0722*b; };
+  const c = s.palette.map(p=>p.hex).filter(h => lum(h) < .42 && lum(h) > .06).sort((a,b)=>lum(b)-lum(a));
+  return c[0] || s.palette[s.palette.length-1].hex;
+}
 
-function render(){
-  const item = Q[i];
-  $('step').textContent = `Question ${i+1} of ${Q.length}`;
-  $('prog').style.width = ((i)/Q.length*100) + '%';
+/* ---------- scoring: profile similarity + explicit style signals ---------- */
+function scores(ch){
+  const acc = Object.fromEntries(AXES.map(a=>[a,[]])), votes = {}; let n = 0;
+  ch.forEach((k,qi)=>{ if(k===null) return; const o = QUESTIONS[qi].o[k]; n++;
+    for(const a in o.v) acc[a].push(o.v[a]);
+    o.tags.forEach(t => votes[t] = (votes[t]||0) + 1/Math.sqrt(o.tags.length)); });
+  const u = {}; for(const a of AXES) if(acc[a].length) u[a] = acc[a].reduce((x,y)=>x+y,0)/acc[a].length;
+  const keys = Object.keys(u), out = {};
+  for(const s of CORE){
+    const d = Math.sqrt(keys.reduce((t,a)=>t+(u[a]-s.profile[a])**2,0)/Math.max(keys.length,1));
+    out[s.id] = W_TAG*((votes[s.id]||0)/Math.max(n,1)) + (1-W_TAG)*Math.max(0,1-d/0.5);
+  }
+  return out;
+}
+
+/* ---------- views ---------- */
+function gallery(){
+  $('gallery').innerHTML = CORE.map(s=>`<button class="tile" data-id="${s.id}">${chips(s.palette.filter((_,k)=>k%2===0).map(p=>p.hex))}<span class="n"><i>${s.num}.</i>${esc(s.name)}</span></button>`).join('');
+  $('gallery').querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{ location.hash = b.dataset.id; }));
+}
+
+function renderQ(){
+  const item = QUESTIONS[i];
+  $('step').textContent = `Question ${i+1} of ${QUESTIONS.length}`;
+  $('prog').style.width = (i/QUESTIONS.length*100) + '%';
   $('qtext').textContent = item.q;
   $('opts').setAttribute('aria-label', item.q);
-  $('opts').innerHTML = item.o.map((o,k)=>`<button class="opt" id="opt-${k}" aria-pressed="${answers[i]===k}">${chips(o[2])}<b>${o[0]}</b><small>${o[1]}</small></button>`).join('');
-  item.o.forEach((o,k)=> $('opt-'+k).addEventListener('click', ()=>{ answers[i]=k; if(i < Q.length-1){ i++; render(); } else { render(); $('next').focus(); } }));
+  $('opts').innerHTML = item.o.map((o,k)=>`<button class="opt" id="opt-${k}" aria-pressed="${answers[i]===k}">${chips(o.chips)}<b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`).join('');
+  item.o.forEach((o,k)=> $('opt-'+k).addEventListener('click', ()=>{ answers[i]=k; if(i < QUESTIONS.length-1){ i++; renderQ(); $('opt-0').focus(); } else { renderQ(); $('next').focus(); } }));
   $('back').disabled = i===0;
   $('next').disabled = answers[i]===null;
-  $('next').textContent = i===Q.length-1 ? 'See my style' : 'Next';
+  $('next').textContent = i===QUESTIONS.length-1 ? 'See my style' : 'Next';
 }
 
-function score(){
-  const s = {WMO:0,HSL:0,OT:0,TB:0};
-  answers.forEach((a,qi)=>{ if(a===null) return; const w = Q[qi].o[a][3]; for(const k in w) s[k]+=w[k]; });
-  return s;
-}
+function show(view){ ['intro','quiz','result'].forEach(v=>$(v).hidden = v!==view); window.scrollTo(0,0); }
 
-function showResult(){
-  const s = score(); const total = Object.values(s).reduce((a,b)=>a+b,0) || 1;
-  const order = Object.keys(s).sort((a,b)=>s[b]-s[a]);
-  const top = STYLES[order[0]], second = STYLES[order[1]];
-  const link = SHOP[order[0]];
-  $('quiz').hidden = true; $('intro').hidden = true;
-  $('step').textContent = 'Your result';
-  const r = $('result'); r.hidden = false;
-  r.style.display='flex'; r.style.flexDirection='column'; r.style.gap='18px';
+function renderStyle(s, sc){
+  const acc = accent(s), link = SHOP.guides[s.id], lib = SHOP.library;
+  const sig = s.signature ? null : SIG.find(g => (g.pair_with||[]).includes(s.id));
+  let match = '';
+  if(sc){
+    const order = Object.keys(sc).sort((a,b)=>sc[b]-sc[a]).slice(0,3), top = sc[order[0]] || 1;
+    match = `<div class="card"><h3>Your closest styles</h3><div class="match">${order.map(k=>{const pc=Math.round(sc[k]/top*100);return `<div class="mrow"><span>${esc(byId[k].name)}</span><div class="t"><i style="width:${pc}%;background:${accent(byId[k])}"></i></div><span>${pc}%</span></div>`}).join('')}</div>
+      <p class="lede" style="font-size:14px">Your second style is <a href="#${order[1]}">${esc(byId[order[1]].name)}</a>. Borrowing one or two of its pieces makes the look your own.</p></div>`;
+  }
+  $('step').textContent = sc ? 'Your result' : (s.signature ? 'Signature colour story' : `Style ${s.num} of 16`);
+  const r = $('result');
   r.innerHTML = `
     <div class="hero">
-      <div class="strip">${top.pal.map(p=>`<span style="background:${p[0]}" title="${p[1]}"></span>`).join('')}</div>
+      <div class="strip" aria-hidden="true">${s.palette.map(p=>`<span style="background:${p.hex}"></span>`).join('')}</div>
       <div class="body">
-        <div class="kicker">Your home style</div>
-        <h1>${top.name}</h1>
-        <p style="font-family:var(--display);font-size:19px;color:${top.accent}">${top.tag}</p>
-        <p>${top.blurb}</p>
-        <div class="words">${top.words.map(w=>`<span class="pill">${w}</span>`).join('')}</div>
+        <div class="kicker">${sc ? 'Your home style' : (s.signature ? 'enidsdigitalhub signature' : 'Interior style ' + s.num)}</div>
+        <h1>${esc(s.name)}</h1>
+        <p style="font-family:var(--display);font-size:19px;color:${acc}">${esc(s.tagline)}</p>
+        <p>${esc(s.blurb)}</p>
+        <div class="words">${s.words.map(w=>`<span class="pill">${esc(w)}</span>`).join('')}</div>
+        <p class="lede" style="font-size:14px"><b>Best for:</b> ${esc(s.best_for)}</p>
       </div>
     </div>
-
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-        <h3>Your 9-colour palette</h3>
-        <button class="btn" id="copy">Copy HEX codes</button>
-      </div>
-      <div class="pal">${top.pal.map(p=>`<div class="sw"><div style="background:${p[0]}"></div><p><b>${p[1]}</b><br><code>${p[0]}</code><br>${p[2]}</p></div>`).join('')}</div>
+      <div class="nav" style="align-items:baseline"><h3>The 9-colour palette</h3><button class="btn" id="copy">Copy HEX codes</button></div>
+      <div class="pal">${s.palette.map(p=>`<div class="sw"><div style="background:${p.hex}"></div><p><b>${esc(p.name)}</b><br><code>${p.hex}</code><br>${esc(p.use)}</p></div>`).join('')}</div>
       <div class="toast" id="toast" aria-live="polite"></div>
     </div>
-
     <div class="card cols">
-      <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${top.pieces.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-      <div><h3 style="margin-bottom:10px">Avoid</h3><ul>${top.avoid.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${s.pieces.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Key materials</h3><ul>${s.materials.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Do</h3><ul>${s.dos.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Avoid</h3><ul>${s.avoid.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
     </div>
-
-    <div class="card">
-      <h3>How you matched</h3>
-      <div class="match">${order.map(k=>{const pc=Math.round(s[k]/total*100); return `<div class="mrow"><span>${STYLES[k].name}</span><div class="t"><i style="width:${pc}%;background:${STYLES[k].accent}"></i></div><span>${pc}%</span></div>`}).join('')}</div>
-      <p class="lede" style="font-size:14px">Your second style is <b>${second.name}</b>. Borrowing one or two of its pieces is a good way to make the look your own.</p>
-    </div>
-
-    <div class="cta" style="background:${top.accent}">
-      <div class="kicker" style="color:rgba(255,255,255,.75)">Take it further</div>
-      <h2 style="color:#fff">The ${top.name} Home Style Guide</h2>
-      <p>18 pages: the full palette with HEX, RGB and CMYK codes, three material boards, room-by-room styling with real furniture sizes, a lighting guide, a sizing cheat sheet and a shopping checklist.</p>
+    ${match}
+    ${sig ? `<div class="card sig">${chips(sig.palette.map(p=>p.hex))}<div style="flex:1;min-width:220px"><div class="kicker">Pairs well with</div><p><a href="#${sig.id}"><b>${esc(sig.name)}</b></a>, an enidsdigitalhub signature colour story. ${esc(sig.tagline)}.</p></div></div>` : ''}
+    <div class="cta" style="background:${acc}">
+      <div class="kicker" style="color:rgba(255,255,255,.8)">Take it further</div>
+      <h2 style="color:#fff">The ${esc(s.name)} Home Style Guide</h2>
+      <p>18 pages: the full palette with HEX, RGB and CMYK codes, material boards, room-by-room styling with real furniture sizes, a lighting guide, a sizing cheat sheet and a shopping checklist.</p>
       <div class="row">
-        ${link ? `<a class="btn solid" style="color:${top.accent}" href="${link}" target="_blank" rel="noopener">Get the guide</a>` : `<span class="btn solid" style="color:${top.accent};cursor:default">Find it at enidsdigitalhub on Payhip</span>`}
-        <button class="btn" id="again">Retake the quiz</button>
+        ${link ? `<a class="btn solid" style="color:${acc}" href="${link}" target="_blank" rel="noopener">Get this guide</a>` : `<span class="btn solid" style="color:${acc};cursor:default">Coming soon at enidsdigitalhub</span>`}
+        ${lib ? `<a class="btn" href="${lib}" target="_blank" rel="noopener">Get all 16 styles</a>` : ''}
+        <button class="btn" id="share">Copy link to this style</button>
+        <button class="btn" id="again">${sc ? 'Retake the quiz' : 'Take the quiz'}</button>
       </div>
     </div>`;
   $('copy').addEventListener('click', async ()=>{
-    const txt = top.name + ' palette\n' + top.pal.map(p=>`${p[1]}: ${p[0]}`).join('\n');
+    const txt = s.name + ' palette\n' + s.palette.map(p=>`${p.name}: ${p.hex}`).join('\n');
     try{ await navigator.clipboard.writeText(txt); $('toast').textContent='Copied. Paste the codes into Canva or take them to your paint shop.'; }
     catch(e){ $('toast').textContent='Your browser blocked copying. Select the codes above and copy them by hand.'; }
   });
-  $('again').addEventListener('click', ()=>{ answers.fill(null); i=0; r.hidden=true; r.innerHTML=''; $('intro').hidden=false; $('step').textContent='8 questions · about 1 minute'; window.scrollTo(0,0); });
-  window.scrollTo(0,0);
+  $('share').addEventListener('click', async e=>{
+    const url = location.href.split('#')[0] + '#' + s.id;
+    try{ await navigator.clipboard.writeText(url); e.target.textContent='Link copied'; } catch(err){ e.target.textContent = url; }
+  });
+  $('again').addEventListener('click', ()=>{ answers.fill(null); i=0; history.replaceState(null,'',location.pathname+location.search); show('quiz'); renderQ(); });
+  show('result');
 }
 
-$('start').addEventListener('click', ()=>{ $('intro').hidden=true; $('quiz').hidden=false; render(); $('opt-0').focus(); });
-$('back').addEventListener('click', ()=>{ if(i>0){ i--; render(); } });
-$('next').addEventListener('click', ()=>{ if(answers[i]===null) return; if(i < Q.length-1){ i++; render(); } else { $('prog').style.width='100%'; showResult(); } });
+function route(){
+  const id = location.hash.slice(1);
+  if(byId[id]) renderStyle(byId[id], null);
+  else { show('intro'); $('step').textContent = '12 questions · about 2 minutes'; }
+}
+
+$('start').addEventListener('click', ()=>{ show('quiz'); renderQ(); $('opt-0').focus(); });
+$('back').addEventListener('click', ()=>{ if(i>0){ i--; renderQ(); } });
+$('next').addEventListener('click', ()=>{
+  if(answers[i]===null) return;
+  if(i < QUESTIONS.length-1){ i++; renderQ(); return; }
+  $('prog').style.width='100%';
+  const sc = scores(answers), top = Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0];
+  renderStyle(byId[top], sc);
+});
+window.addEventListener('hashchange', route);
+gallery(); route();
 </script>
 </body>
 </html>
