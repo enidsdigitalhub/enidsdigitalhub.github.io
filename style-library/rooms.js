@@ -2,7 +2,7 @@
    Simple one-point perspective: x across the room (-1..1), z depth (0 = back wall, 1 = front edge), y height (0 floor .. 1 ceiling). */
 const ROOMS = (() => {
   const W = 800, H = 500, VX = 400;
-  const CX = 0.17, KZ = 0.84;
+  let CX = 0.17; const KZ = 0.84;
   const k = z => 1 + KZ * z;
   const P = (x, z, y) => [VX + 30 + (x - CX) * 230 * k(z), 330 + 170 * z - y * 260 * k(z)];
   const pt = p => p[0].toFixed(1) + ',' + p[1].toFixed(1);
@@ -405,44 +405,65 @@ const ROOMS = (() => {
     const cane = isCane(sc); return seat(x, z, { ori, frame: sh(sc.wood, -0.15), seatC: sc.chair, backC: sc.chair, cane, w: 0.11, d: 0.12, seatY: 0.15, backY: 0.38, t: 0.03, rx: 6, legW: 3, cushion: sc.cushions[1] || sc.cushions[0], backCushion: sc.cushions[0] });
   }
 
-  // ---------- entry porch (sample home: covered entrance terrace) ----------
+  // ---------- entry porch (sample home: covered entrance terrace, straight-on and symmetrical) ----------
+  function wreath(cx, cy, r, sc) { let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#4F7A45" stroke-width="${r * 0.42}"/>`; seed = 91;
+    for (let i = 0; i < 22; i++) { const a = i / 22 * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; s += `<ellipse cx="${x}" cy="${y}" rx="${r * 0.22}" ry="${r * 0.1}" transform="rotate(${a * 57 + 40} ${x} ${y})" fill="${['#6E9A5C', '#3E6B3C', '#7D8F5E'][i % 3]}"/>`; }
+    for (let i = 0; i < 7; i++) { const a = (i / 7 + 0.05) * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; s += `<circle cx="${x}" cy="${y}" r="${r * 0.13}" fill="${['#E8A3A9', '#FBF6EE', '#F3C86E'][i % 3]}" stroke="#9c6b6b" stroke-width="0.4"/>`; }
+    return s + `<path d="M${cx - r * 0.25} ${cy + r * 0.95} q${r * 0.25} ${r * 0.25} ${r * 0.5} 0" stroke="${sc.cushions[0]}" stroke-width="3" fill="none"/>`; }
+  function lantern(x, y, sz, metal) { return `<circle cx="${x}" cy="${y + sz * 0.9}" r="${sz * 2.2}" fill="${U('glow')}"/>` + `<path d="M${x - sz * 0.5} ${y} H${x + sz * 0.5} L${x + sz * 0.75} ${y + sz * 0.35} V${y + sz * 1.6} H${x - sz * 0.75} V${y + sz * 0.35} Z" fill="#FFF1CC" stroke="${metal}" stroke-width="2.2"/>` + ln([x, y + sz * 0.35], [x, y + sz * 1.6], metal, 1.4) + `<path d="M${x - sz * 0.9} ${y + sz * 1.6} H${x + sz * 0.9} L${x + sz * 0.6} ${y + sz * 1.85} H${x - sz * 0.6} Z" fill="${metal}"/><path d="M${x - sz * 0.6} ${y} L${x} ${y - sz * 0.45} L${x + sz * 0.6} ${y} Z" fill="${metal}"/>`; }
   function porch(sc) {
     let s = '';
-    const soffit = sh(sc.wood, 0.15), stone = mix(sc.wall, '#B9A98D', 0.55), door = sc.accent && lum(sc.accent) < 0.7 ? sc.accent : sh(sc.wood, -0.2), tile = mix(sc.bfloor, sc.wall, 0.35);
-    // timber-look soffit with downlights
+    const wall = sc.wall, soffit = sh(sc.wood, 0.18), stone = mix(wall, '#B9A98D', 0.55), trim = sh(wall, lum(wall) > 0.6 ? -0.1 : 0.15);
+    const door = sc.accent && lum(sc.accent) < 0.7 ? sc.accent : sh(sc.wood, -0.18), shutter = mix(sc.cushions[0], sh(sc.wood, -0.2), 0.35), tile = mix(sc.bfloor, wall, 0.35);
+    const boards = ['farmhouse', 'coastal', 'scandinavian', 'transitional'].some(k => (sc.bwall || '') && sc.feature !== 'brick') && ['beams', 'panelling', 'none'].includes(sc.feature);
+    // sky and garden behind, timber soffit, facade
+    s += rect0(0, 0, W, H, U('sky'));
     s += poly([[0, 0], [W, 0], P(1, 0, 1), P(-1, 0, 1)], soffit);
-    for (let i = 1; i < 16; i++) s += ln(P(-1.4 + 2.8 * i / 16, 0, 1), P(-1.4 + 2.8 * i / 16, 1.1, 1), sh(soffit, -0.1), 0.8);
-    [-0.5, 0.5].forEach(xx => { const [dx, dy] = P(xx, 0.45, 1); s += `<circle cx="${dx}" cy="${dy}" r="26" fill="${U('glow')}"/><ellipse cx="${dx}" cy="${dy}" rx="6" ry="2.5" fill="#FFF5DC"/>`; });
-    // open ends: garden, railing
-    [-1, 1].forEach(sx => { s += poly(sx < 0 ? [[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]] : [[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], U('sky'));
-      s += poly([P(sx, 0, 0), P(sx, 0, 0.45), P(sx, 1.2, 0.45), P(sx, 1.2, 0)], '#6F8F5E'); seed = sx > 0 ? 3 : 8;
-      for (let i = 0; i < 14; i++) { const p2 = P(sx, rnd() * 1.1, 0.42 + rnd() * 0.08); s += `<circle cx="${p2[0]}" cy="${p2[1]}" r="${8 + rnd() * 10}" fill="${sh('#6F8F5E', (rnd() - 0.5) * 0.25)}"/>`; }
-      [0.34, 0.2].forEach(yy => s += ln(P(sx, 0, yy), P(sx, 1.2, yy), sc.metal, 3));
-      for (let i = 0; i <= 10; i++) s += ln(P(sx, i * 0.12, 0), P(sx, i * 0.12, 0.36), sc.metal, 2.5); });
-    // facade
-    s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], sc.wall);
+    for (let i = 1; i < 22; i++) s += ln(P(-1, i / 22 * 1.0, 1), P(1, i / 22 * 1.0, 1), sh(soffit, -0.09), 0.7);
+    [[0, 0], [W, 0]].forEach(([cx], i) => { const sx = i ? 1 : -1; s += poly(sx < 0 ? [[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]] : [[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], U('sky')); seed = 7 + i;
+      s += poly([P(sx, 0, 0), P(sx, 1.3, 0), P(sx, 1.3, 0.26), P(sx, 0, 0.26)], '#6F8F5E');
+      for (let j = 0; j < 22; j++) { const zz = j / 21 * 1.25, p2 = P(sx, zz, 0.26 + rnd() * 0.03); s += `<circle cx="${p2[0]}" cy="${p2[1]}" r="${(8 + rnd() * 6) * k(zz)}" fill="${sh('#6F8F5E', (rnd() - 0.5) * 0.25)}"/>`; } });
+    s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], wall);
+    if (sc.feature === 'brick') s += feature('brick', wall, sc);
+    else if (boards || sc.feature === 'beams') { const [x, y, w, h] = fr(-1, 1, 0.001, 0, 1); for (let r = 1; r * 13 < h; r++) s += ln([x, y + r * 13], [x + w, y + r * 13], sh(wall, -0.07), 1); }
+    s += ln(P(-1, 0, 0), P(1, 0, 0), '#1a1208', 10, `opacity="0.22" filter="${U('b')}"`);
+    // floor: large porch tiles
     s += poly([P(-1.4, 0, 0), P(1.4, 0, 0), [W, H], [0, H]], tile);
-    s += clipFloor((() => { let g = ''; for (let i = 0; i <= 8; i++) g += ln(P(-1.4 + 2.8 * i / 8, 0, 0), P(-1.4 + 2.8 * i / 8, 1.2, 0), sh(tile, -0.12), 0.8); for (let j = 1; j <= 4; j++) g += ln(P(-1.4, Math.pow(j / 4, 1.1), 0), P(1.4, Math.pow(j / 4, 1.1), 0), sh(tile, -0.12), 0.8); return g; })());
-    s += ln(P(-1, 0, 0), P(1, 0, 0), '#000', 10, `opacity="0.2" filter="${U('b')}"`);
-    // windows with planter boxes beneath
-    [[-0.88, -0.42], [0.42, 0.88]].forEach(([a, b2]) => { const [x, y, w, h] = fr(a, b2, 0.002, 0.3, 0.86);
-      s += rect(x - 4, y - 4, w + 8, h + 8, sh(sc.wall, -0.14)) + rect(x, y, w, h, U('sky')) + rect(x, y, w, h * 0.5, sh(sc.cushions[1] || sc.wall, 0.4), 'opacity="0.75"') + ln([x + w / 2, y], [x + w / 2, y + h], sc.metal, 3);
-      s += box(a + 0.02, b2 - 0.02, 0.08, 0.07, 0, 0.12, potC(sc)); seed = Math.round(a * 100) + 50;
-      for (let i = 0; i < 12; i++) { const p2 = P(a + 0.05 + rnd() * (b2 - a - 0.1), 0.05, 0.13 + rnd() * 0.06); s += `<ellipse cx="${p2[0]}" cy="${p2[1]}" rx="${10 + rnd() * 8}" ry="${6 + rnd() * 4}" fill="${['#6E8052', '#7D8F5E', '#5E7A4C'][i % 3]}"/>`; }
-      { const [fx, fy] = P((a + b2) / 2, 0.05, 0.17); s += blooms(fx - 32, fy - 4, 17, sc, 5) + blooms(fx + 32, fy - 4, 17, sc, 9); } });
-    // front door with sconces
-    { const [x, y, w, h] = fr(-0.16, 0.16, 0.002, 0, 0.76); s += rect(x - 9, y - 9, w + 18, h + 9, sh(sc.wall, -0.2)) + rect(x, y, w, h, door);
-      s += rect(x + w * 0.1, y + h * 0.07, w * 0.35, h * 0.86, sh(door, -0.1), 'rx="2"') + rect(x + w * 0.55, y + h * 0.07, w * 0.35, h * 0.86, sh(door, -0.1), 'rx="2"') + ln([x + w / 2, y], [x + w / 2, y + h], sh(door, -0.25), 1.5);
-      s += rect(x + w * 0.46, y + h * 0.45, 3, 18, sc.metal) + rect(x + w * 0.52, y + h * 0.45, 3, 18, sc.metal); }
-    [-0.26, 0.26].forEach(xx => { const [lx, ly] = P(xx, 0.003, 0.6); s += `<circle cx="${lx}" cy="${ly}" r="24" fill="${U('glow')}"/>` + rect(lx - 5, ly - 12, 10, 18, '#FFF0C9', `stroke="${sc.metal}" stroke-width="2"`); });
-    s += rug(-0.2, 0.2, 0.05, 0.2, sh(sc.rug, -0.12), 'jute', sc);
-    // olive trees in large planters: flanking the door and at the outer corners
-    s += oliveTree(-0.3, 0.14, 1, potC(sc)) + oliveTree(0.3, 0.14, 1, potC(sc));
-    // two seating areas: a pair of lounge chairs and a side table each side
-    [-1, 1].forEach(sx => { const a2 = loungeChair(sx * 0.86, 0.56, sc, sx < 0 ? 'right' : 'left'), b2 = loungeChair(sx * 0.46, 0.56, sc, sx < 0 ? 'left' : 'right'), t2 = roundTable(sx * 0.66, 0.5, 0.055, 0.16, sc.wood, sc.metal); s += sx < 0 ? a2 + t2 + b2 : b2 + t2 + a2; });
-    // stone-clad columns
-    [[-1.02, -0.9], [0.9, 1.02]].forEach(([a, b2]) => { s += box(a, b2, 1.02, 0.08, 0, 1, stone); const [x, y, w, h] = fr(a, b2, 1.02, 0, 1); seed = 31;
-      for (let r = 0; r * 14 < h; r++) { let cx = x; while (cx < x + w) { const ww = 14 + rnd() * 24; s += rect(cx + 1, y + r * 14 + 1, Math.min(ww, x + w - cx) - 2, 12, sh(stone, (rnd() - 0.5) * 0.22), 'rx="2"'); cx += ww; } } });
+    s += clipFloor((() => { let g = ''; for (let i = 0; i <= 10; i++) g += ln(P(-1.4 + 2.8 * i / 10, 0, 0), P(-1.4 + 2.8 * i / 10, 1.3, 0), sh(tile, -0.1), 0.8); [0.22, 0.48, 0.78].forEach(z => g += ln(P(-1.4, z, 0), P(1.4, z, 0), sh(tile, -0.1), 0.8)); return g; })());
+    s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], U('fl'));
+    // windows with shutters and flower boxes, mirrored
+    [-1, 1].forEach(sx => { const a = sx < 0 ? -0.86 : 0.48, b2 = sx < 0 ? -0.48 : 0.86; const [x, y, w, h] = fr(a, b2, 0.002, 0.34, 0.84);
+      s += rect0(x - 6, y - 6, w + 12, h + 12, trim) + rect0(x, y, w, h, U('sky')) + rect0(x, y, w, h * 0.45, sh(sc.bedding || wall, 0.1), 'opacity="0.85"');
+      s += ln([x + w / 2, y], [x + w / 2, y + h], trim, 4) + ln([x, y + h / 2], [x + w, y + h / 2], trim, 4) + rect0(x - 10, y + h + 6, w + 20, 6, sh(trim, -0.08));
+      [x - 6 - w * 0.32, x + w + 6].forEach(sxx => { s += rect0(sxx, y - 6, w * 0.32, h + 12, shutter, `stroke="${sh(shutter, -0.35)}" stroke-width="0.8"`); for (let i = 1; i < 9; i++) s += ln([sxx + 3, y - 6 + i * (h + 12) / 9], [sxx + w * 0.32 - 3, y - 6 + i * (h + 12) / 9], sh(shutter, -0.22), 1.2); });
+      s += box(a - 0.02, b2 + 0.02, 0.06, 0.05, 0.27, 0.33, potC(sc), { nowall: true });
+      const [fx, fy] = P((a + b2) / 2, 0.04, 0.34); s += blooms(fx - w * 0.28, fy - 4, 15, sc, 3 + sx) + blooms(fx, fy - 6, 16, sc, 5 + sx) + blooms(fx + w * 0.28, fy - 4, 15, sc, 8 + sx); });
+    // front door: glazed upper, panels, sidelights, transom, wreath
+    { const [x, y, w, h] = fr(-0.17, 0.17, 0.002, 0.06, 0.74), side = w * 0.32, tr = h * 0.16;
+      s += rect0(x - side - 14, y - tr - 14, w + side * 2 + 28, h + tr + 14, trim);
+      s += rect0(x - side - 6, y - tr - 6, w + side * 2 + 12, tr - 2, U('sky'), `stroke="${sh(trim, -0.2)}" stroke-width="1"`);
+      [x - side - 6, x + w + 6].forEach(gx => { s += rect0(gx, y, side, h, U('sky'), `stroke="${sh(trim, -0.2)}" stroke-width="1"`); for (let i = 1; i < 4; i++) s += ln([gx, y + i * h * 0.6 / 4], [gx + side, y + i * h * 0.6 / 4], trim, 2); s += rect0(gx, y + h * 0.62, side, h * 0.38, trim); });
+      s += rect0(x, y, w, h, door, `stroke="${sh(door, -0.4)}" stroke-width="1"`) + rect0(x + w * 0.12, y + h * 0.06, w * 0.76, h * 0.34, U('sky'));
+      s += ln([x + w / 2, y + h * 0.06], [x + w / 2, y + h * 0.4], door, 2.5) + ln([x + w * 0.12, y + h * 0.23], [x + w * 0.88, y + h * 0.23], door, 2.5);
+      [[0.5, 0.68], [0.72, 0.9]].forEach(([t0, t1]) => s += rect0(x + w * 0.14, y + h * t0, w * 0.72, h * (t1 - t0), 'none', `stroke="${sh(door, -0.25)}" stroke-width="2"`));
+      s += rect0(x + w * 0.82, y + h * 0.46, 4, 16, sc.metal, 'rx="2"') + wreath(x + w / 2, y + h * 0.24, w * 0.2, sc);
+      s += box(-0.32, 0.32, 0.12, 0.12, 0, 0.06, sh(tile, -0.05), { nowall: true }); }
+    s += lantern(fr(-0.36, -0.36, 0.002, 0.6, 0.6)[0], fr(0, 0, 0.002, 0.68, 0.68)[1], 12, sc.metal) + lantern(fr(0.36, 0.36, 0.002, 0.6, 0.6)[0], fr(0, 0, 0.002, 0.68, 0.68)[1], 12, sc.metal);
+    s += rug(-0.16, 0.16, 0.13, 0.25, sh(sc.rug, -0.12), 'jute', sc);
+    // seating either side: lounge chair + side table, mirrored
+    s += loungeChair(-0.68, 0.5, sc, 'front') + roundTable(-0.42, 0.5, 0.055, 0.16, sc.wood, sc.metal);
+    s += loungeChair(0.68, 0.5, sc, 'front') + roundTable(0.42, 0.5, 0.055, 0.16, sc.wood, sc.metal);
+    { const [tx, ty] = P(-0.42, 0.5, 0.16); s += foot(tx - 6, ty, 12) + rect0(tx - 5, ty - 14, 10, 14, sc.cushions[1], 'rx="4"'); const [ux, uy] = P(0.42, 0.5, 0.16); s += foot(ux - 9, uy, 18) + rect0(ux - 9, uy - 5, 18, 5, sh(sc.wood, -0.15), 'rx="2"'); }
+    // olive trees flanking the door
+    s += oliveTree(-0.4, 0.16, 0.8, potC(sc)) + oliveTree(0.4, 0.16, 0.8, potC(sc));
+    // front steps across the bottom, flower pots at the ends
+    [[0.92, 0.0], [1.02, -0.06]].forEach(([z, y]) => { s += poly([P(-1.4, z, y + 0.001), P(1.4, z, y + 0.001), P(1.4, z, y - 0.06), P(-1.4, z, y - 0.06)], sh(tile, -0.22)) + ln(P(-1.4, z, y), P(1.4, z, y), sh(tile, 0.15), 1.5); });
+    [-0.8, 0.8].forEach((xx, i) => { s += box(xx - 0.06, xx + 0.06, 0.86, 0.06, 0, 0.1, potC(sc)); const [fx, fy] = P(xx, 0.83, 0.11); s += blooms(fx, fy - 6, 20, sc, 40 + i); });
+    // pendant lantern from the soffit, stone columns, climbing greenery
+    { const [px, py] = P(0, 0.45, 1); s += ln([px, py], [px, py + 34], sc.metal, 1.5) + lantern(px, py + 34, 10, sc.metal); }
+    [[-1.04, -0.9], [0.9, 1.04]].forEach(([a, b2], ci) => { s += box(a, b2, 0.98, 0.07, -0.06, 1, stone, { nowall: true }); const [x, y, w, h] = fr(a, b2, 0.98, -0.06, 1); seed = 31;
+      for (let r = 0; r * 14 < h; r++) { let cx = x; while (cx < x + w) { const ww = 14 + rnd() * 24; s += rect0(cx + 1, y + r * 14 + 1, Math.min(ww, x + w - cx) - 2, 12, sh(stone, (rnd() - 0.5) * 0.22), 'rx="2"'); cx += ww; } }
+      seed = 60 + ci; const cx0 = ci ? x : x + w; for (let i = 0; i < 30; i++) { const yy = y + rnd() * h * 0.55, xx = cx0 + (ci ? -1 : 1) * rnd() * 34; s += `<ellipse cx="${xx}" cy="${yy}" rx="${7 + rnd() * 6}" ry="${4 + rnd() * 3}" transform="rotate(${rnd() * 180} ${xx} ${yy})" fill="${['#5E8A52', '#4C7A47', '#7FA36F'][i % 3]}"/>`; if (i % 4 === 0) s += `<circle cx="${xx}" cy="${yy}" r="4.5" fill="#E8A3A9" stroke="#a8686e" stroke-width="0.4"/>`; } });
     return s;
   }
 
@@ -550,6 +571,7 @@ const ROOMS = (() => {
   const LABELS = { living: 'Living room', porch: 'Entry porch', dining: 'Rear dining room', kitchen: 'Kitchen', bedroom: 'Master bedroom', guest: 'Bedroom', closet: 'Walk-in closet', bathroom: 'Bathroom' };
   function draw(room, sc) {
     pf = 'r' + (++uid) + Math.random().toString(36).slice(2, 5);
+    CX = room === 'porch' ? 0 : 0.17;
     const body = { living, porch, dining, kitchen, bedroom, guest, closet, bathroom }[room](sc);
     const defs = `<clipPath id="${pf}c"><rect width="${W}" height="${H}"/></clipPath>
       <filter id="${pf}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
