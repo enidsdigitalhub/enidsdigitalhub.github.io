@@ -8,6 +8,8 @@ Everything else (the style quiz, style guides, pins, listings) is generated from
 | `styles_data.py` | The 18 styles: 9-colour palette, words, blurb, materials, pieces with sizes, dos/avoid, quiz profile |
 | `questions.py` | The 12 quiz questions; each option sets profile values and signals specific styles |
 | `match.py` | Scoring (profile similarity + style signals) and a test proving all 16 styles can be reached |
+| `scenes.py` | Room settings per style for the illustrated sample home |
+| `rooms.js` | Draws the four sample-home rooms (living, kitchen, bedroom, bathroom) for any style |
 | `quiz_template.html` | Quiz page template |
 | `build_quiz.py` | Builds the quiz: `python3 build_quiz.py ../apps/style-quiz` |
 | `styles.json` | JSON export of the style data: `python3 styles_data.py` |

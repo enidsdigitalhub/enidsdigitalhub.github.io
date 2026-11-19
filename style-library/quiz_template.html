@@ -90,6 +90,14 @@ ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px}
 .sig{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
 .sig .chips{width:150px; height:40px}
 .toast{font-size:13px; color:var(--muted); min-height:18px}
+.home{display:flex; flex-direction:column; gap:14px}
+.tabs{display:flex; gap:8px; flex-wrap:wrap}
+.tab{all:unset; box-sizing:border-box; cursor:pointer; padding:7px 14px; border-radius:999px; border:1.5px solid var(--line); font-size:14px}
+.tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tab:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.view{border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#fff; aspect-ratio:8/5}
+.view svg{display:block; width:100%; height:100%}
+.note{font-size:13px; color:var(--muted)}
 footer{font-size:12.5px; color:var(--muted); text-align:center}
 [hidden]{display:none !important}
 @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
@@ -137,6 +145,8 @@ const SHOP = {
 const DATA = /*__DATA__*/;
 const QUESTIONS = /*__QUESTIONS__*/;
 const W_TAG = /*__WTAG__*/;
+const SCENES = /*__SCENES__*/;
+/*__ROOMS_JS__*/
 
 const AXES = DATA.axes, ALL = DATA.styles;
 const CORE = ALL.filter(s => !s.signature), SIG = ALL.filter(s => s.signature);
@@ -216,6 +226,12 @@ function renderStyle(s, sc){
       <div class="pal">${s.palette.map(p=>`<div class="sw"><div style="background:${p.hex}"></div><p><b>${esc(p.name)}</b><br><code>${p.hex}</code><br>${esc(p.use)}</p></div>`).join('')}</div>
       <div class="toast" id="toast" aria-live="polite"></div>
     </div>
+    ${SCENES[s.id] ? `<div class="card home">
+      <div><div class="kicker">See it in a real home</div><h3 style="margin-top:4px">${esc(s.name)}, room by room</h3></div>
+      <div class="tabs" role="tablist" aria-label="Rooms">${Object.entries(ROOMS.LABELS).map(([k,v],n)=>`<button class="tab" role="tab" data-room="${k}" aria-selected="${n===0}">${v}</button>`).join('')}</div>
+      <div class="view" id="view">${ROOMS.draw('living', SCENES[s.id])}</div>
+      <p class="note">Illustrated sample home based on a real 3-bedroom bungalow (details changed for privacy). Want your own rooms designed in this style? Ask about the design-my-home service at enidsdigitalhub.</p>
+    </div>` : ''}
     <div class="card cols">
       <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${s.pieces.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
       <div><h3 style="margin-bottom:10px">Key materials</h3><ul>${s.materials.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
@@ -235,6 +251,10 @@ function renderStyle(s, sc){
         <button class="btn" id="again">${sc ? 'Retake the quiz' : 'Take the quiz'}</button>
       </div>
     </div>`;
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x===b));
+    $('view').innerHTML = ROOMS.draw(b.dataset.room, SCENES[s.id]);
+  }));
   $('copy').addEventListener('click', async ()=>{
     const txt = s.name + ' palette\n' + s.palette.map(p=>`${p.name}: ${p.hex}`).join('\n');
     try{ await navigator.clipboard.writeText(txt); $('toast').textContent='Copied. Paste the codes into Canva or take them to your paint shop.'; }
