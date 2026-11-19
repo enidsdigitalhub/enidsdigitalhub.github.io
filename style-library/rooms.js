@@ -2,8 +2,9 @@
    Simple one-point perspective: x across the room (-1..1), z depth (0 = back wall, 1 = front edge), y height (0 floor .. 1 ceiling). */
 const ROOMS = (() => {
   const W = 800, H = 500, VX = 400;
-  const k = z => 1 + 0.739 * z;
-  const P = (x, z, y) => [VX + x * 230 * k(z), 330 + 170 * z - y * 260 * k(z)];
+  const CX = 0.17, KZ = 0.84;
+  const k = z => 1 + KZ * z;
+  const P = (x, z, y) => [VX + 30 + (x - CX) * 230 * k(z), 330 + 170 * z - y * 260 * k(z)];
   const pt = p => p[0].toFixed(1) + ',' + p[1].toFixed(1);
   const hexRGB = h => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
   const toHex = c => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
@@ -13,7 +14,8 @@ const ROOMS = (() => {
   const line = c => lum(c) > 0.5 ? sh(c, -0.14) : sh(c, 0.16);
   let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const poly = (pts, fill, extra = '') => `<polygon points="${pts.map(pt).join(' ')}" fill="${fill}" ${extra}/>`;
-  const rect = (x, y, w, h, fill, extra = '') => `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0, w).toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" fill="${fill}" ${extra}/>`;
+  const rect0 = (x, y, w, h, fill, extra = '') => `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0, w).toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" fill="${fill}" ${extra}/>`;
+  const rect = (x, y, w, h, fill, extra = '') => rect0(x, y, w, h, fill, extra) + (/rx="[0-9]/.test(extra) && fill[0] === '#' && !/stroke|opacity/.test(extra) && h > 6 ? rect0(x, y, w, h, `url(#${pf}cu)`, extra.match(/rx="[^"]*"/)[0]) : '');
   const ln = (a, b, c, w = 1, extra = '') => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" ${extra}/>`;
 
   // a box: x0..x1, front face at z (depth d going back), height y0..y1
@@ -21,11 +23,11 @@ const ROOMS = (() => {
   const U = n => `url(#${pf}${n})`;
   function box(x0, x1, z, d, y0, y1, c, o = {}) {
     let s = '';
-    if (y0 <= 0.05 && !o.noshadow) s += poly([P(x0 - 0.03, z + 0.035, 0.001), P(x1 + 0.03, z + 0.035, 0.001), P(x1 + 0.03, z - d - 0.01, 0.001), P(x0 - 0.03, z - d - 0.01, 0.001)], '#000', `opacity="${0.16 + Math.min(0.12, (y1 - y0) * 0.25)}" filter="${U('b')}"`);
+    if (y0 <= 0.05 && !o.noshadow) { const sx = Math.min(0.12, (y1 - y0) * 0.22); s += poly([P(x0 - 0.02, z + 0.04, 0.001), P(x1 + 0.02 + sx, z + 0.04, 0.001), P(x1 + 0.02 + sx * 1.6, z - d - 0.02, 0.001), P(x0 - 0.02 + sx * 0.6, z - d - 0.02, 0.001)], '#1a1208', `opacity="${0.22 + Math.min(0.14, (y1 - y0) * 0.3)}" filter="${U('b')}"`); }
     const top = [P(x0, z, y1), P(x1, z, y1), P(x1, z - d, y1), P(x0, z - d, y1)];
-    if (x1 < 0) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.18));
-    if (x0 > 0) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.18));
-    if (!o.notop) s += poly(top, o.top || sh(c, 0.12));
+    if (x1 < CX) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.26)) + poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], U('fs'));
+    if (x0 > CX) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.12)) + poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], U('fs'));
+    if (!o.notop) s += poly(top, o.top || sh(c, 0.16));
     const a = P(x0, z, y1), b = P(x1, z, y0);
     s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], c, o.rx ? `rx="${o.rx}"` : '');
     if (b[1] - a[1] > 3) s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], U('fs'), o.rx ? `rx="${o.rx}"` : '');
@@ -534,11 +536,11 @@ const ROOMS = (() => {
       <filter id="${pf}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
       <filter id="${pf}b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
       <filter id="${pf}grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0.09 0"/></filter>
-      <linearGradient id="${pf}fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.13"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
+      <linearGradient id="${pf}fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
       <linearGradient id="${pf}wl" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.02"/><stop offset="1" stop-color="#000" stop-opacity="0.16"/></linearGradient>
       <linearGradient id="${pf}wr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.04"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
       <linearGradient id="${pf}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F9FB"/><stop offset="0.7" stop-color="#CFE2EA"/><stop offset="1" stop-color="#B9D3C2"/></linearGradient>
-      <radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${pf}cu" cx="0.38" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff" stop-opacity="0.28"/><stop offset="0.55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></radialGradient><radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
       <linearGradient id="${pf}lx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF6E2" stop-opacity="0.10"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
       <linearGradient id="${pf}ly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1208" stop-opacity="0.10"/><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="0.8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
       <radialGradient id="${pf}vig" cx="0.5" cy="0.48" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>`;
