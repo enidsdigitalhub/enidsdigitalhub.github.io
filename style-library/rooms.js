@@ -21,8 +21,10 @@ const ROOMS = (() => {
   // a box: x0..x1, front face at z (depth d going back), height y0..y1
   let pf = 'r0';
   const U = n => `url(#${pf}${n})`;
+  const foot = (x, y, w) => `<ellipse cx="${(x + w / 2 + 1.5).toFixed(1)}" cy="${(y - 0.5).toFixed(1)}" rx="${(w * 0.62).toFixed(1)}" ry="2.6" fill="#1a1208" opacity="0.32" filter="url(#${pf}bs)"/>`;
   function box(x0, x1, z, d, y0, y1, c, o = {}) {
     let s = '';
+    if (z - d <= 0.035 && !o.nowall && y1 - y0 > 0.02) { const [wx, wy, ww, wh] = fr(x0 - 0.01, x1 + 0.035, 0.001, Math.max(0, y0 - 0.02), Math.min(1, y1 + 0.015)); s += rect0(wx, wy, ww, wh, '#1a1208', `opacity="0.2" filter="${U('b')}"`); }
     if (y0 <= 0.05 && !o.noshadow) { const sx = Math.min(0.12, (y1 - y0) * 0.22); s += poly([P(x0 - 0.02, z + 0.04, 0.001), P(x1 + 0.02 + sx, z + 0.04, 0.001), P(x1 + 0.02 + sx * 1.6, z - d - 0.02, 0.001), P(x0 - 0.02 + sx * 0.6, z - d - 0.02, 0.001)], '#1a1208', `opacity="${0.22 + Math.min(0.14, (y1 - y0) * 0.3)}" filter="${U('b')}"`); }
     const top = [P(x0, z, y1), P(x1, z, y1), P(x1, z - d, y1), P(x0, z - d, y1)];
     if (x1 < CX) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.26)) + poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], U('fs'));
@@ -113,7 +115,7 @@ const ROOMS = (() => {
   }
   function art(type, x0, x1, y0, y1, sc) {
     if (type === 'none') return '';
-    const [x, y, w, h] = fr(x0, x1, 0.003, y0, y1); let s = '';
+    const [x, y, w, h] = fr(x0, x1, 0.003, y0, y1); let s = rect0(x + 3, y + 5, w, h, '#1a1208', `opacity="0.22" filter="${U('bs')}"`);
     if (type === 'gallery') { seed = 9; const fr2 = [[0, 0, .3, .55], [.34, 0, .28, .4], [.66, 0, .34, .62], [.34, .45, .28, .55], [0, .6, .3, .4], [.66, .66, .34, .34]];
       fr2.forEach((f, i) => { s += rect(x + f[0] * w, y + f[1] * h, f[2] * w - 4, f[3] * h - 4, sc.cushions[i % 3], `stroke="${sc.metal}" stroke-width="3"`); }); return s; }
     if (type === 'sunburst') { const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) / 2; for (let i = 0; i < 24; i++) { const a = i * Math.PI / 12; s += ln([cx, cy], [cx + Math.cos(a) * r, cy + Math.sin(a) * r], sc.metal, 2.5); } s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.35}" fill="${sh(sc.wall, 0.3)}" stroke="${sc.metal}" stroke-width="3"/>`; return s; }
@@ -147,7 +149,7 @@ const ROOMS = (() => {
     return s;
   }
   function rug(x0, x1, z0, z1, c, t, sc) {
-    let s = poly([P(x0, z0, 0.002), P(x1, z0, 0.002), P(x1, z1, 0.002), P(x0, z1, 0.002)], c);
+    let s = poly([P(x0 - 0.01, z0, 0.001), P(x1 + 0.02, z0, 0.001), P(x1 + 0.02, z1 + 0.02, 0.001), P(x0 - 0.01, z1 + 0.02, 0.001)], '#1a1208', `opacity="0.16" filter="${U('bs')}"`) + poly([P(x0, z1, 0.0), P(x1, z1, 0.0), P(x1, z1, 0.008), P(x0, z1, 0.008)], sh(c, -0.3)) + poly([P(x0, z0, 0.008), P(x1, z0, 0.008), P(x1, z1, 0.008), P(x0, z1, 0.008)], c);
     const inner = (m, col, w = 2) => poly([P(x0 + m, z0 + m * 0.6, 0.003), P(x1 - m, z0 + m * 0.6, 0.003), P(x1 - m, z1 - m * 0.6, 0.003), P(x0 + m, z1 - m * 0.6, 0.003)], 'none', `stroke="${col}" stroke-width="${w}"`);
     if (t === 'border') s += inner(0.07, sh(c, -0.3), 3) + inner(0.12, sh(c, 0.3), 1.5);
     if (t === 'stripe') for (let i = 1; i < 6; i++) { const zz = z0 + (z1 - z0) * i / 6; s += poly([P(x0, zz, 0.003), P(x1, zz, 0.003), P(x1, zz + 0.025, 0.003), P(x0, zz + 0.025, 0.003)], sc.cushions[i % 2 ? 1 : 0]); }
@@ -210,7 +212,7 @@ const ROOMS = (() => {
     { const [x, y, w, h] = fr(-0.3, 0.3, 0.09, 0.07, 0.22); s += rect(x, y, w, h, '#1A1512') + `<ellipse cx="${x + w / 2}" cy="${y + h * 0.75}" rx="${w * 0.4}" ry="${h * 0.3}" fill="#F2A65A" opacity="0.85" filter="${U('b')}"/>` + `<ellipse cx="${x + w / 2}" cy="${y + h * 0.78}" rx="${w * 0.3}" ry="${h * 0.12}" fill="#FFD27A"/>`; s += box(-0.38, 0.38, 0.1, 0.01, 0.22, 0.245, sh(bm, 0.1), { noshadow: true }); }
     const shelfC = sh(sc.wood, -0.08), cols = neutrals(sc);
     [[-0.92, -0.6], [0.6, 0.92]].forEach(([a, b2], si) => { s += box(a, b2, 0.06, 0.06, 0, 0.3, sc.cab2 === wall ? sh(sc.wood, 0.05) : sc.cab2); const [x, y, w, h] = fr(a, b2, 0.005, 0.32, 0.92); s += rect(x, y, w, h, sh(sc.accent || wall, -0.12));
-      [0.32, 0.47, 0.62, 0.77, 0.92].forEach((yy, r) => { s += box(a, b2, 0.06, 0.06, yy - 0.012, yy, shelfC, { noshadow: true }); if (r < 4) { seed = r * 7 + si; for (let i = 0; i < 4; i++) { const xx = a + 0.03 + i * (b2 - a - 0.06) / 4; const [ox, oy, ow, oh] = fr(xx, xx + 0.04 + rnd() * 0.03, 0.03, yy, yy + 0.05 + rnd() * 0.06); s += rect(ox, oy, ow, oh, cols[(i + r) % cols.length], i % 2 ? 'rx="3"' : 'rx="8"'); } } }); });
+      [0.32, 0.47, 0.62, 0.77, 0.92].forEach((yy, r) => { s += box(a, b2, 0.06, 0.06, yy - 0.012, yy, shelfC, { noshadow: true }); if (r < 4) { seed = r * 7 + si; for (let i = 0; i < 4; i++) { const xx = a + 0.03 + i * (b2 - a - 0.06) / 4; const [ox, oy, ow, oh] = fr(xx, xx + 0.04 + rnd() * 0.03, 0.03, yy, yy + 0.05 + rnd() * 0.06); s += foot(ox, oy + oh, ow) + rect(ox, oy, ow, oh, cols[(i + r) % cols.length], i % 2 ? 'rx="3"' : 'rx="8"'); } } }); });
     s += windowLeft(0.2, 0.62, 0.15, 0.92, sc.metal, sh(sc.sofa, 0.3));
     s += rug(-0.7, 0.7, 0.3, 1.05, sc.rug, sc.rugT, sc);
     // armchairs either side of a round coffee table, side tables, plants
@@ -220,7 +222,7 @@ const ROOMS = (() => {
       s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${ry}" fill="#000" opacity="0.18" filter="${U('b')}"/>`;
       if (sc.tableT === 'rect') { s += box(-0.28, 0.28, tz, 0.16, 0.08, 0.12, tb); s += box(-0.26, -0.23, tz, 0.02, 0, 0.08, sh(tb, -0.2)) + box(0.23, 0.26, tz, 0.02, 0, 0.08, sh(tb, -0.2)); }
       else { s += rect(cx - rx, cy, rx * 2, fy - cy, sh(tb, -0.15)) + `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.15)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.08)}"/>`; }
-      s += rect(cx - 6, cy - 22, 12, 22, sc.cushions[1], 'rx="5"') + rect(cx + 14, cy - 8, 26, 6, sh(sc.wood, -0.2), 'rx="2"'); }
+      s += foot(cx - 6, cy, 12) + foot(cx + 14, cy, 26) + rect(cx - 6, cy - 22, 12, 22, sc.cushions[1], 'rx="5"') + rect(cx + 14, cy - 8, 26, 6, sh(sc.wood, -0.2), 'rx="2"'); }
     if (sc.plants >= 1) s += plant(-0.94, 0.12, 0.85, potC(sc));
     if (sc.plants >= 2) s += plant(0.94, 0.12, 0.75, potC(sc));
     s += pendant(sc.light, 0, 0.5, 0.2, sc);
@@ -243,7 +245,7 @@ const ROOMS = (() => {
     { const [x, y, w, h] = fr(-0.5, -0.05, 0.002, 0.4, 0.86); s += rect(x - 5, y - 5, w + 10, h + 10, sh(sc.wall, -0.1)) + rect(x, y, w, h, U('sky')) + rect(x, y, w, h * 0.35, sh(sc.bedding || sc.wall, -0.02)) + ln([x + w / 2, y + h * 0.35], [x + w / 2, y + h], sc.metal, 3); }
     { const [x, y, w, h] = fr(0.12, 0.52, 0.06, 0.62, 1); const hc = sh(sc.wall, lum(sc.wall) > 0.6 ? -0.07 : 0.08); s += `<path d="M${x + w * 0.2} ${y} H${x + w * 0.8} V${y + h * 0.45} Q${x + w} ${y + h * 0.8} ${x + w} ${y + h} H${x} Q${x} ${y + h * 0.8} ${x + w * 0.2} ${y + h * 0.45} Z" fill="${hc}"/>` + rect(x, y + h - 4, w, 4, sh(hc, -0.15)) + `<path d="M${x + w} ${y + h * 0.82} Q${x + w * 0.85} ${y + h * 0.6} ${x + w * 0.8} ${y + h * 0.45} V${y} H${x + w * 0.8}" fill="${sh(hc, -0.08)}"/>`; }
     // wall units to the ceiling, or open shelves
-    if (sc.shelves) [0.7, 0.85].forEach(y => { s += box(-0.86, -0.56, 0.06, 0.06, y, y + 0.015, sc.wood, { noshadow: true }); seed = 4; for (let i = 0; i < 3; i++) { const xx = -0.83 + i * 0.09; const [x, yy, w, h] = fr(xx, xx + 0.06, 0.04, y + 0.015, y + 0.07 + rnd() * 0.04); s += rect(x, yy, w, h, neutrals(sc)[i], 'rx="3"'); } });
+    if (sc.shelves) [0.7, 0.85].forEach(y => { s += box(-0.86, -0.56, 0.06, 0.06, y, y + 0.015, sc.wood, { noshadow: true }); seed = 4; for (let i = 0; i < 3; i++) { const xx = -0.83 + i * 0.09; const [x, yy, w, h] = fr(xx, xx + 0.06, 0.04, y + 0.015, y + 0.07 + rnd() * 0.04); s += foot(x, yy + h, w) + rect(x, yy, w, h, neutrals(sc)[i], 'rx="3"'); } });
     else { s += box(-0.86, -0.56, 0.1, 0.1, 0.62, 1, wallU, { noshadow: true }); s += shakerRun(-0.86, -0.56, 0.1, 0.62, 1, wallU, 2, sc.metal); }
     s += box(0.56, 0.72, 0.1, 0.1, 0.62, 1, wallU, { noshadow: true }) + shakerRun(0.56, 0.72, 0.1, 0.62, 1, wallU, 1, sc.metal);
     // tall fridge / oven tower
@@ -259,7 +261,6 @@ const ROOMS = (() => {
     { const [x, y, w] = fr(-0.5, 0.5, 0.64, 0.3, 0.33); s += rect(x, y, w, 4, sh(sc.wood, -0.1)); }
     [-0.32, 0, 0.32].forEach(xx => s += seat(xx, 0.82, { ori: 'away', frame: sh(sc.wood, -0.2), seatC: sc.stool, backC: isCane(sc) || sc.chairT === 'lounge' ? '#C9A46C' : sc.stool, cane: true, w: 0.07, d: 0.07, seatY: 0.27, backY: 0.39, t: 0.018, rx: 4, legW: 2.4 }));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? 'globe' : 'linear', 0, 0.55, 0.26, sc);
-    s += plant(-0.78, 0.07, 0.5, potC(sc));
     return s;
   }
   function bedroom(sc) {
@@ -277,7 +278,7 @@ const ROOMS = (() => {
     else { s += box(-0.5, 0.5, 0.02, 0.02, 0.1, 0.3, hb); hbTop = 0.3; }
     if (hbTop < 0.65) s += art(sc.art === 'gallery' ? 'gallery' : (sc.art === 'none' ? 'print' : sc.art), -0.22, 0.22, hbTop + 0.08, Math.min(0.92, hbTop + 0.3), sc);
     // side tables + lamps
-    [-0.68, 0.68].forEach(xx => { s += box(xx - 0.1, xx + 0.1, 0.18, 0.14, 0, 0.2, sc.wood); const [lx, ly] = P(xx, 0.11, 0.2); s += rect(lx - 3, ly - 26, 6, 26, sc.metal) + `<path d="M${lx - 16} ${ly - 26} L${lx - 10} ${ly - 44} H${lx + 10} L${lx + 16} ${ly - 26} Z" fill="#F7F1E4" stroke="${sh('#F7F1E4', -0.15)}"/>`; });
+    [-0.68, 0.68].forEach(xx => { s += box(xx - 0.1, xx + 0.1, 0.18, 0.14, 0, 0.2, sc.wood); const [lx, ly] = P(xx, 0.11, 0.2); s += foot(lx - 8, ly, 16) + rect(lx - 3, ly - 26, 6, 26, sc.metal) + `<path d="M${lx - 16} ${ly - 26} L${lx - 10} ${ly - 44} H${lx + 10} L${lx + 16} ${ly - 26} Z" fill="#F7F1E4" stroke="${sh('#F7F1E4', -0.15)}"/>`; });
     // bed
     s += box(-0.5, 0.5, 0.62, 0.58, 0, 0.12, hb);
     s += box(-0.5, 0.5, 0.63, 0.59, 0.12, 0.2, sc.bedding, { top: sh(sc.bedding, 0.06), rx: 4 });
@@ -316,7 +317,7 @@ const ROOMS = (() => {
     else s += rect(x + w * 0.1, y, w * 0.8, h, mg, `stroke="${mf}" stroke-width="4"`);
     // towel on rail
     { const [rx, ry] = P(0.93, 0.003, 0.72); for (let i = 0; i < 6; i++) s += ln([rx - 34, ry + i * 14], [rx + 4, ry + i * 14], sc.metal, 2.5); s += ln([rx - 34, ry - 4], [rx - 34, ry + 76], sc.metal, 3) + ln([rx + 4, ry - 4], [rx + 4, ry + 76], sc.metal, 3) + rect(rx - 30, ry + 10, 30, 46, sc.towel, 'rx="3"'); }
-    { const [wx, wy] = P(0.05, 0.08, 0.28); s += `<path d="M${wx - 20} ${wy} H${wx + 20} V${wy + 10} Q${wx + 20} ${wy + 34} ${wx} ${wy + 36} Q${wx - 20} ${wy + 34} ${wx - 20} ${wy + 10} Z" fill="#FBFAF7" stroke="${sh('#FBFAF7', -0.15)}"/>`; const [fx, fy] = P(0.05, 0.003, 0.5); s += rect(fx - 10, fy, 20, 12, sc.metal, 'rx="2"'); }
+    { const [wx, wy] = P(0.05, 0.08, 0.28); { const [sx, sy] = P(0.05, 0.003, 0.28); s += rect0(sx - 18, sy - 2, 44, 46, '#1a1208', `opacity="0.22" filter="${U('b')}"`); } s += `<path d="M${wx - 20} ${wy} H${wx + 20} V${wy + 10} Q${wx + 20} ${wy + 34} ${wx} ${wy + 36} Q${wx - 20} ${wy + 34} ${wx - 20} ${wy + 10} Z" fill="#FBFAF7" stroke="${sh('#FBFAF7', -0.15)}"/>`; const [fx, fy] = P(0.05, 0.003, 0.5); s += rect(fx - 10, fy, 20, 12, sc.metal, 'rx="2"'); }
     s += plant(0.75, 0.06, 0.45, '#F2EFEA');
     return s;
   }
@@ -359,6 +360,7 @@ const ROOMS = (() => {
       rect(cx - 2.5 * k(z), cy, 5 * k(z), fy - cy, metal) + `<ellipse cx="${cx}" cy="${cy + 3}" rx="${rx}" ry="${rx * 0.28}" fill="${sh(c, -0.15)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.28}" fill="${c}"/>`;
   }
   const sideQuad = (x, z0, z1, y0, y1, fill, extra = '') => poly([P(x, z0, y0), P(x, z1, y0), P(x, z1, y1), P(x, z0, y1)], fill, extra);
+  const baseAO = (x, z0, z1) => ln(P(x, z0, 0), P(x, z1, 0), '#1a1208', 7, `opacity="0.25" filter="${U('b')}"`) + ln(P(x, z0, 0), P(x, z0, 1), '#1a1208', 6, `opacity="0.14" filter="${U('b')}"`);
   const neutrals = sc => { const c = [sc.bedding, sc.sofa, sh(sc.wall, -0.12), sc.throw, sc.cushions[1], sc.cushions[0], sh(sc.wood, -0.1)].filter(Boolean); return c.sort((a, b) => lum(b) - lum(a)); };
 
   // one seat drawn in a given direction: 'front' (faces you), 'away', 'left', 'right'
@@ -442,7 +444,7 @@ const ROOMS = (() => {
     { const [x, y, w] = fr(-1, 1, 0.03, 0.99, 1); s += rect(x, y - 2, w, 6, sh(sc.ceil || sc.wall, -0.15)); }
     // built-in utensil cabinet on the left wall
     const J = joinery(sc);
-    s += sideQuad(-0.995, 0.15, 0.55, 0, 0.8, J) + sideQuad(-0.995, 0.15, 0.55, 0, 0.8, U('wl'));
+    s += sideQuad(-0.995, 0.15, 0.55, 0, 0.8, J) + sideQuad(-0.995, 0.15, 0.55, 0, 0.8, U('wl')) + baseAO(-0.99, 0.15, 0.55);
     for (let i = 0; i <= 2; i++) s += ln(P(-0.99, 0.15 + i * 0.2, 0), P(-0.99, 0.15 + i * 0.2, 0.8), sh(J, -0.18), 1.5);
     s += ln(P(-0.99, 0.15, 0.4), P(-0.99, 0.55, 0.4), sh(J, -0.18), 1.5) + ln(P(-0.99, 0.33, 0.25), P(-0.99, 0.33, 0.33), sc.metal, 3) + ln(P(-0.99, 0.37, 0.25), P(-0.99, 0.37, 0.33), sc.metal, 3);
     s += plant(0.9, 0.2, 1.1, potC(sc));
@@ -455,7 +457,7 @@ const ROOMS = (() => {
       s += `<path d="M${cx - 10} ${cy + 8} L${cx - 22} ${fy} H${cx + 22} L${cx + 10} ${cy + 8} Z" fill="${sh(tb, -0.2)}"/><ellipse cx="${cx}" cy="${fy}" rx="28" ry="7" fill="${sh(tb, -0.25)}"/>`;
       s += `<ellipse cx="${cx}" cy="${cy + 5}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.18)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.04)}"/>`;
       s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.75}" ry="${ry * 0.32}" fill="${sc.cushions[1] || sc.bedding}" opacity="0.9"/>`;
-      [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}"/>`); }
+      [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += foot(cx + dx - 8, cy + 1, 16) + `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}"/>`); }
     s += caneChair(-0.66, tz + 0.06, sc, 'right') + caneChair(0.66, tz + 0.06, sc, 'left');
     [-0.3, 0.3].forEach(xx => s += caneChair(xx, tz + 0.36, sc, 'away'));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? sc.light : 'linear', 0, tz - 0.02, 0.28, sc);
@@ -471,7 +473,7 @@ const ROOMS = (() => {
     { const [wx, wy, ww, wh] = fr(0.3, 0.6, 0.002, 0.45, 0.92); s += rect(wx, wy, ww, wh, U('sky')) + rect(wx, wy, ww, wh * 0.55, sh(sc.bedding || sc.wall, -0.04)) + rect(wx - 3, wy - 3, ww + 6, wh + 6, 'none', `stroke="${sc.metal}" stroke-width="3"`); }
     { const [mx, my, mw, mh] = fr(-0.32, 0.18, 0.003, 0.42, 0.9); s += rect(mx - 10, my - 10, mw + 20, mh + 20, '#FFF2D0', `opacity="0.5" filter="${U('b')}"`) + rect(mx, my, mw, mh, '#DDE7EA', `rx="${mw / 2}" stroke="${sc.metal}" stroke-width="4"`) + rect(mx + 4, my + mh * 0.15, mw - 8, mh * 0.5, '#FFFFFF', `rx="${mw / 3}" opacity="0.25"`); }
     s += box(-0.42, 0.28, 0.2, 0.2, 0.12, 0.31, J); { const [x, y, w, h] = fr(-0.42, 0.28, 0.2, 0.12, 0.29); s += ln([x + w / 2, y], [x + w / 2, y + h], Jd, 1.2) + rect(x + w * 0.25 - 10, y + h / 2, 20, 3, sc.metal) + rect(x + w * 0.75 - 10, y + h / 2, 20, 3, sc.metal); }
-    { const [tx, ty] = P(-0.25, 0.08, 0.31); s += rect(tx - 4, ty - 14, 8, 14, sc.cushions[0], 'rx="3"') + rect(tx + 8, ty - 9, 10, 9, sc.metal, 'rx="2"'); }
+    { const [tx, ty] = P(-0.25, 0.08, 0.31); s += foot(tx - 4, ty, 22) + rect(tx - 4, ty - 14, 8, 14, sc.cushions[0], 'rx="3"') + rect(tx + 8, ty - 9, 10, 9, sc.metal, 'rx="2"'); }
     // open walnut shoe wall / shelves on the right
     s += sideQuad(0.995, 0, 1.8, 0, 1, sh(walnut, -0.15));
     for (let r = 0; r < 7; r++) { const yy = 0.04 + r * 0.14; s += poly([P(RX, 0, yy), P(RX, 1.8, yy), P(1, 1.8, yy), P(1, 0, yy)], walnut) + ln(P(RX, 0, yy), P(RX, 1.8, yy), sh(walnut, 0.15), 1.5); seed = 60 + r;
@@ -489,7 +491,7 @@ const ROOMS = (() => {
       else { s += sideQuad(LX + 0.002, z0 + 0.012, z1 - 0.012, 0.02, 0.97, sh(J, 0.03)) + sideQuad(LX + 0.003, z0 + 0.04, z1 - 0.04, 0.08, 0.9, cane);
         if (cane === '#C9A46C') for (let q = 1; q < 10; q++) { const zz = z0 + 0.04 + q * (z1 - z0 - 0.08) / 10; s += ln(P(LX + 0.004, zz, 0.08), P(LX + 0.004, zz, 0.9), sh(cane, -0.18), 0.7); }
         s += ln(P(LX + 0.005, z1 - 0.03, 0.42), P(LX + 0.005, z1 - 0.03, 0.56), sc.metal, 3); } });
-    s += sideQuad(LX, 0, 1.8, 0, 1, U('wl'));
+    s += sideQuad(LX, 0, 1.8, 0, 1, U('wl')) + baseAO(LX, 0, 1.8) + baseAO(RX, 0, 1.8);
     // runner, make-up stool, ceiling
     s += rug(-0.4, 0.5, 0.3, 1.05, sc.rug, sc.rugT === 'plain' ? 'border' : sc.rugT, sc);
     { const [cx, cy] = P(-0.07, 0.4, 0.2), rx = 0.1 * 230 * k(0.4), [, fy] = P(-0.07, 0.4, 0); s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${rx * 0.3}" fill="#000" opacity="0.2" filter="${U('b')}"/>` + rect(cx - rx, cy, rx * 2, fy - cy - 4, sh(sc.chair, -0.15), 'rx="6"') + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.3}" fill="${sh(sc.chair, 0.1)}"/>` + rect(cx - 3, fy - 6, 6, 6, sc.metal); }
@@ -501,7 +503,7 @@ const ROOMS = (() => {
     const bedding = sh(sc.cushions[1] || sc.bedding, 0.35), throwC = sc.cushions[0];
     let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil || sh(sc.wall, 0.4));
     // built-in wardrobe with sliding doors on the left wall
-    const J = joinery(sc); s += sideQuad(-0.995, 0.12, 0.62, 0, 0.98, J);
+    const J = joinery(sc); s += sideQuad(-0.995, 0.12, 0.62, 0, 0.98, J) + baseAO(-0.99, 0.12, 0.62);
     [0.12, 0.37, 0.62].forEach(zz => s += ln(P(-0.99, zz, 0), P(-0.99, zz, 0.98), sh(J, -0.22), 2));
     s += sideQuad(-0.99, 0.37, 0.39, 0.4, 0.6, sc.metal);
     // window with curtains on the right
@@ -517,11 +519,11 @@ const ROOMS = (() => {
     { const a2 = P(-0.3, 0.3, 0.2), b2 = P(0.05, 0.3, 0.06); s += rect(a2[0], a2[1], b2[0] - a2[0], b2[1] - a2[1], throwC); for (let i = 1; i < 6; i++) s += rect(a2[0], a2[1] + i * (b2[1] - a2[1]) / 6, b2[0] - a2[0], 2.5, sc.cushions[1] || bedding, 'opacity="0.8"'); }
     // full-length mirror, desk + cane chair, desk lamp, shelf
     { const [x, y, w, h] = fr(0.12, 0.24, 0.004, 0.04, 0.8); s += rect(x, y, w, h, '#DDE7EA', `stroke="${sh(sc.wood, -0.3)}" stroke-width="5" rx="3"`) + rect(x + 4, y + 6, w * 0.3, h - 12, '#fff', 'opacity="0.25"'); }
-    [0.62, 0.76].forEach(yy => { s += box(0.32, 0.86, 0.05, 0.05, yy, yy + 0.015, sc.wood, { noshadow: true }); seed = Math.round(yy * 50); for (let i = 0; i < 6; i++) { const xx = 0.35 + i * 0.08; const [x, y, w, h] = fr(xx, xx + 0.05, 0.03, yy + 0.015, yy + 0.08 + rnd() * 0.04); s += rect(x, y, w, h, neutrals(sc)[i % neutrals(sc).length], 'rx="2"'); } });
+    [0.62, 0.76].forEach(yy => { s += box(0.32, 0.86, 0.05, 0.05, yy, yy + 0.015, sc.wood, { noshadow: true }); seed = Math.round(yy * 50); for (let i = 0; i < 6; i++) { const xx = 0.35 + i * 0.08; const [x, y, w, h] = fr(xx, xx + 0.05, 0.03, yy + 0.015, yy + 0.08 + rnd() * 0.04); s += foot(x, y + h, w) + rect(x, y, w, h, neutrals(sc)[i % neutrals(sc).length], 'rx="2"'); } });
     s += box(0.32, 0.88, 0.2, 0.17, 0.27, 0.3, sc.wood);
     [0.35, 0.85].forEach(xx => s += box(xx - 0.02, xx + 0.02, 0.2, 0.02, 0, 0.27, sh(sc.wood, -0.2)));
     { const [lx, ly] = P(0.8, 0.1, 0.3); s += `<circle cx="${lx - 12}" cy="${ly - 36}" r="22" fill="${U('glow')}"/>` + ln([lx, ly], [lx - 8, ly - 36], sc.metal, 2.5) + `<path d="M${lx - 22} ${ly - 30} L${lx - 14} ${ly - 46} L${lx + 2} ${ly - 40} Z" fill="${sc.metal}"/>`; }
-    { const [bx, by] = P(0.5, 0.12, 0.3); s += rect(bx - 26, by - 4, 52, 4, '#3A3A3A') + rect(bx - 22, by - 30, 44, 26, '#4A4A4A', 'rx="2"'); }
+    { const [bx, by] = P(0.5, 0.12, 0.3); s += foot(bx - 26, by, 52) + rect(bx - 26, by - 4, 52, 4, '#3A3A3A') + rect(bx - 22, by - 30, 44, 26, '#4A4A4A', 'rx="2"'); }
     s += caneChair(0.6, 0.4, sc, true);
     if (sc.plants >= 2) s += plant(0.12, 0.62, 0.8, potC(sc));
     s += pendant(sc.light === 'linear' || sc.light === 'chandelier' || sc.light === 'tiered' ? 'globe' : sc.light, -0.1, 0.55, 0.15, sc);
@@ -534,6 +536,7 @@ const ROOMS = (() => {
     const body = { living, porch, dining, kitchen, bedroom, guest, closet, bathroom }[room](sc);
     const defs = `<clipPath id="${pf}c"><rect width="${W}" height="${H}"/></clipPath>
       <filter id="${pf}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+      <filter id="${pf}bs" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
       <filter id="${pf}b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
       <filter id="${pf}grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0.09 0"/></filter>
       <linearGradient id="${pf}fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
