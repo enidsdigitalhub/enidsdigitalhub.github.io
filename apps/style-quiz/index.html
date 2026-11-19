@@ -363,7 +363,7 @@ const ROOMS = (() => {
     s += rug(-0.7, 0.7, 0.3, 1.05, sc.rug, sc.rugT, sc);
     // armchairs either side of a round coffee table, side tables, plants
     s += roundTable(-0.86, 0.48, 0.06, 0.17, sc.wood, sc.metal) + roundTable(0.86, 0.48, 0.06, 0.17, sc.wood, sc.metal);
-    s += armchair(-0.62, 0.62, sc, -1) + armchair(0.62, 0.62, sc, 1);
+    [-1, 1].forEach(sx => { const cane = sc.chairT === 'rattan'; s += seat(sx * 0.64, 0.66, { ori: sx < 0 ? 'right' : 'left', frame: sc.wood, seatC: sh(sc.chair, -0.04), backC: sc.chair, cane, w: 0.14, d: 0.17, seatY: 0.17, backY: sc.chairT === 'wing' ? 0.44 : 0.36, t: 0.05, rx: 8, legW: 3, cushion: sc.chair, backCushion: sc.cushions[sx < 0 ? 0 : 1] }); });
     { const tb = sc.table, tz = 0.66, [cx, cy] = P(0, tz - 0.08, 0.13), rx = 0.26 * 230 * k(tz), ry = rx * 0.28, [, fy] = P(0, tz - 0.08, 0);
       s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${ry}" fill="#000" opacity="0.18" filter="${U('b')}"/>`;
       if (sc.tableT === 'rect') { s += box(-0.28, 0.28, tz, 0.16, 0.08, 0.12, tb); s += box(-0.26, -0.23, tz, 0.02, 0, 0.08, sh(tb, -0.2)) + box(0.23, 0.26, tz, 0.02, 0, 0.08, sh(tb, -0.2)); }
@@ -405,10 +405,7 @@ const ROOMS = (() => {
     s += box(-0.5, 0.5, 0.62, 0.22, 0, 0.33, sc.island) + shakerRun(-0.5, 0.5, 0.62, 0.03, 0.31, sc.island, 4, sc.metal);
     s += box(-0.55, 0.55, 0.65, 0.27, 0.33, 0.355, sc.top);
     { const [x, y, w] = fr(-0.5, 0.5, 0.64, 0.3, 0.33); s += rect(x, y, w, 4, sh(sc.wood, -0.1)); }
-    [-0.32, 0, 0.32].forEach(xx => { const z = 0.8; const st = sc.stool; s += poly([P(xx - 0.07, z + 0.02, 0.001), P(xx + 0.07, z + 0.02, 0.001), P(xx + 0.07, z - 0.06, 0.001), P(xx - 0.07, z - 0.06, 0.001)], '#000', `opacity="0.16" filter="${U('b')}"`);
-      [-0.055, 0.055].forEach(o => s += ln(P(xx + o * 1.2, z, 0), P(xx + o, z, 0.24), sh(sc.wood, -0.2), 2.5)); s += ln(P(xx - 0.06, z, 0.1), P(xx + 0.06, z, 0.1), sh(sc.wood, -0.2), 2);
-      const [bx, by, bw, bh] = fr(xx - 0.07, xx + 0.07, z - 0.05, 0.26, 0.38); s += rect(bx, by, bw, bh, '#C9A46C', `rx="4" stroke="${sh(sc.wood, -0.2)}" stroke-width="2"`); for (let i = 1; i < 5; i++) s += ln([bx + i * bw / 5, by + 2], [bx + i * bw / 5, by + bh - 2], sh('#C9A46C', -0.2), 0.8);
-      s += box(xx - 0.075, xx + 0.075, z, 0.07, 0.24, 0.27, st, { rx: 4, noshadow: true }); });
+    [-0.32, 0, 0.32].forEach(xx => s += seat(xx, 0.82, { ori: 'away', frame: sh(sc.wood, -0.2), seatC: sc.stool, backC: isCane(sc) || sc.chairT === 'lounge' ? '#C9A46C' : sc.stool, cane: true, w: 0.07, d: 0.07, seatY: 0.27, backY: 0.39, t: 0.018, rx: 4, legW: 2.4 }));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? 'globe' : 'linear', 0, 0.55, 0.26, sc);
     s += plant(-0.78, 0.07, 0.5, potC(sc));
     return s;
@@ -504,17 +501,6 @@ const ROOMS = (() => {
       s += `<ellipse cx="${cx}" cy="${cy}" rx="${(9 + rnd() * 8) * kk}" ry="${(6 + rnd() * 5) * kk}" fill="${['#7D8F5E', '#8FA06F', '#6E8052', '#9AAA7E'][i % 4]}"/>`; }
     return s;
   }
-  function loungeChair(x, z, sc, mirror) {
-    const c = sc.chair, cu = sc.cushions[1] || sc.cushions[0], q = 0.8, woven = sc.chairT === 'rattan' || sc.chairT === 'round' || sc.chairT === 'lounge';
-    let s = '';
-    const [bx, by, bw, bh] = fr(x - 0.11, x + 0.11, z - 0.12, 0.1, 0.36);
-    s += `<path d="M${bx} ${by + bh} V${by + bh * 0.3} Q${bx + bw / 2} ${by - bh * 0.12} ${bx + bw} ${by + bh * 0.3} V${by + bh} Z" fill="${c}" ${woven ? `stroke="${sh(c, -0.25)}" stroke-width="2"` : ''}/>`;
-    if (woven) for (let i = 1; i < 8; i++) s += ln([bx + i * bw / 8, by + bh * 0.12], [bx + i * bw / 8, by + bh], sh(c, -0.2), 1);
-    s += box(x - 0.12, x + 0.12, z, 0.13, 0.03, 0.12, c, { rx: 6 });
-    s += box(x - 0.1, x + 0.1, z - 0.005, 0.1, 0.12, 0.155, cu, { rx: 6, noshadow: true });
-    { const [px, py, pw, ph] = fr(x - 0.065, x + 0.065, z - 0.1, 0.15, 0.26); s += rect(px, py, pw, ph, sc.cushions[0], 'rx="7"'); }
-    return s;
-  }
   function roundTable(x, z, r, h, c, metal) {
     const [cx, cy] = P(x, z, h), rx = r * 230 * k(z), [, fy] = P(x, z, 0);
     return poly([P(x - r, z + 0.02, 0.001), P(x + r, z + 0.02, 0.001), P(x + r, z - 0.06, 0.001), P(x - r, z - 0.06, 0.001)], '#000', `opacity="0.18" filter="${U('b')}"`) +
@@ -522,6 +508,33 @@ const ROOMS = (() => {
   }
   const sideQuad = (x, z0, z1, y0, y1, fill, extra = '') => poly([P(x, z0, y0), P(x, z1, y0), P(x, z1, y1), P(x, z0, y1)], fill, extra);
   const neutrals = sc => { const c = [sc.bedding, sc.sofa, sh(sc.wall, -0.12), sc.throw, sc.cushions[1], sc.cushions[0], sh(sc.wood, -0.1)].filter(Boolean); return c.sort((a, b) => lum(b) - lum(a)); };
+
+  // one seat drawn in a given direction: 'front' (faces you), 'away', 'left', 'right'
+  function seat(x, z, o) {
+    const w = o.w || 0.09, d = o.d || 0.09, sy = o.seatY || 0.2, by = o.backY || 0.46, t = o.t || 0.022, ori = o.ori || 'front';
+    const frame = o.frame, sc0 = o.seatC, bc = o.backC || o.seatC, cane = o.cane, rx = o.rx || 3; let s = '';
+    s += poly([P(x - w - 0.02, z + 0.02, 0.001), P(x + w + 0.05, z + 0.02, 0.001), P(x + w + 0.07, z - d - 0.02, 0.001), P(x - w + 0.01, z - d - 0.02, 0.001)], '#1a1208', `opacity="0.2" filter="${U('b')}"`);
+    const legs = zz => [x - w + 0.012, x + w - 0.012].map(xx => ln(P(xx, zz, sy - 0.03), P(xx, zz, 0), frame, o.legW || 2.4)).join('');
+    const caneLines = (x0, x1, zz) => { if (!cane) return ''; const [bx, byy, bw, bh] = fr(x0, x1, zz, sy + 0.02, by - 0.02); let q = ''; for (let i = 1; i < 6; i++) q += ln([bx + i * bw / 6, byy + 2], [bx + i * bw / 6, byy + bh - 2], sh(bc, -0.22), 0.8) + ln([bx + 2, byy + i * bh / 6], [bx + bw - 2, byy + i * bh / 6], sh(bc, -0.22), 0.8); return q; };
+    const sideCane = (xx) => { if (!cane) return ''; let q = ''; for (let i = 1; i < 6; i++) { const zz = z - d + i * d / 6; q += ln(P(xx, zz, sy + 0.02), P(xx, zz, by - 0.02), sh(bc, -0.22), 0.8); } for (let i = 1; i < 5; i++) { const yy = sy + i * (by - sy) / 5; q += ln(P(xx, z - d + 0.01, yy), P(xx, z - 0.01, yy), sh(bc, -0.22), 0.8); } return q; };
+    s += legs(z - d);
+    if (ori === 'front') s += box(x - w, x + w, z - d + t, t, sy, by, bc, { rx, noshadow: true }) + caneLines(x - w + 0.015, x + w - 0.015, z - d + t);
+    if (ori === 'right') s += box(x - w, x - w + t, z, d, sy, by, bc, { noshadow: true }) + sideCane(x - w + t);
+    if (ori === 'left') s += box(x + w - t, x + w, z, d, sy, by, bc, { noshadow: true }) + sideCane(x + w - t);
+    s += box(x - w, x + w, z, d, sy - 0.035, sy, sc0, { rx, noshadow: true });
+    if (o.cushion) s += box(x - w + 0.012, x + w - 0.012, z - 0.004, d - 0.01, sy, sy + 0.03, o.cushion, { rx: 5, noshadow: true });
+    s += legs(z);
+    if (ori === 'away') s += box(x - w, x + w, z, t, sy, by, bc, { rx, noshadow: true }) + caneLines(x - w + 0.015, x + w - 0.015, z);
+    if (o.backCushion && ori !== 'away') { const bcx = ori === 'right' ? x - w + t + 0.01 : ori === 'left' ? x + w - t - 0.03 : x - w + 0.03; if (ori === 'front') { const [px, py, pw, ph] = fr(x - w + 0.03, x + w - 0.03, z - d + t + 0.012, sy + 0.025, by - 0.04); s += rect(px, py, pw, ph, o.backCushion, 'rx="7"'); } else s += box(bcx, bcx + 0.02, z - 0.015, d - 0.03, sy + 0.025, by - 0.05, o.backCushion, { rx: 5, noshadow: true }); }
+    return s;
+  }
+  const isCane = sc => ['rattan', 'lounge', 'round'].includes(sc.chairT);
+  function caneChair(x, z, sc, ori) {
+    const cane = isCane(sc); return seat(x, z, { ori: ori === true ? 'away' : (ori || 'front'), frame: sh(sc.wood, -0.1), seatC: sc.cushions[0], backC: cane ? '#C9A46C' : sc.chair, cane, w: 0.085, d: 0.09, seatY: 0.22, backY: 0.48 });
+  }
+  function loungeChair(x, z, sc, ori) {
+    const cane = isCane(sc); return seat(x, z, { ori, frame: sh(sc.wood, -0.15), seatC: sc.chair, backC: sc.chair, cane, w: 0.11, d: 0.12, seatY: 0.15, backY: 0.38, t: 0.03, rx: 6, legW: 3, cushion: sc.cushions[1] || sc.cushions[0], backCushion: sc.cushions[0] });
+  }
 
   // ---------- entry porch (sample home: covered entrance terrace) ----------
   function porch(sc) {
@@ -556,7 +569,7 @@ const ROOMS = (() => {
     // olive trees in large planters: flanking the door and at the outer corners
     s += oliveTree(-0.3, 0.14, 1, potC(sc)) + oliveTree(0.3, 0.14, 1, potC(sc));
     // two seating areas: a pair of lounge chairs and a side table each side
-    [-1, 1].forEach(sx => { s += loungeChair(sx * 0.8, 0.5, sc) + loungeChair(sx * 0.52, 0.5, sc) + roundTable(sx * 0.66, 0.66, 0.06, 0.16, sc.wood, sc.metal); });
+    [-1, 1].forEach(sx => { const a2 = loungeChair(sx * 0.86, 0.56, sc, sx < 0 ? 'right' : 'left'), b2 = loungeChair(sx * 0.46, 0.56, sc, sx < 0 ? 'left' : 'right'), t2 = roundTable(sx * 0.66, 0.5, 0.055, 0.16, sc.wood, sc.metal); s += sx < 0 ? a2 + t2 + b2 : b2 + t2 + a2; });
     // stone-clad columns
     [[-1.02, -0.9], [0.9, 1.02]].forEach(([a, b2]) => { s += box(a, b2, 1.02, 0.08, 0, 1, stone); const [x, y, w, h] = fr(a, b2, 1.02, 0, 1); seed = 31;
       for (let r = 0; r * 14 < h; r++) { let cx = x; while (cx < x + w) { const ww = 14 + rnd() * 24; s += rect(cx + 1, y + r * 14 + 1, Math.min(ww, x + w - cx) - 2, 12, sh(stone, (rnd() - 0.5) * 0.22), 'rx="2"'); cx += ww; } } });
@@ -564,19 +577,6 @@ const ROOMS = (() => {
   }
 
   // ---------- rear dining room (sample home: oval table, glazed doors to rear terrace) ----------
-  function caneChair(x, z, sc, facing) {
-    const frame = sh(sc.wood, -0.08), seat = sc.cushions[0], panel = sc.chairT === 'rattan' || sc.chairT === 'lounge' || sc.chairT === 'round' ? '#C9A46C' : sc.chair;
-    let s = '';
-    const back = () => { const [x0, y0, w, h] = fr(x - 0.085, x + 0.085, z - (facing ? -0.03 : 0.07), 0.24, 0.48); let t = rect(x0 - 2, y0 - 2, w + 4, h + 4, frame, 'rx="6"') + rect(x0 + 2, y0 + 2, w - 4, h - 4, panel, 'rx="4"');
-      if (panel === '#C9A46C') for (let i = 1; i < 7; i++) t += ln([x0 + i * w / 7, y0 + 3], [x0 + i * w / 7, y0 + h - 3], sh(panel, -0.2), 0.8) + ln([x0 + 3, y0 + i * h / 7], [x0 + w - 3, y0 + i * h / 7], sh(panel, -0.2), 0.8);
-      return t; };
-    if (!facing) s += back();
-    s += box(x - 0.09, x + 0.09, z, 0.09, 0.2, 0.24, seat, { rx: 3, noshadow: true });
-    [[x - 0.08], [x + 0.08]].forEach(([xx]) => s += ln(P(xx, z, 0.2), P(xx, z, 0), frame, 2.5));
-    s += poly([P(x - 0.1, z + 0.02, 0.001), P(x + 0.1, z + 0.02, 0.001), P(x + 0.1, z - 0.1, 0.001), P(x - 0.1, z - 0.1, 0.001)], '#000', `opacity="0.15" filter="${U('b')}"`);
-    if (facing) s += back();
-    return s;
-  }
   function dining(sc) {
     let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
     // glazed sliding doors across the back wall, curtains stacked in pockets, rear terrace beyond
@@ -604,8 +604,8 @@ const ROOMS = (() => {
       s += `<ellipse cx="${cx}" cy="${cy + 5}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.18)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.04)}"/>`;
       s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.75}" ry="${ry * 0.32}" fill="${sc.cushions[1] || sc.bedding}" opacity="0.9"/>`;
       [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}"/>`); }
-    [-0.66, 0.66].forEach(xx => s += caneChair(xx, tz + 0.04, sc));
-    [-0.36, 0.36].forEach(xx => s += caneChair(xx, tz + 0.4, sc, true));
+    s += caneChair(-0.66, tz + 0.06, sc, 'right') + caneChair(0.66, tz + 0.06, sc, 'left');
+    [-0.3, 0.3].forEach(xx => s += caneChair(xx, tz + 0.36, sc, 'away'));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? sc.light : 'linear', 0, tz - 0.02, 0.28, sc);
     return s;
   }
