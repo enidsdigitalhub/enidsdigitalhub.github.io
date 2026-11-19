@@ -27,11 +27,12 @@ const ROOMS = (() => {
     if (z - d <= 0.035 && !o.nowall && y1 - y0 > 0.02) { const [wx, wy, ww, wh] = fr(x0 - 0.01, x1 + 0.035, 0.001, Math.max(0, y0 - 0.02), Math.min(1, y1 + 0.015)); s += rect0(wx, wy, ww, wh, '#1a1208', `opacity="0.2" filter="${U('b')}"`); }
     if (y0 <= 0.05 && !o.noshadow) { const sx = Math.min(0.12, (y1 - y0) * 0.22); s += poly([P(x0 - 0.02, z + 0.04, 0.001), P(x1 + 0.02 + sx, z + 0.04, 0.001), P(x1 + 0.02 + sx * 1.6, z - d - 0.02, 0.001), P(x0 - 0.02 + sx * 0.6, z - d - 0.02, 0.001)], '#1a1208', `opacity="${0.22 + Math.min(0.14, (y1 - y0) * 0.3)}" filter="${U('b')}"`); }
     const top = [P(x0, z, y1), P(x1, z, y1), P(x1, z - d, y1), P(x0, z - d, y1)];
-    if (x1 < CX) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.26)) + poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], U('fs'));
-    if (x0 > CX) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.12)) + poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], U('fs'));
-    if (!o.notop) s += poly(top, o.top || sh(c, 0.16));
+    const ink = `stroke="${sh(c, -0.4)}" stroke-width="0.8" stroke-linejoin="round"`;
+    if (x1 < CX) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.26), ink) + poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], U('fs'));
+    if (x0 > CX) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.12), ink) + poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], U('fs'));
+    if (!o.notop) s += poly(top, o.top || sh(c, 0.16), ink);
     const a = P(x0, z, y1), b = P(x1, z, y0);
-    s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], c, o.rx ? `rx="${o.rx}"` : '');
+    s += rect0(a[0], a[1], b[0] - a[0], b[1] - a[1], c, (o.rx ? `rx="${o.rx}" ` : '') + ink);
     if (b[1] - a[1] > 3) s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], U('fs'), o.rx ? `rx="${o.rx}"` : '');
     return s;
   }
@@ -47,6 +48,7 @@ const ROOMS = (() => {
     s += poly(bw, wall);
     s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], floor);
     s += clipFloor(floorLines(floor, floorT));
+    s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], U('fl'));
     // ambient occlusion in the corners and along the skirting, darker side walls toward the viewer
     s += poly([[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]], U('wl'));
     s += poly([[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], U('wr'));
@@ -99,8 +101,14 @@ const ROOMS = (() => {
     if (f === 'arch') { const [a, b, cw, ch] = fr(0.55, 0.85, 0.002, 0.35, 0.82); s += `<path d="M${a} ${b + ch} V${b + cw / 2} A${cw / 2} ${cw / 2} 0 0 1 ${a + cw} ${b + cw / 2} V${b + ch} Z" fill="${sh(sc.accent || sc.wall, sc.accent ? 0 : -0.08)}"/>`; s += `<ellipse cx="${a + cw / 2}" cy="${b + ch - 8}" rx="12" ry="18" fill="${sc.cushions[0]}"/>`; }
     return s;
   }
+  function sunbeam(side, z0, z1, y0, y1) {
+    const xa = side * (1 - 0.5 * y0), xb = side * (1 - 0.5 * y1), sh1 = 0.12, sh2 = 0.3;
+    const q = [P(xa, z0 + sh1, 0.002), P(xb, z0 + sh2, 0.002), P(xb, z1 + sh2, 0.002), P(xa, z1 + sh1, 0.002)];
+    const zm = (z0 + z1) / 2;
+    return poly(q, '#FFF1CF', `opacity="0.5" filter="${U('bs')}"`) + ln(P(xa, zm + sh1, 0.003), P(xb, zm + sh2, 0.003), '#8a7a60', 4, `opacity="0.22" filter="${U('bs')}"`);
+  }
   function windowLeft(z0, z1, y0, y1, frame, curtain) {
-    let s = poly([P(-1, z0, 0.002), P(-1, z1, 0.002), P(-0.15, z1 + 0.22, 0.002), P(-0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.22" filter="${U('b2')}"`);
+    let s = sunbeam(-1, z0, z1, y0, y1) + poly([P(-1, z0, 0.002), P(-1, z1, 0.002), P(-0.15, z1 + 0.22, 0.002), P(-0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.22" filter="${U('b2')}"`);
     s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], U('sky'));
     s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
     s += ln(P(-1, (z0 + z1) / 2, y0), P(-1, (z0 + z1) / 2, y1), frame, 3);
@@ -108,7 +116,7 @@ const ROOMS = (() => {
     return s;
   }
   function windowRight(z0, z1, y0, y1, frame) {
-    let s = poly([P(1, z0, 0.002), P(1, z1, 0.002), P(0.15, z1 + 0.22, 0.002), P(0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.2" filter="${U('b2')}"`);
+    let s = sunbeam(1, z0, z1, y0, y1) + poly([P(1, z0, 0.002), P(1, z1, 0.002), P(0.15, z1 + 0.22, 0.002), P(0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.2" filter="${U('b2')}"`);
     s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], U('sky'));
     s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
     return s;
@@ -130,10 +138,14 @@ const ROOMS = (() => {
   function plant(x, z, size, pot) {
     let s = box(x - 0.06 * size, x + 0.06 * size, z, 0.05, 0, 0.1 * size, pot);
     const [cx, cy] = P(x, z - 0.02, 0.1 * size); seed = Math.round((x + 2) * 1000);
-    for (let i = 0; i < 9; i++) { const a = -150 + rnd() * 120, r = (34 + rnd() * 34) * size * k(z); const ex = cx + Math.cos(a * Math.PI / 180) * r, ey = cy + Math.sin(a * Math.PI / 180) * r;
-      s += `<ellipse cx="${(cx + ex) / 2}" cy="${(cy + ey) / 2}" rx="${r * 0.55}" ry="${r * 0.2}" transform="rotate(${a} ${(cx + ex) / 2} ${(cy + ey) / 2})" fill="${['#4C7A47', '#5E8A52', '#3E6B3C'][i % 3]}"/>`; }
+    for (let i = 0; i < 13; i++) { const a = -160 + rnd() * 140, r = (34 + rnd() * 34) * size * k(z); const ex = cx + Math.cos(a * Math.PI / 180) * r, ey = cy + Math.sin(a * Math.PI / 180) * r;
+      s += `<ellipse cx="${(cx + ex) / 2}" cy="${(cy + ey) / 2}" rx="${r * 0.55}" ry="${r * 0.2}" transform="rotate(${a} ${(cx + ex) / 2} ${(cy + ey) / 2})" fill="${['#4C7A47', '#5E8A52', '#3E6B3C', '#6E9A5C'][i % 4]}" stroke="#2F4F2C" stroke-width="0.5" stroke-opacity="0.5"/>`; }
     return s;
   }
+  function blooms(cx, cy, r, sc, sd) { seed = sd || 77; let s = ''; const cols = ['#E8A3A9', '#F3C86E', '#FBF6EE', mix(sc.cushions[0], '#E07A6A', 0.4)];
+    for (let i = 0; i < 10; i++) { const a = rnd() * Math.PI * 2, rr = rnd() * r; s += `<ellipse cx="${cx + Math.cos(a) * rr * 1.3}" cy="${cy + Math.sin(a) * rr * 0.7}" rx="${r * 0.35}" ry="${r * 0.18}" transform="rotate(${rnd() * 180} ${cx + Math.cos(a) * rr * 1.3} ${cy + Math.sin(a) * rr * 0.7})" fill="${['#5E8A52', '#4C7A47'][i % 2]}"/>`; }
+    for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, rr = rnd() * r, x = cx + Math.cos(a) * rr * 1.2, y = cy + Math.sin(a) * rr * 0.65 - r * 0.15; s += `<circle cx="${x}" cy="${y}" r="${r * (0.14 + rnd() * 0.08)}" fill="${cols[i % cols.length]}" stroke="${sh(cols[i % cols.length], -0.3)}" stroke-width="0.5"/><circle cx="${x}" cy="${y}" r="${r * 0.05}" fill="#C98A2E"/>`; }
+    return s; }
   function pendant(type, x, z, drop, sc) {
     const top = P(x, z, 1), [cx, cy] = P(x, z, 1 - drop), r = 22 * k(z); let s = ln(top, [cx, cy], sh(sc.metal, 0), 1.5);
     const m = sc.metal;
@@ -259,6 +271,9 @@ const ROOMS = (() => {
     s += box(-0.5, 0.5, 0.62, 0.22, 0, 0.33, sc.island) + shakerRun(-0.5, 0.5, 0.62, 0.03, 0.31, sc.island, 4, sc.metal);
     s += box(-0.55, 0.55, 0.65, 0.27, 0.33, 0.355, sc.top);
     { const [x, y, w] = fr(-0.5, 0.5, 0.64, 0.3, 0.33); s += rect(x, y, w, 4, sh(sc.wood, -0.1)); }
+    { const [bx, by] = P(-0.3, 0.52, 0.355); s += foot(bx - 34, by, 68) + `<path d="M${bx - 34} ${by - 6} Q${bx} ${by + 10} ${bx + 34} ${by - 6} Z" fill="#F4F1EA" stroke="#BDB6A8" stroke-width="0.8"/>`; seed = 12; for (let i = 0; i < 5; i++) s += `<ellipse cx="${bx - 18 + i * 9}" cy="${by - 9 - (i % 2) * 4}" rx="7" ry="5.5" fill="#EBC94A" stroke="#B8962A" stroke-width="0.6"/>`; }
+    { const [cx, cy] = P(0.05, 0.55, 0.355); s += foot(cx - 40, cy, 80) + `<rect x="${cx - 40}" y="${cy - 5}" width="80" height="6" rx="3" fill="${sh(sc.wood, 0.05)}" stroke="${sh(sc.wood, -0.35)}" stroke-width="0.7"/>`; s += `<ellipse cx="${cx - 12}" cy="${cy - 9}" rx="14" ry="7" fill="#D9B07A" stroke="#9C7443" stroke-width="0.6"/>`; }
+    { const [vx, vy] = P(0.36, 0.6, 0.355); s += foot(vx - 9, vy, 18) + `<path d="M${vx - 9} ${vy} Q${vx - 13} ${vy - 14} ${vx - 5} ${vy - 22} H${vx + 5} Q${vx + 13} ${vy - 14} ${vx + 9} ${vy} Z" fill="${mix(sc.cushions[0], '#8E9B7E', 0.5)}" stroke="#4F5A42" stroke-width="0.7"/>` + blooms(vx, vy - 38, 22, sc, 33); }
     [-0.32, 0, 0.32].forEach(xx => s += seat(xx, 0.82, { ori: 'away', frame: sh(sc.wood, -0.2), seatC: sc.stool, backC: isCane(sc) || sc.chairT === 'lounge' ? '#C9A46C' : sc.stool, cane: true, w: 0.07, d: 0.07, seatY: 0.27, backY: 0.39, t: 0.018, rx: 4, legW: 2.4 }));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? 'globe' : 'linear', 0, 0.55, 0.26, sc);
     return s;
@@ -413,7 +428,8 @@ const ROOMS = (() => {
     [[-0.88, -0.42], [0.42, 0.88]].forEach(([a, b2]) => { const [x, y, w, h] = fr(a, b2, 0.002, 0.3, 0.86);
       s += rect(x - 4, y - 4, w + 8, h + 8, sh(sc.wall, -0.14)) + rect(x, y, w, h, U('sky')) + rect(x, y, w, h * 0.5, sh(sc.cushions[1] || sc.wall, 0.4), 'opacity="0.75"') + ln([x + w / 2, y], [x + w / 2, y + h], sc.metal, 3);
       s += box(a + 0.02, b2 - 0.02, 0.08, 0.07, 0, 0.12, potC(sc)); seed = Math.round(a * 100) + 50;
-      for (let i = 0; i < 12; i++) { const p2 = P(a + 0.05 + rnd() * (b2 - a - 0.1), 0.05, 0.13 + rnd() * 0.06); s += `<ellipse cx="${p2[0]}" cy="${p2[1]}" rx="${10 + rnd() * 8}" ry="${6 + rnd() * 4}" fill="${['#6E8052', '#7D8F5E', '#5E7A4C'][i % 3]}"/>`; } });
+      for (let i = 0; i < 12; i++) { const p2 = P(a + 0.05 + rnd() * (b2 - a - 0.1), 0.05, 0.13 + rnd() * 0.06); s += `<ellipse cx="${p2[0]}" cy="${p2[1]}" rx="${10 + rnd() * 8}" ry="${6 + rnd() * 4}" fill="${['#6E8052', '#7D8F5E', '#5E7A4C'][i % 3]}"/>`; }
+      { const [fx, fy] = P((a + b2) / 2, 0.05, 0.17); s += blooms(fx - 32, fy - 4, 17, sc, 5) + blooms(fx + 32, fy - 4, 17, sc, 9); } });
     // front door with sconces
     { const [x, y, w, h] = fr(-0.16, 0.16, 0.002, 0, 0.76); s += rect(x - 9, y - 9, w + 18, h + 9, sh(sc.wall, -0.2)) + rect(x, y, w, h, door);
       s += rect(x + w * 0.1, y + h * 0.07, w * 0.35, h * 0.86, sh(door, -0.1), 'rx="2"') + rect(x + w * 0.55, y + h * 0.07, w * 0.35, h * 0.86, sh(door, -0.1), 'rx="2"') + ln([x + w / 2, y], [x + w / 2, y + h], sh(door, -0.25), 1.5);
@@ -457,7 +473,8 @@ const ROOMS = (() => {
       s += `<path d="M${cx - 10} ${cy + 8} L${cx - 22} ${fy} H${cx + 22} L${cx + 10} ${cy + 8} Z" fill="${sh(tb, -0.2)}"/><ellipse cx="${cx}" cy="${fy}" rx="28" ry="7" fill="${sh(tb, -0.25)}"/>`;
       s += `<ellipse cx="${cx}" cy="${cy + 5}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.18)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.04)}"/>`;
       s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.75}" ry="${ry * 0.32}" fill="${sc.cushions[1] || sc.bedding}" opacity="0.9"/>`;
-      [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += foot(cx + dx - 8, cy + 1, 16) + `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}"/>`); }
+      [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += foot(cx + dx - 8, cy + 1, 16) + `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}" stroke="${sh(potC(sc), -0.4)}" stroke-width="0.7"/>`);
+      s += blooms(cx, cy - 40, 26, sc, 21); }
     s += caneChair(-0.66, tz + 0.06, sc, 'right') + caneChair(0.66, tz + 0.06, sc, 'left');
     [-0.3, 0.3].forEach(xx => s += caneChair(xx, tz + 0.36, sc, 'away'));
     s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? sc.light : 'linear', 0, tz - 0.02, 0.28, sc);
@@ -543,7 +560,7 @@ const ROOMS = (() => {
       <linearGradient id="${pf}wl" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.02"/><stop offset="1" stop-color="#000" stop-opacity="0.16"/></linearGradient>
       <linearGradient id="${pf}wr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.04"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
       <linearGradient id="${pf}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F9FB"/><stop offset="0.7" stop-color="#CFE2EA"/><stop offset="1" stop-color="#B9D3C2"/></linearGradient>
-      <radialGradient id="${pf}cu" cx="0.38" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff" stop-opacity="0.28"/><stop offset="0.55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></radialGradient><radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${pf}fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.06"/></linearGradient><radialGradient id="${pf}cu" cx="0.38" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff" stop-opacity="0.28"/><stop offset="0.55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></radialGradient><radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
       <linearGradient id="${pf}lx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF6E2" stop-opacity="0.10"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
       <linearGradient id="${pf}ly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1208" stop-opacity="0.10"/><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="0.8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
       <radialGradient id="${pf}vig" cx="0.5" cy="0.48" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>`;
