@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Your Home Style</title>
+<meta name="description" content="A 12-question quiz that matches you to one of 16 interior design styles, with its 9-colour palette and HEX codes. By enidsdigitalhub.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred column. Intro = 16-style gallery; quiz = one question card at a time; result = palette-led style card. */
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#26241F; --muted:#6B665C; --line:#DEDAD1; --accent:#4F5B3A; --accent-ink:#FFFFFF;
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
+}
+:root[data-theme="dark"]{ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55}
+.wrap{max-width:820px; margin:0 auto; padding:24px 18px 56px; display:flex; flex-direction:column; gap:22px}
+header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
+.brand{font-weight:700; letter-spacing:.08em; font-size:13px; color:var(--muted); text-decoration:none}
+.step{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+.bar{height:4px; background:var(--line); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .3s ease}
+h1,h2,h3{font-family:var(--display); font-weight:600; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,6vw,46px); line-height:1.08}
+h2{font-size:clamp(23px,4.4vw,31px); line-height:1.15}
+h3{font-size:18px}
+p{margin:0; max-width:65ch}
+.lede{color:var(--muted)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:16px}
+.kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.opts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+@media (max-width:520px){ .opts{grid-template-columns:1fr} }
+.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--bg); transition:border-color .15s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible,.btn:focus-visible,.tile:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex; height:28px; border-radius:6px; overflow:hidden}
+.chips span{flex:1}
+.opt b{font-weight:500}
+.opt small{color:var(--muted); font-size:13.5px; line-height:1.4}
+.nav{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.btn{all:unset; box-sizing:border-box; cursor:pointer; padding:11px 18px; border-radius:999px; font-weight:500; font-size:15px; border:1.5px solid var(--line); color:var(--ink); text-align:center}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn[disabled]{opacity:.4; cursor:default}
+/* gallery */
+.gallery{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+@media (max-width:640px){ .gallery{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.tile{all:unset; box-sizing:border-box; cursor:pointer; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface); display:flex; flex-direction:column}
+.tile:hover{border-color:var(--accent)}
+.tile .chips{height:34px; border-radius:0}
+.tile span.n{padding:8px 10px; font-size:13px; line-height:1.3; display:flex; gap:6px}
+.tile span.n i{font-style:normal; color:var(--muted); font-variant-numeric:tabular-nums}
+.axis{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+/* result */
+.hero{border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--surface)}
+.hero .strip{display:flex; height:110px}
+.hero .strip span{flex:1}
+.hero .body{padding:22px; display:flex; flex-direction:column; gap:12px}
+.words{display:flex; gap:8px; flex-wrap:wrap}
+.pill{border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px}
+.pal{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+@media (max-width:520px){ .pal{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.sw{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
+.sw div{height:56px}
+.sw p{padding:8px 10px; font-size:13px; line-height:1.35}
+.sw code{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:12px}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:560px){ .cols{grid-template-columns:1fr} }
+ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px}
+.match{display:flex; flex-direction:column; gap:8px}
+.mrow{display:grid; grid-template-columns:170px 1fr 44px; gap:10px; align-items:center; font-size:14px}
+@media (max-width:420px){ .mrow{grid-template-columns:120px 1fr 40px} }
+.mrow .t{height:8px; background:var(--line); border-radius:8px; overflow:hidden}
+.mrow .t i{display:block; height:100%; border-radius:8px}
+.mrow span:last-child{text-align:right; font-variant-numeric:tabular-nums; color:var(--muted)}
+.cta{display:flex; flex-direction:column; gap:12px; border-radius:14px; padding:22px; color:#fff}
+.cta p{color:rgba(255,255,255,.92)}
+.cta .row{display:flex; gap:10px; flex-wrap:wrap}
+.cta .btn{border-color:rgba(255,255,255,.65); color:#fff}
+.cta .btn.solid{background:#fff; border-color:#fff}
+.sig{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.sig .chips{width:150px; height:40px}
+.toast{font-size:13px; color:var(--muted); min-height:18px}
+.home{display:flex; flex-direction:column; gap:14px}
+.tabs{display:flex; gap:8px; flex-wrap:wrap}
+.tab{all:unset; box-sizing:border-box; cursor:pointer; padding:7px 14px; border-radius:999px; border:1.5px solid var(--line); font-size:14px}
+.tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tab:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.view{border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#fff; aspect-ratio:8/5}
+.view svg{display:block; width:100%; height:100%}
+.note{font-size:13px; color:var(--muted)}
+footer{font-size:12.5px; color:var(--muted); text-align:center}
+[hidden]{display:none !important}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#">enidsdigitalhub</a>
+    <span class="step" id="step">12 questions · about 2 minutes</span>
+  </header>
+
+  <section id="intro" class="card">
+    <div class="kicker">Home style quiz</div>
+    <h1>Which of the 16 interior styles is really yours?</h1>
+    <p class="lede">Answer 12 quick questions about how you live and what you love. You'll get your style, its nine-colour palette with HEX codes, the pieces to look for and the mistakes to avoid.</p>
+    <div class="nav"><span></span><button class="btn primary" id="start">Start the quiz</button></div>
+    <div class="axis" aria-hidden="true"><span>Neutral &amp; calm</span><span>Bold &amp; expressive</span></div>
+    <div class="gallery" id="gallery" aria-label="Browse all 16 styles"></div>
+  </section>
+
+  <section id="quiz" class="card" hidden>
+    <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+    <h2 id="qtext"></h2>
+    <div class="opts" id="opts" role="group"></div>
+    <div class="nav">
+      <button class="btn" id="back">Back</button>
+      <button class="btn primary" id="next" disabled>Next</button>
+    </div>
+  </section>
+
+  <section id="result" hidden style="display:flex;flex-direction:column;gap:18px"></section>
+
+  <footer>Colours on screen are a guide. Test a painted sample on your own wall in daylight before you buy.<br>© enidsdigitalhub · Personal use</footer>
+</div>
+
+<script>
+/* ---------- Paste your Payhip product links here (leave "" until a product is live) ---------- */
+const SHOP = {
+  library: "",          // Complete 16-Style Library bundle
+  palettes: "",         // 16 palette pack
+  guides: {}            // e.g. { "japandi": "https://payhip.com/b/XXXX", ... }
+};
+
+const DATA = /*__DATA__*/;
+const QUESTIONS = /*__QUESTIONS__*/;
+const W_TAG = /*__WTAG__*/;
+const SCENES = /*__SCENES__*/;
+/*__ROOMS_JS__*/
+
+const AXES = DATA.axes, ALL = DATA.styles;
+const CORE = ALL.filter(s => !s.signature), SIG = ALL.filter(s => s.signature);
+const byId = Object.fromEntries(ALL.map(s => [s.id, s]));
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let i = 0; const answers = new Array(QUESTIONS.length).fill(null);
+
+function chips(cols){ return '<div class="chips" aria-hidden="true">' + cols.map(c=>`<span style="background:${c}"></span>`).join('') + '</div>'; }
+function accent(s){ // darkest mid-tone from the palette, readable with white text
+  const lum = h => { const n=parseInt(h.slice(1),16), r=(n>>16)/255, g=(n>>8&255)/255, b=(n&255)/255; return .2126*r+.7152*g+.0722*b; };
+  const c = s.palette.map(p=>p.hex).filter(h => lum(h) < .42 && lum(h) > .06).sort((a,b)=>lum(b)-lum(a));
+  return c[0] || s.palette[s.palette.length-1].hex;
+}
+
+/* ---------- scoring: profile similarity + explicit style signals ---------- */
+function scores(ch){
+  const acc = Object.fromEntries(AXES.map(a=>[a,[]])), votes = {}; let n = 0;
+  ch.forEach((k,qi)=>{ if(k===null) return; const o = QUESTIONS[qi].o[k]; n++;
+    for(const a in o.v) acc[a].push(o.v[a]);
+    o.tags.forEach(t => votes[t] = (votes[t]||0) + 1/Math.sqrt(o.tags.length)); });
+  const u = {}; for(const a of AXES) if(acc[a].length) u[a] = acc[a].reduce((x,y)=>x+y,0)/acc[a].length;
+  const keys = Object.keys(u), out = {};
+  for(const s of CORE){
+    const d = Math.sqrt(keys.reduce((t,a)=>t+(u[a]-s.profile[a])**2,0)/Math.max(keys.length,1));
+    out[s.id] = W_TAG*((votes[s.id]||0)/Math.max(n,1)) + (1-W_TAG)*Math.max(0,1-d/0.5);
+  }
+  return out;
+}
+
+/* ---------- views ---------- */
+function gallery(){
+  $('gallery').innerHTML = CORE.map(s=>`<button class="tile" data-id="${s.id}">${chips(s.palette.filter((_,k)=>k%2===0).map(p=>p.hex))}<span class="n"><i>${s.num}.</i>${esc(s.name)}</span></button>`).join('');
+  $('gallery').querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{ location.hash = b.dataset.id; }));
+}
+
+function renderQ(){
+  const item = QUESTIONS[i];
+  $('step').textContent = `Question ${i+1} of ${QUESTIONS.length}`;
+  $('prog').style.width = (i/QUESTIONS.length*100) + '%';
+  $('qtext').textContent = item.q;
+  $('opts').setAttribute('aria-label', item.q);
+  $('opts').innerHTML = item.o.map((o,k)=>`<button class="opt" id="opt-${k}" aria-pressed="${answers[i]===k}">${chips(o.chips)}<b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`).join('');
+  item.o.forEach((o,k)=> $('opt-'+k).addEventListener('click', ()=>{ answers[i]=k; if(i < QUESTIONS.length-1){ i++; renderQ(); $('opt-0').focus(); } else { renderQ(); $('next').focus(); } }));
+  $('back').disabled = i===0;
+  $('next').disabled = answers[i]===null;
+  $('next').textContent = i===QUESTIONS.length-1 ? 'See my style' : 'Next';
+}
+
+function show(view){ ['intro','quiz','result'].forEach(v=>$(v).hidden = v!==view); window.scrollTo(0,0); }
+
+function renderStyle(s, sc){
+  const acc = accent(s), link = SHOP.guides[s.id], lib = SHOP.library;
+  const sig = s.signature ? null : SIG.find(g => (g.pair_with||[]).includes(s.id));
+  let match = '';
+  if(sc){
+    const order = Object.keys(sc).sort((a,b)=>sc[b]-sc[a]).slice(0,3), top = sc[order[0]] || 1;
+    match = `<div class="card"><h3>Your closest styles</h3><div class="match">${order.map(k=>{const pc=Math.round(sc[k]/top*100);return `<div class="mrow"><span>${esc(byId[k].name)}</span><div class="t"><i style="width:${pc}%;background:${accent(byId[k])}"></i></div><span>${pc}%</span></div>`}).join('')}</div>
+      <p class="lede" style="font-size:14px">Your second style is <a href="#${order[1]}">${esc(byId[order[1]].name)}</a>. Borrowing one or two of its pieces makes the look your own.</p></div>`;
+  }
+  $('step').textContent = sc ? 'Your result' : (s.signature ? 'Signature colour story' : `Style ${s.num} of 16`);
+  const r = $('result');
+  r.innerHTML = `
+    <div class="hero">
+      <div class="strip" aria-hidden="true">${s.palette.map(p=>`<span style="background:${p.hex}"></span>`).join('')}</div>
+      <div class="body">
+        <div class="kicker">${sc ? 'Your home style' : (s.signature ? 'enidsdigitalhub signature' : 'Interior style ' + s.num)}</div>
+        <h1>${esc(s.name)}</h1>
+        <p style="font-family:var(--display);font-size:19px;color:${acc}">${esc(s.tagline)}</p>
+        <p>${esc(s.blurb)}</p>
+        <div class="words">${s.words.map(w=>`<span class="pill">${esc(w)}</span>`).join('')}</div>
+        <p class="lede" style="font-size:14px"><b>Best for:</b> ${esc(s.best_for)}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="nav" style="align-items:baseline"><h3>The 9-colour palette</h3><button class="btn" id="copy">Copy HEX codes</button></div>
+      <div class="pal">${s.palette.map(p=>`<div class="sw"><div style="background:${p.hex}"></div><p><b>${esc(p.name)}</b><br><code>${p.hex}</code><br>${esc(p.use)}</p></div>`).join('')}</div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+    ${SCENES[s.id] ? `<div class="card home">
+      <div><div class="kicker">See it in a real home</div><h3 style="margin-top:4px">${esc(s.name)}, room by room</h3></div>
+      <div class="tabs" role="tablist" aria-label="Rooms">${Object.entries(ROOMS.LABELS).map(([k,v],n)=>`<button class="tab" role="tab" data-room="${k}" aria-selected="${n===0}">${v}</button>`).join('')}</div>
+      <div class="view" id="view">${ROOMS.draw('living', SCENES[s.id])}</div>
+      <p class="note">Illustrated sample home based on a real 3-bedroom bungalow (details changed for privacy). Want your own rooms designed in this style? Ask about the design-my-home service at enidsdigitalhub.</p>
+    </div>` : ''}
+    <div class="card cols">
+      <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${s.pieces.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Key materials</h3><ul>${s.materials.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Do</h3><ul>${s.dos.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Avoid</h3><ul>${s.avoid.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+    </div>
+    ${match}
+    ${sig ? `<div class="card sig">${chips(sig.palette.map(p=>p.hex))}<div style="flex:1;min-width:220px"><div class="kicker">Pairs well with</div><p><a href="#${sig.id}"><b>${esc(sig.name)}</b></a>, an enidsdigitalhub signature colour story. ${esc(sig.tagline)}.</p></div></div>` : ''}
+    <div class="cta" style="background:${acc}">
+      <div class="kicker" style="color:rgba(255,255,255,.8)">Take it further</div>
+      <h2 style="color:#fff">The ${esc(s.name)} Home Style Guide</h2>
+      <p>18 pages: the full palette with HEX, RGB and CMYK codes, material boards, room-by-room styling with real furniture sizes, a lighting guide, a sizing cheat sheet and a shopping checklist.</p>
+      <div class="row">
+        ${link ? `<a class="btn solid" style="color:${acc}" href="${link}" target="_blank" rel="noopener">Get this guide</a>` : `<span class="btn solid" style="color:${acc};cursor:default">Coming soon at enidsdigitalhub</span>`}
+        ${lib ? `<a class="btn" href="${lib}" target="_blank" rel="noopener">Get all 16 styles</a>` : ''}
+        <button class="btn" id="share">Copy link to this style</button>
+        <button class="btn" id="again">${sc ? 'Retake the quiz' : 'Take the quiz'}</button>
+      </div>
+    </div>`;
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x===b));
+    $('view').innerHTML = ROOMS.draw(b.dataset.room, SCENES[s.id]);
+  }));
+  $('copy').addEventListener('click', async ()=>{
+    const txt = s.name + ' palette\n' + s.palette.map(p=>`${p.name}: ${p.hex}`).join('\n');
+    try{ await navigator.clipboard.writeText(txt); $('toast').textContent='Copied. Paste the codes into Canva or take them to your paint shop.'; }
+    catch(e){ $('toast').textContent='Your browser blocked copying. Select the codes above and copy them by hand.'; }
+  });
+  $('share').addEventListener('click', async e=>{
+    const url = location.href.split('#')[0] + '#' + s.id;
+    try{ await navigator.clipboard.writeText(url); e.target.textContent='Link copied'; } catch(err){ e.target.textContent = url; }
+  });
+  $('again').addEventListener('click', ()=>{ answers.fill(null); i=0; history.replaceState(null,'',location.pathname+location.search); show('quiz'); renderQ(); });
+  show('result');
+}
+
+function route(){
+  const id = location.hash.slice(1);
+  if(byId[id]) renderStyle(byId[id], null);
+  else { show('intro'); $('step').textContent = '12 questions · about 2 minutes'; }
+}
+
+$('start').addEventListener('click', ()=>{ show('quiz'); renderQ(); $('opt-0').focus(); });
+$('back').addEventListener('click', ()=>{ if(i>0){ i--; renderQ(); } });
+$('next').addEventListener('click', ()=>{
+  if(answers[i]===null) return;
+  if(i < QUESTIONS.length-1){ i++; renderQ(); return; }
+  $('prog').style.width='100%';
+  const sc = scores(answers), top = Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0];
+  renderStyle(byId[top], sc);
+});
+window.addEventListener('hashchange', route);
+gallery(); route();
+</script>
+</body>
+</html>

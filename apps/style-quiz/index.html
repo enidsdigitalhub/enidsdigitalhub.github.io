@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Find Your Home Style</title>
+<meta name="description" content="A 12-question quiz that matches you to one of 16 interior design styles, with its 9-colour palette and HEX codes. By enidsdigitalhub.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred column. Intro = 16-style gallery; quiz = one question card at a time; result = palette-led style card. */
+:root{
+  --bg:#F3F1EC; --surface:#FFFFFF; --ink:#26241F; --muted:#6B665C; --line:#DEDAD1; --accent:#4F5B3A; --accent-ink:#FFFFFF;
+  --display:"Fraunces", Georgia, "Times New Roman", serif;
+  --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
+}
+:root[data-theme="dark"]{ --bg:#1B1A17; --surface:#25231F; --ink:#EEEAE2; --muted:#A8A196; --line:#3A372F; --accent:#A9B98A; --accent-ink:#1B1A17; color-scheme: dark; }
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.55}
+.wrap{max-width:820px; margin:0 auto; padding:24px 18px 56px; display:flex; flex-direction:column; gap:22px}
+header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap}
+.brand{font-weight:700; letter-spacing:.08em; font-size:13px; color:var(--muted); text-decoration:none}
+.step{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+.bar{height:4px; background:var(--line); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .3s ease}
+h1,h2,h3{font-family:var(--display); font-weight:600; text-wrap:balance; margin:0}
+h1{font-size:clamp(30px,6vw,46px); line-height:1.08}
+h2{font-size:clamp(23px,4.4vw,31px); line-height:1.15}
+h3{font-size:18px}
+p{margin:0; max-width:65ch}
+.lede{color:var(--muted)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:16px}
+.kicker{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.opts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+@media (max-width:520px){ .opts{grid-template-columns:1fr} }
+.opt{all:unset; box-sizing:border-box; cursor:pointer; border:1.5px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; background:var(--bg); transition:border-color .15s}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible,.btn:focus-visible,.tile:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.opt[aria-pressed="true"]{border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent)}
+.chips{display:flex; height:28px; border-radius:6px; overflow:hidden}
+.chips span{flex:1}
+.opt b{font-weight:500}
+.opt small{color:var(--muted); font-size:13.5px; line-height:1.4}
+.nav{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap}
+.btn{all:unset; box-sizing:border-box; cursor:pointer; padding:11px 18px; border-radius:999px; font-weight:500; font-size:15px; border:1.5px solid var(--line); color:var(--ink); text-align:center}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn[disabled]{opacity:.4; cursor:default}
+/* gallery */
+.gallery{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px}
+@media (max-width:640px){ .gallery{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.tile{all:unset; box-sizing:border-box; cursor:pointer; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface); display:flex; flex-direction:column}
+.tile:hover{border-color:var(--accent)}
+.tile .chips{height:34px; border-radius:0}
+.tile span.n{padding:8px 10px; font-size:13px; line-height:1.3; display:flex; gap:6px}
+.tile span.n i{font-style:normal; color:var(--muted); font-variant-numeric:tabular-nums}
+.axis{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+/* result */
+.hero{border-radius:14px; overflow:hidden; border:1px solid var(--line); background:var(--surface)}
+.hero .strip{display:flex; height:110px}
+.hero .strip span{flex:1}
+.hero .body{padding:22px; display:flex; flex-direction:column; gap:12px}
+.words{display:flex; gap:8px; flex-wrap:wrap}
+.pill{border:1px solid var(--line); border-radius:999px; padding:4px 12px; font-size:14px}
+.pal{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+@media (max-width:520px){ .pal{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.sw{border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--surface)}
+.sw div{height:56px}
+.sw p{padding:8px 10px; font-size:13px; line-height:1.35}
+.sw code{font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--muted); font-size:12px}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:560px){ .cols{grid-template-columns:1fr} }
+ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px}
+.match{display:flex; flex-direction:column; gap:8px}
+.mrow{display:grid; grid-template-columns:170px 1fr 44px; gap:10px; align-items:center; font-size:14px}
+@media (max-width:420px){ .mrow{grid-template-columns:120px 1fr 40px} }
+.mrow .t{height:8px; background:var(--line); border-radius:8px; overflow:hidden}
+.mrow .t i{display:block; height:100%; border-radius:8px}
+.mrow span:last-child{text-align:right; font-variant-numeric:tabular-nums; color:var(--muted)}
+.cta{display:flex; flex-direction:column; gap:12px; border-radius:14px; padding:22px; color:#fff}
+.cta p{color:rgba(255,255,255,.92)}
+.cta .row{display:flex; gap:10px; flex-wrap:wrap}
+.cta .btn{border-color:rgba(255,255,255,.65); color:#fff}
+.cta .btn.solid{background:#fff; border-color:#fff}
+.sig{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.sig .chips{width:150px; height:40px}
+.toast{font-size:13px; color:var(--muted); min-height:18px}
+.home{display:flex; flex-direction:column; gap:14px}
+.tabs{display:flex; gap:8px; flex-wrap:wrap}
+.tab{all:unset; box-sizing:border-box; cursor:pointer; padding:7px 14px; border-radius:999px; border:1.5px solid var(--line); font-size:14px}
+.tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tab:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.view{border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#fff; aspect-ratio:8/5}
+.view svg{display:block; width:100%; height:100%}
+.note{font-size:13px; color:var(--muted)}
+footer{font-size:12.5px; color:var(--muted); text-align:center}
+[hidden]{display:none !important}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#">enidsdigitalhub</a>
+    <span class="step" id="step">12 questions · about 2 minutes</span>
+  </header>
+
+  <section id="intro" class="card">
+    <div class="kicker">Home style quiz</div>
+    <h1>Which of the 16 interior styles is really yours?</h1>
+    <p class="lede">Answer 12 quick questions about how you live and what you love. You'll get your style, its nine-colour palette with HEX codes, the pieces to look for and the mistakes to avoid.</p>
+    <div class="nav"><span></span><button class="btn primary" id="start">Start the quiz</button></div>
+    <div class="axis" aria-hidden="true"><span>Neutral &amp; calm</span><span>Bold &amp; expressive</span></div>
+    <div class="gallery" id="gallery" aria-label="Browse all 16 styles"></div>
+  </section>
+
+  <section id="quiz" class="card" hidden>
+    <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+    <h2 id="qtext"></h2>
+    <div class="opts" id="opts" role="group"></div>
+    <div class="nav">
+      <button class="btn" id="back">Back</button>
+      <button class="btn primary" id="next" disabled>Next</button>
+    </div>
+  </section>
+
+  <section id="result" hidden style="display:flex;flex-direction:column;gap:18px"></section>
+
+  <footer>Colours on screen are a guide. Test a painted sample on your own wall in daylight before you buy.<br>© enidsdigitalhub · Personal use</footer>
+</div>
+
+<script>
+/* ---------- Paste your Payhip product links here (leave "" until a product is live) ---------- */
+const SHOP = {
+  library: "",          // Complete 16-Style Library bundle
+  palettes: "",         // 16 palette pack
+  guides: {}            // e.g. { "japandi": "https://payhip.com/b/XXXX", ... }
+};
+
+const DATA = {"axes": ["color", "rustic", "decor", "warmth", "era", "mood", "green"], "styles": [{"id": "japandi", "num": 1, "name": "Japandi", "tagline": "Quiet, crafted, uncluttered", "words": ["Serene", "Crafted", "Simple"], "blurb": "Japanese calm meets Scandinavian comfort. Low furniture, pale wood, hand-made ceramics and plenty of empty space make a home that feels like a slow exhale.", "palette": [{"hex": "#F2EEE6", "name": "Rice Paper", "use": "Main walls"}, {"hex": "#E4DCCF", "name": "Washi", "use": "Secondary walls, linen"}, {"hex": "#C8B194", "name": "Ash Oak", "use": "Floors, furniture"}, {"hex": "#B08A62", "name": "Hinoki", "use": "Joinery, slatted screens"}, {"hex": "#A8A196", "name": "Stone", "use": "Tiles, pottery"}, {"hex": "#7C8466", "name": "Moss", "use": "Plants, cushions"}, {"hex": "#8C6B4F", "name": "Roasted Tea", "use": "Leather, ceramics"}, {"hex": "#4A4642", "name": "Charcoal Clay", "use": "Accents, lamp bases"}, {"hex": "#2B2926", "name": "Sumi Ink", "use": "Fine frames, outlines"}], "materials": ["Light ash or oak, matte", "Paper and linen shades", "Hand-thrown stoneware", "Bamboo and rattan", "Tatami-style or jute rugs", "Matte black metal, used sparingly"], "pieces": ["Low-profile sofa, seat height about 380–420 mm", "Low oak coffee table, 350–400 mm high", "Platform bed with a slatted headboard", "Paper lantern pendant, Ø500–600 mm", "Slatted oak screen or room divider"], "dos": ["Leave one wall and one surface completely empty", "Keep furniture low to the ground", "Choose a few hand-made pieces over many bought ones", "Hide storage behind plain, handle-less doors"], "avoid": ["Busy patterns and bright colours", "Glossy or mirrored finishes", "Filling every shelf", "Cool white (6000 K) bulbs"], "best_for": "Small homes, calm minds, anyone who wants less stuff", "profile": {"color": 0.1, "rustic": 0.35, "decor": 0.1, "warmth": 0.55, "era": 0.2, "mood": 0.3, "green": 0.5}}, {"id": "minimalist", "num": 2, "name": "Minimalist", "tagline": "Less, but better", "words": ["Clean", "Calm", "Essential"], "blurb": "Every object earns its place. Clean lines, a tight neutral palette and hidden storage leave a home that is easy to keep tidy and restful to come back to.", "palette": [{"hex": "#F7F6F3", "name": "Pure White", "use": "Walls, ceilings"}, {"hex": "#ECEAE5", "name": "Chalk", "use": "Secondary walls"}, {"hex": "#E6DFD3", "name": "Linen", "use": "Upholstery, curtains"}, {"hex": "#D9C7AC", "name": "Pale Oak", "use": "Floors, joinery"}, {"hex": "#D3D0C9", "name": "Pebble", "use": "Rugs, tiles"}, {"hex": "#A9A69F", "name": "Concrete", "use": "Worktops, floors"}, {"hex": "#8C9093", "name": "Steel", "use": "Hardware, lighting"}, {"hex": "#5E5D5A", "name": "Graphite", "use": "Accents"}, {"hex": "#2A2A29", "name": "Soft Black", "use": "Frames, single statement piece"}], "materials": ["Flat-front handle-less joinery", "Microcement or large-format porcelain", "Pale oak", "Matte white quartz", "Wool and cotton in plain weaves", "Brushed steel"], "pieces": ["Track-arm sofa in a solid neutral, 2000–2200 mm", "Simple rectangular coffee table, about ⅔ the sofa length", "Floor-to-ceiling hidden storage wall", "Platform bed with integrated side ledges", "One sculptural floor lamp"], "dos": ["Plan storage before you buy furniture", "Repeat the same two or three materials room to room", "Use texture so neutral rooms don't feel cold", "Keep worktops completely clear"], "avoid": ["Open shelving full of objects", "More than one accent colour", "Visible cables", "Furniture that is too small for the room"], "best_for": "Busy people, rentals, small apartments, anyone who hates clutter", "profile": {"color": 0.0, "rustic": 0.1, "decor": 0.0, "warmth": 0.35, "era": 0.1, "mood": 0.1, "green": 0.15}}, {"id": "scandinavian", "num": 3, "name": "Scandinavian", "tagline": "Light, simple, hygge", "words": ["Bright", "Cosy", "Practical"], "blurb": "Built for long dark winters, Scandinavian rooms bounce every bit of light around: white walls, pale wood and soft textiles, with a gentle blue or green for calm.", "palette": [{"hex": "#F6F5F1", "name": "Snow", "use": "Walls, ceilings"}, {"hex": "#E8DFD1", "name": "Birch", "use": "Secondary walls"}, {"hex": "#E4DED4", "name": "Wool", "use": "Throws, upholstery"}, {"hex": "#D7C3A3", "name": "Pale Ash", "use": "Floors, furniture"}, {"hex": "#D6D8D6", "name": "Fog", "use": "Rugs, tiles"}, {"hex": "#B9BBB8", "name": "Dove Grey", "use": "Sofa, curtains"}, {"hex": "#A9B8C4", "name": "Fjord Blue", "use": "Accent wall, bedding"}, {"hex": "#A8B59B", "name": "Sage", "use": "Plants, cushions"}, {"hex": "#5C6166", "name": "Slate", "use": "Lamps, frames"}], "materials": ["Pale ash, birch or white-oiled oak", "Wool, sheepskin and knitted throws", "White-painted wood panelling", "Matte ceramic tiles", "Paper and opal-glass lighting", "Black or brass details, small"], "pieces": ["Light grey sofa on wooden legs, 2000–2200 mm", "Round white or ash coffee table, Ø800–900 mm", "Wishbone-style dining chairs", "Wall-mounted shelf with a few books and plants", "Sheepskin on a lounge chair"], "dos": ["Keep windows bare or use sheer white curtains", "Layer several lamps instead of one ceiling light", "Bring in one soft colour: blue, sage or blush", "Use wool and knit textures for warmth"], "avoid": ["Dark heavy curtains", "Ornate or carved furniture", "Too many colours", "Dark wood floors"], "best_for": "Darker homes, families, renters, cool climates", "profile": {"color": 0.15, "rustic": 0.3, "decor": 0.25, "warmth": 0.35, "era": 0.25, "mood": 0.05, "green": 0.4}}, {"id": "modern-organic", "num": 4, "name": "Modern Organic", "tagline": "Calm, light and tactile", "replaces": "Warm Modern Organic", "words": ["Soft", "Natural", "Quiet"], "blurb": "A calm, light-filled home that feels soft underfoot and quiet to the eye. Natural oak, warm stone tones, curves and bouclé do the work, with sage green as the one living colour.", "palette": [{"hex": "#E9E0D2", "name": "Oat", "use": "60% · main walls, upholstery"}, {"hex": "#CFC3B1", "name": "Limestone", "use": "Secondary walls, tiles, rugs"}, {"hex": "#F3EEE6", "name": "Ivory Bouclé", "use": "Sofa, cushions, bedding"}, {"hex": "#D9C9B0", "name": "Travertine", "use": "Floor tiles, coffee table, worktops"}, {"hex": "#B98A5E", "name": "Natural Oak", "use": "30% · floors, joinery, furniture"}, {"hex": "#8E9B7E", "name": "Sage", "use": "10% · limewash wall, zellige, plants"}, {"hex": "#4A3B30", "name": "Espresso", "use": "Fine outlines, frames, lamp bases"}, {"hex": "#B08D57", "name": "Brushed Brass", "use": "Taps, handles, light fittings"}, {"hex": "#F8F6F0", "name": "Soft White", "use": "Ceilings and trims"}], "materials": ["Matte engineered and fluted oak", "Limewash walls", "Travertine-look porcelain", "Bouclé and linen", "Calacatta-look quartz", "Brushed brass"], "pieces": ["Curved bouclé sofa, 2200–2400 mm wide", "Oak drum coffee table, Ø900–1000", "Fluted oak media wall with a linear fire", "Wool or jute rug, about 2400 × 3400", "Sheer linen curtains hung from the ceiling"], "dos": ["Choose curves: a rounded sofa, oval table or arched mirror", "Keep wood tones in one family, light to mid oak", "Use texture instead of pattern", "Display three objects, not ten"], "avoid": ["Bright white next to oat and oak", "High-gloss finishes", "More than one strong colour", "Cool white (6000 K) bulbs"], "best_for": "Homeowners who want calm but warm; small or darker homes", "profile": {"color": 0.2, "rustic": 0.45, "decor": 0.25, "warmth": 0.65, "era": 0.2, "mood": 0.25, "green": 0.6}}, {"id": "contemporary", "num": 5, "name": "Contemporary", "tagline": "Sleek, current, gallery-calm", "words": ["Sleek", "Current", "Refined"], "blurb": "Of-the-moment and crisp: big windows, clean architecture, greige and taupe softened by walnut and a single dramatic black. It's polished without being cold.", "palette": [{"hex": "#F4F3F0", "name": "Gallery White", "use": "Walls"}, {"hex": "#DADADA", "name": "Mist Grey", "use": "Secondary walls, rugs"}, {"hex": "#CFC8BD", "name": "Greige", "use": "Upholstery, curtains"}, {"hex": "#9E9284", "name": "Taupe", "use": "Feature wall, cushions"}, {"hex": "#7A6E63", "name": "Mink", "use": "Accent chairs"}, {"hex": "#C9B48E", "name": "Champagne", "use": "Metal finishes"}, {"hex": "#6B4E3A", "name": "Walnut", "use": "Media unit, dining table"}, {"hex": "#5A5A58", "name": "Smoke", "use": "Tiles, worktops"}, {"hex": "#232323", "name": "Onyx", "use": "Window frames, statement pieces"}], "materials": ["Large-format porcelain or polished concrete", "Walnut veneer", "Smoked glass", "Matte black and champagne metal", "Bouclé, wool and leather", "Quartz with subtle veining"], "pieces": ["Low modular sectional, about 3000 × 1800 L-shape", "Rectangular coffee table in stone or smoked glass", "Floating walnut media unit with hidden storage", "Statement linear pendant over the dining table", "Large abstract artwork, about ⅔ the sofa width"], "dos": ["Keep architecture clean: flush skirtings, hidden tracks", "Use one dramatic black element per room", "Choose large-scale art over many small frames", "Layer greige, taupe and walnut for warmth"], "avoid": ["Fussy ornaments and patterns", "Matching furniture sets", "Too many small accessories", "Mixing many wood tones"], "best_for": "New builds, apartments, open-plan living", "profile": {"color": 0.2, "rustic": 0.1, "decor": 0.3, "warmth": 0.4, "era": 0.0, "mood": 0.5, "green": 0.2}}, {"id": "transitional", "num": 6, "name": "Transitional", "tagline": "Classic comfort, modern lines", "words": ["Timeless", "Balanced", "Welcoming"], "blurb": "The bridge between traditional and modern: classic shapes, mouldings and a fireplace, kept fresh with soft neutrals and one confident navy.", "palette": [{"hex": "#F5F1EA", "name": "Warm White", "use": "Walls, trims"}, {"hex": "#E3DDD2", "name": "Oyster", "use": "Secondary walls"}, {"hex": "#C9C0B2", "name": "Greige", "use": "Sofa, curtains"}, {"hex": "#A8998A", "name": "Mushroom", "use": "Rugs, cushions"}, {"hex": "#9A9A96", "name": "Pewter", "use": "Tiles, accents"}, {"hex": "#B7B8B4", "name": "Brushed Nickel", "use": "Taps, lighting"}, {"hex": "#B98E5F", "name": "Honey Oak", "use": "Floors, dining table"}, {"hex": "#2F3E55", "name": "Navy", "use": "Accent chairs, kitchen island"}, {"hex": "#3D3C3A", "name": "Charcoal", "use": "Frames, details"}], "materials": ["Wall panelling and simple mouldings", "Mid-tone oak floors", "Marble-look porcelain", "Performance linen and velvet", "Brushed nickel or aged brass", "Glass and crystal lighting, kept simple"], "pieces": ["Rolled-arm or track-arm sofa, 2200–2400 mm", "Pair of upholstered armchairs facing the sofa", "Fireplace with a simple surround as the focal point", "Round or oval pedestal dining table", "Classic chandelier with a modern shape"], "dos": ["Arrange seating symmetrically around a focal point", "Mix one classic shape with one modern shape", "Use navy as the single colour", "Pick lined, floor-length curtains"], "avoid": ["Heavily carved or ornate pieces", "Too many trends at once", "Bright, saturated colours", "Cluttered surfaces"], "best_for": "Family homes, people who like classic but not old-fashioned", "profile": {"color": 0.2, "rustic": 0.2, "decor": 0.4, "warmth": 0.5, "era": 0.55, "mood": 0.25, "green": 0.25}}, {"id": "coastal", "num": 7, "name": "Coastal", "tagline": "Breezy, bright, by the sea", "words": ["Breezy", "Fresh", "Relaxed"], "blurb": "Sun, salt and sea in a home: sandy neutrals, driftwood, sea-glass greens and harbour blues, with linen that moves in the breeze.", "palette": [{"hex": "#F4F2EC", "name": "Sea Salt", "use": "Walls"}, {"hex": "#EDE3D6", "name": "Shell", "use": "Secondary walls, linen"}, {"hex": "#DCCBAE", "name": "Sand Dune", "use": "Rugs, upholstery"}, {"hex": "#B8A68C", "name": "Driftwood", "use": "Floors, furniture"}, {"hex": "#C9A97A", "name": "Rope", "use": "Woven baskets, lighting"}, {"hex": "#A9C6C1", "name": "Sea Glass", "use": "Cushions, tiles"}, {"hex": "#B9CCD6", "name": "Sky", "use": "Accent wall, bedding"}, {"hex": "#4F7184", "name": "Harbour Blue", "use": "Kitchen island, accents"}, {"hex": "#23384F", "name": "Navy", "use": "Stripes, frames"}], "materials": ["Whitewashed or driftwood timber", "Linen and cotton slipcovers", "Rattan, rope and seagrass", "Shiplap or tongue-and-groove panelling", "Glazed handmade tiles in blue-green", "Weathered brass or nickel"], "pieces": ["Slipcovered sofa in white or sand, 2200–2400 mm", "Whitewashed coffee table or a woven ottoman", "Rattan or wicker accent chairs", "Woven pendant light over the dining table", "Striped or flat-weave rug, about 2400 × 3400"], "dos": ["Keep windows open and curtains sheer", "Mix two or three blues, not more", "Use natural fibres for texture", "Keep accessories few and natural (glass, wood)"], "avoid": ["Themed décor: anchors, 'beach' signs, shells everywhere", "Heavy dark furniture", "Busy patterns", "Dark wall colours"], "best_for": "Coastal and warm homes, holiday homes, Airbnbs", "profile": {"color": 0.4, "rustic": 0.35, "decor": 0.4, "warmth": 0.3, "era": 0.35, "mood": 0.0, "green": 0.3}}, {"id": "farmhouse", "num": 8, "name": "Farmhouse", "tagline": "Simple, sturdy, country warmth", "words": ["Homely", "Sturdy", "Unfussy"], "blurb": "Country living with clean modern lines: beams, shaker cabinets, a big farmhouse table, sage and olive greens and black iron details.", "palette": [{"hex": "#F2ECE0", "name": "Cream", "use": "Walls"}, {"hex": "#E7DFD0", "name": "Linen", "use": "Curtains, upholstery"}, {"hex": "#DCCDB6", "name": "Oatmeal", "use": "Rugs, secondary walls"}, {"hex": "#A57C55", "name": "Barn Oak", "use": "Beams, table, floors"}, {"hex": "#9C978E", "name": "Weathered Grey", "use": "Tiles, painted furniture"}, {"hex": "#8F9A73", "name": "Sage Green", "use": "Kitchen units, cabinets"}, {"hex": "#6C7348", "name": "Olive", "use": "Accent wall, cushions"}, {"hex": "#9C5A44", "name": "Brick", "use": "Pots, accents"}, {"hex": "#2C2B29", "name": "Black Iron", "use": "Lights, hardware, frames"}], "materials": ["Shaker-style painted cabinets", "Reclaimed or wire-brushed oak", "Butcher-block worktops", "Subway or zellige-look tiles", "Linen, cotton and plaid", "Black iron and aged brass"], "pieces": ["Long plank dining table, 2000 × 950 for six to eight", "Slipcovered or linen sofa with deep seats", "Farmhouse (Belfast) sink with a bridge tap", "Open shelving for everyday dishes", "Black iron or lantern pendants"], "dos": ["Make the kitchen table the heart of the home", "Pair painted cabinets with wood worktops", "Use black iron as your fine line", "Keep patterns simple: checks, stripes"], "avoid": ["Over-theming with signs and roosters", "Too many distressed pieces", "Glossy finishes", "Cool grey palettes"], "best_for": "Family homes, country and peri-urban plots, cooks", "profile": {"color": 0.3, "rustic": 0.7, "decor": 0.45, "warmth": 0.65, "era": 0.6, "mood": 0.2, "green": 0.4}}, {"id": "bohemian", "num": 9, "name": "Bohemian", "tagline": "Free-spirited, layered, well-travelled", "words": ["Layered", "Collected", "Free"], "blurb": "A home that tells stories: kilim rugs, rust and mustard textiles, rattan, macramé and a jungle of plants, all layered with love.", "palette": [{"hex": "#EFE6D8", "name": "Bone", "use": "Walls"}, {"hex": "#CDB28A", "name": "Jute", "use": "Rugs, baskets"}, {"hex": "#C0704B", "name": "Terracotta", "use": "Pots, cushions"}, {"hex": "#B5562F", "name": "Rust", "use": "Sofa throws, textiles"}, {"hex": "#C9962E", "name": "Mustard", "use": "Accent chair, cushions"}, {"hex": "#6E7445", "name": "Olive", "use": "Velvet, plants"}, {"hex": "#1F5E63", "name": "Deep Teal", "use": "Accent wall, pouffes"}, {"hex": "#6B3A4B", "name": "Plum", "use": "Textiles, glassware"}, {"hex": "#5A3E2B", "name": "Walnut", "use": "Furniture, frames"}], "materials": ["Kilim, Persian-style and flat-weave rugs", "Rattan, cane and wicker", "Macramé and woven wall hangings", "Velvet and embroidered textiles", "Hand-painted tiles", "Brass and hammered metal"], "pieces": ["Low sofa layered with throws and floor cushions", "Rattan peacock or egg chair", "Layered rugs: a large jute plus a smaller kilim", "Moroccan-style pouffes", "Plant shelf or hanging planters"], "dos": ["Layer rugs, throws and cushions in a shared colour family", "Mix vintage, handmade and travel finds", "Go big with plants", "Keep walls light so the layers can shine"], "avoid": ["Matching furniture sets", "Sleek, shiny surfaces", "Too many colours outside your family", "Clutter without breathing room"], "best_for": "Creatives, renters, collectors, plant lovers", "profile": {"color": 0.7, "rustic": 0.55, "decor": 0.85, "warmth": 0.75, "era": 0.5, "mood": 0.4, "green": 0.85}}, {"id": "mid-century-modern", "num": 10, "name": "Mid-Century Modern", "tagline": "Retro shapes, warm wood, happy colour", "words": ["Retro", "Graphic", "Optimistic"], "blurb": "1950s and '60s optimism: tapered legs, teak and walnut, sunburst mirrors and confident mustard, olive, orange and teal.", "palette": [{"hex": "#F3EEE4", "name": "Warm White", "use": "Walls"}, {"hex": "#E6D9BF", "name": "Cream", "use": "Upholstery, rugs"}, {"hex": "#D3A232", "name": "Mustard", "use": "Accent chair, cushions"}, {"hex": "#C4632D", "name": "Burnt Orange", "use": "Lamp, art, cushions"}, {"hex": "#6F7A3A", "name": "Olive", "use": "Sofa, accent wall"}, {"hex": "#2F6F73", "name": "Teal", "use": "Bedding, glass"}, {"hex": "#9A5E34", "name": "Teak", "use": "Sideboard, furniture"}, {"hex": "#5A3B26", "name": "Walnut", "use": "Floors, dining table"}, {"hex": "#333130", "name": "Charcoal", "use": "Lamps, frames"}], "materials": ["Teak and walnut veneers", "Tapered wooden legs", "Moulded plywood and fibreglass", "Wool tweed and leather", "Terrazzo", "Brass and globe glass"], "pieces": ["Low sofa on tapered legs, 2000–2200 mm", "Lounge chair and ottoman in leather", "Long, low teak sideboard", "Tulip or round pedestal dining table", "Sputnik or globe pendant"], "dos": ["Keep furniture low and leggy so the floor shows", "Repeat one hero colour three times", "Choose graphic art and sunburst shapes", "Mix one or two genuine vintage pieces"], "avoid": ["Bulky, overstuffed furniture", "Too many reproduction pieces in one room", "Fussy patterns", "Cool grey walls"], "best_for": "Design lovers, apartments, anyone who likes colour with order", "profile": {"color": 0.65, "rustic": 0.3, "decor": 0.45, "warmth": 0.7, "era": 0.75, "mood": 0.45, "green": 0.5}}, {"id": "industrial", "num": 11, "name": "Industrial", "tagline": "Raw, urban, warehouse-cool", "words": ["Raw", "Urban", "Honest"], "blurb": "Exposed brick, concrete, steel and reclaimed timber, softened by cognac leather and warm Edison light: loft living with character.", "palette": [{"hex": "#D9D2C4", "name": "Canvas", "use": "Walls, curtains"}, {"hex": "#B8B5AF", "name": "Concrete", "use": "Floors, walls"}, {"hex": "#8E8B86", "name": "Cement", "use": "Tiles, worktops"}, {"hex": "#9A4E35", "name": "Brick", "use": "Feature wall"}, {"hex": "#8E5733", "name": "Cognac", "use": "Leather sofa, chairs"}, {"hex": "#7A5A3E", "name": "Reclaimed Oak", "use": "Tables, shelving"}, {"hex": "#C8913F", "name": "Edison Amber", "use": "Bulbs, glass, accents"}, {"hex": "#5D6063", "name": "Raw Steel", "use": "Frames, shelving"}, {"hex": "#2B2B2B", "name": "Soot", "use": "Metalwork, windows"}], "materials": ["Exposed brick or brick slips", "Polished concrete or microcement", "Black steel and pipework", "Reclaimed timber", "Distressed leather", "Clear-glass Edison bulbs"], "pieces": ["Cognac or charcoal leather sofa, 2200–2400 mm", "Reclaimed wood and steel coffee table", "Steel-frame open bookshelf", "Factory-style pendants over the island", "Crittall-style black glass partition"], "dos": ["Leave one surface raw: brick, concrete or ductwork", "Warm it up with leather, wood and rugs", "Use metal as a frame, not everywhere", "Light with warm 2700 K bulbs"], "avoid": ["Too much metal and no softness", "Pastel colours", "Cold white light", "Small, delicate furniture"], "best_for": "Lofts, apartments, studios, men's and shared spaces", "profile": {"color": 0.35, "rustic": 0.85, "decor": 0.35, "warmth": 0.4, "era": 0.45, "mood": 0.75, "green": 0.3}}, {"id": "rustic", "num": 12, "name": "Rustic", "tagline": "Cosy, grounded, fireside", "replaces": "Highland Stone Lodge", "words": ["Sheltered", "Textured", "Practical"], "blurb": "A cosy retreat for cool evenings: natural stone, dark timber, leather and wool gathered around the fire, with moss green and slate as quiet supporting colours.", "palette": [{"hex": "#EFE8DA", "name": "Mist", "use": "60% · main walls"}, {"hex": "#B5A897", "name": "Mushroom", "use": "Board-and-batten, upholstery"}, {"hex": "#A79C8C", "name": "Ledgestone", "use": "Fireplace, feature walls, tiles"}, {"hex": "#7A5236", "name": "Cypress", "use": "30% · beams, tables, shelving"}, {"hex": "#6B5643", "name": "Smoked Oak", "use": "Floors and furniture"}, {"hex": "#9A5B32", "name": "Cognac", "use": "10% · leather sofa, cushions"}, {"hex": "#6E7A4F", "name": "Moss", "use": "Kitchen units, bedroom walls"}, {"hex": "#5E5F5A", "name": "Slate", "use": "Floors, worktops, accents"}, {"hex": "#2B2A28", "name": "Black Iron", "use": "Lights, rods, hardware"}], "materials": ["Natural stacked stone", "Cypress beams, smoked brushed oak", "Cognac leather", "Wool plaid and kilim", "Honed granite", "Matte black iron"], "pieces": ["Floor-to-ceiling stone fireplace with a timber mantel", "Cognac leather sofa, 2200–2400 mm", "Two wool wingback chairs angled to the fire", "Chunky solid-wood coffee table", "Wrought-iron chandelier over the dining table"], "dos": ["Make the fireplace or one stone wall the hero", "Use two timbers at most", "Layer wool, leather and plaid", "Use matte black iron for fittings"], "avoid": ["Bright white walls", "Glossy or mirrored furniture", "Antlers and signs everywhere", "Under-lighting the room"], "best_for": "Cool climates, highland homes, cabins, families", "profile": {"color": 0.4, "rustic": 0.95, "decor": 0.55, "warmth": 0.75, "era": 0.65, "mood": 0.6, "green": 0.3}}, {"id": "tropical", "num": 13, "name": "Tropical", "tagline": "Lush, warm, holiday every day", "words": ["Lush", "Vibrant", "Laid-back"], "blurb": "Bring the outdoors in: palm greens, rattan, teak and pops of coral and mango, with big leafy plants and botanical prints.", "palette": [{"hex": "#F3EDE1", "name": "Coconut", "use": "Walls"}, {"hex": "#C9A46C", "name": "Rattan", "use": "Furniture, lighting"}, {"hex": "#8A5A34", "name": "Teak", "use": "Tables, floors"}, {"hex": "#2F5D3A", "name": "Palm", "use": "Accent wall, velvet"}, {"hex": "#4C7A47", "name": "Monstera", "use": "Cushions, prints"}, {"hex": "#7FA36B", "name": "Fern", "use": "Bedding, glass"}, {"hex": "#3E8C8C", "name": "Lagoon", "use": "Tiles, accents"}, {"hex": "#E07A5F", "name": "Coral", "use": "Cushions, art"}, {"hex": "#E3A23B", "name": "Mango", "use": "Accents, ceramics"}], "materials": ["Rattan, cane and bamboo", "Teak and iroko", "Botanical wallpaper or prints", "Linen and cotton in leafy prints", "Terrazzo and glazed tiles", "Brass and woven pendants"], "pieces": ["Rattan or cane-back sofa with green cushions", "Teak coffee table", "Banana-leaf or palm wallpaper on one wall", "Large woven pendant lights", "Big floor plants: monstera, bird of paradise, palm"], "dos": ["Use plants as furniture: go big", "Pick one leafy print and repeat its colours", "Keep it breezy with ceiling fans and sheers", "Mix rattan with solid wood"], "avoid": ["Heavy dark fabrics", "Too many prints fighting each other", "Plastic plants", "Cold metal finishes"], "best_for": "Warm climates, coastal Kenya, Airbnbs, plant lovers", "profile": {"color": 0.85, "rustic": 0.5, "decor": 0.75, "warmth": 0.7, "era": 0.4, "mood": 0.4, "green": 1.0}}, {"id": "mediterranean", "num": 14, "name": "Mediterranean", "tagline": "Sun-washed, arched, timeless", "words": ["Sunny", "Rustic-elegant", "Inviting"], "blurb": "Whitewashed walls, arches, terracotta floors and Aegean blue: the easy warmth of a Greek or Spanish village house, with olive trees at the door.", "palette": [{"hex": "#F5F0E6", "name": "Whitewash", "use": "Walls, arches"}, {"hex": "#E3D5BE", "name": "Limestone", "use": "Floors, worktops"}, {"hex": "#CDB48E", "name": "Sand", "use": "Upholstery, rugs"}, {"hex": "#B9603A", "name": "Terracotta", "use": "Floor tiles, pots"}, {"hex": "#6F7445", "name": "Olive", "use": "Plants, cushions, shutters"}, {"hex": "#2F5F8A", "name": "Aegean Blue", "use": "Doors, tiles, accents"}, {"hex": "#8FB3CF", "name": "Sky Blue", "use": "Bedding, glassware"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Lighting, hardware"}, {"hex": "#5A3E2B", "name": "Walnut", "use": "Beams, furniture"}], "materials": ["Limewash and plaster walls", "Terracotta and patterned cement tiles", "Wood beams and shutters", "Wrought iron", "Linen and cotton", "Hand-painted ceramics"], "pieces": ["Built-in plaster bench or banquette with cushions", "Rustic wood dining table with rush-seat chairs", "Arched doorways, niches or mirrors", "Wrought-iron lanterns and pendants", "Olive or lemon trees in terracotta pots"], "dos": ["Use arches and curves wherever you can", "Pair terracotta floors with white walls", "Bring blue in through tiles, doors or textiles", "Let the outdoor terrace be a room too"], "avoid": ["Cool grey", "Glossy modern finishes", "Too many patterned tiles in one view", "Heavy, dark curtains"], "best_for": "Sunny homes, outdoor living, people who love colour with calm", "profile": {"color": 0.55, "rustic": 0.6, "decor": 0.5, "warmth": 0.85, "era": 0.55, "mood": 0.2, "green": 0.55}}, {"id": "art-deco", "num": 15, "name": "Art Deco", "tagline": "Glamorous, geometric, jewel-toned", "words": ["Glamorous", "Bold", "Polished"], "blurb": "1920s luxury: emerald and peacock velvet, black lacquer, gold, marble and fan-shaped geometry. A home that feels like a grand hotel bar.", "palette": [{"hex": "#EFE8DA", "name": "Ivory", "use": "Ceilings, trims"}, {"hex": "#C9C6C0", "name": "Marble Grey", "use": "Floors, worktops"}, {"hex": "#D9C39A", "name": "Champagne", "use": "Walls, upholstery"}, {"hex": "#B8934A", "name": "Gold", "use": "Metal, mirrors, lights"}, {"hex": "#D8A7A0", "name": "Blush", "use": "Accent chairs"}, {"hex": "#1F4D43", "name": "Emerald", "use": "Velvet sofa, walls"}, {"hex": "#12505A", "name": "Peacock", "use": "Accent wall, cushions"}, {"hex": "#5C1F2B", "name": "Burgundy", "use": "Textiles, glass"}, {"hex": "#161616", "name": "Black Lacquer", "use": "Furniture, panelling"}], "materials": ["Velvet in jewel tones", "Marble and terrazzo", "Black lacquer and high-gloss veneers", "Polished brass and gold", "Fluted glass and mirror", "Geometric tiles and wallpaper"], "pieces": ["Channel-tufted velvet sofa, 2200–2400 mm", "Round marble and brass coffee table", "Fan or scalloped headboard", "Statement tiered or globe chandelier", "Mirrored or lacquered sideboard"], "dos": ["Choose one jewel tone and commit to it", "Repeat geometric shapes: fans, arches, chevrons", "Mix velvet with marble and brass", "Light with dimmers for drama"], "avoid": ["Rustic or distressed finishes", "Too many metals (stick to gold/brass)", "Pale, washed-out colours", "Clutter: glamour needs space"], "best_for": "Apartments, entertainers, lovers of drama and polish", "profile": {"color": 0.85, "rustic": 0.05, "decor": 0.75, "warmth": 0.5, "era": 0.9, "mood": 0.85, "green": 0.2}}, {"id": "eclectic-maximalist", "num": 16, "name": "Eclectic Maximalist", "tagline": "More is more, with intent", "words": ["Bold", "Personal", "Joyful"], "blurb": "Colour, pattern and collections, layered with confidence: a gallery wall, a raspberry sofa, cobalt walls and everything you love on show.", "palette": [{"hex": "#F1E8D8", "name": "Cream", "use": "Ceilings, breathing space"}, {"hex": "#E0A22F", "name": "Saffron", "use": "Cushions, lamps"}, {"hex": "#E07B62", "name": "Coral", "use": "Accent chair, art"}, {"hex": "#B0305A", "name": "Raspberry", "use": "Sofa, textiles"}, {"hex": "#5A2E5A", "name": "Plum", "use": "Velvet, glass"}, {"hex": "#2E8A86", "name": "Teal", "use": "Accent wall, tiles"}, {"hex": "#1F6B4A", "name": "Emerald", "use": "Plants, cushions"}, {"hex": "#23407A", "name": "Cobalt", "use": "Walls, cabinetry"}, {"hex": "#1E2433", "name": "Ink", "use": "Frames, contrast"}], "materials": ["Patterned wallpaper", "Velvet, chintz and embroidered fabrics", "Layered Persian and kilim rugs", "Lacquered and painted furniture", "Collections: books, ceramics, art", "Mixed metals"], "pieces": ["Statement velvet sofa in a strong colour", "Gallery wall of mixed frames, edge to edge", "Patterned wallpaper on one or more walls", "Pair of mismatched accent chairs", "Display cabinet for collections"], "dos": ["Pick one anchor colour and pull the rest from it", "Repeat colours in at least three places", "Mix pattern scales: one large, one medium, one small", "Leave one calm surface for the eye to rest"], "avoid": ["Random colours with no anchor", "All patterns the same size", "Cheap filler accessories", "Poor lighting: layers need light"], "best_for": "Collectors, creatives, confident colour lovers", "profile": {"color": 1.0, "rustic": 0.4, "decor": 1.0, "warmth": 0.65, "era": 0.6, "mood": 0.7, "green": 0.6}}, {"id": "olive-terracotta", "num": 17, "name": "Olive & Terracotta", "signature": true, "tagline": "Warm, earthy, never themed", "words": ["Grounded", "Layered", "Warm"], "blurb": "Earthy olive, sun-baked terracotta, warm cream and walnut: a grounded, welcoming home with a little Mediterranean warmth.", "palette": [{"hex": "#EFE6D6", "name": "Warm Cream", "use": "Main walls"}, {"hex": "#D8C3A5", "name": "Sand", "use": "Hallways, blinds, rugs"}, {"hex": "#6B7A45", "name": "Olive", "use": "Kitchen units, sofa"}, {"hex": "#9EA878", "name": "Muted Sage", "use": "Cushions, soft accents"}, {"hex": "#B8643E", "name": "Burnt Terracotta", "use": "Armchairs, splashback"}, {"hex": "#5B3A29", "name": "Walnut", "use": "Tables, beds, shelving"}, {"hex": "#F8F6F0", "name": "Soft White", "use": "Ceilings, trims"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Taps, lamps, frames"}, {"hex": "#262421", "name": "Black Steel", "use": "Window frames, outlines"}], "materials": ["Walnut and mid oak", "Velvet, bouclé and cane", "Terracotta zellige-look tiles", "Jute and wool rugs", "Aged brass", "Black steel frames"], "pieces": ["Olive velvet or canvas sofa, 2200–2400 mm", "Two terracotta bouclé armchairs", "Round walnut coffee table", "Olive shaker kitchen with a terracotta splashback", "Cane-back dining chairs with sage seat pads"], "dos": ["Keep walls cream; let olive and terracotta live in furniture", "Repeat terracotta three times per room", "Use brass for warmth", "Layer jute and wool"], "avoid": ["Painting every wall olive or terracotta", "Cool white bulbs", "Mixing chrome with brass", "Filling every shelf"], "best_for": "Lovers of warm colour that still feels calm", "pair_with": ["mediterranean", "farmhouse", "bohemian", "modern-organic"], "profile": {"color": 0.5, "rustic": 0.5, "decor": 0.45, "warmth": 0.8, "era": 0.4, "mood": 0.35, "green": 0.6}}, {"id": "terracotta-beige", "num": 18, "name": "Terracotta & Beige", "signature": true, "replaces": "Terracotta & Beige", "tagline": "Sun-baked warmth, softly layered", "words": ["Tonal", "Handmade", "Relaxed"], "blurb": "Layered beige, sand and limed oak make a soft, tonal backdrop, and terracotta and clay bring the glow. Warm without being heavy.", "palette": [{"hex": "#F4EDE3", "name": "Bone", "use": "Ceilings and trim"}, {"hex": "#E6D7C3", "name": "Beige", "use": "60% · main walls"}, {"hex": "#D8C8B0", "name": "Travertine", "use": "Floors, tables, worktops"}, {"hex": "#CDB89C", "name": "Sand", "use": "30% · timber, weave, upholstery"}, {"hex": "#D2C0A3", "name": "Limed Oak", "use": "Furniture and joinery"}, {"hex": "#D49A7A", "name": "Clay", "use": "Soft furnishings, cushions"}, {"hex": "#B5603A", "name": "Terracotta", "use": "10% · feature wall, tiles, pots"}, {"hex": "#B08D57", "name": "Aged Brass", "use": "Taps, handles, lamps"}, {"hex": "#49372D", "name": "Umber", "use": "Fine outlines, frames, dark wood"}], "materials": ["Limewash and travertine", "Limed oak", "Linen, jute and sisal", "Rattan and cane", "Hand-thrown clay", "Aged brass"], "pieces": ["Low, deep linen sofa with washable covers", "Rattan or cane accent chairs", "Travertine coffee table", "Terracotta limewash on one wall or an arched niche", "Sisal rug with a smaller wool rug on top"], "dos": ["Layer three or four shades of beige", "Use limewash for soft, cloudy walls", "Repeat terracotta three times", "Choose arches and rounded shapes"], "avoid": ["Cool grey", "High-gloss tiles or furniture", "Terracotta on more than one wall per room", "Cool white bulbs"], "best_for": "Lovers of warm neutrals and earthy minimal homes", "pair_with": ["mediterranean", "modern-organic", "japandi", "bohemian"], "profile": {"color": 0.35, "rustic": 0.5, "decor": 0.4, "warmth": 0.85, "era": 0.4, "mood": 0.2, "green": 0.45}}]};
+const QUESTIONS = [{"q": "It's Sunday evening. Where are you?", "o": [{"label": "A tidy, light room with tea and a book", "sub": "Calm and uncluttered", "chips": ["#F2EEE6", "#C8B194", "#7C8466"], "tags": ["japandi", "minimalist", "scandinavian"], "v": {"color": 0.1, "decor": 0.1, "mood": 0.1, "rustic": 0.3}}, {"label": "By a crackling fire under a wool blanket", "sub": "Cosy and sheltered", "chips": ["#7A5236", "#9A5B32", "#2B2A28"], "tags": ["rustic", "farmhouse"], "v": {"rustic": 0.9, "mood": 0.7, "warmth": 0.8}}, {"label": "Round a long table with friends and food", "sub": "Lively and warm", "chips": ["#6B7A45", "#B8643E", "#5B3A29"], "tags": ["farmhouse", "mediterranean", "transitional"], "v": {"warmth": 0.8, "decor": 0.5, "color": 0.5}}, {"label": "On a sunny terrace surrounded by plants", "sub": "Slow and outdoorsy", "chips": ["#F3EDE1", "#4C7A47", "#E3A23B"], "tags": [], "v": {"green": 0.9, "mood": 0.1, "warmth": 0.7}}], "tags": ["tropical", "mediterranean", "bohemian", "coastal"]}, {"q": "Which walls would you live with for years?", "o": [{"label": "Crisp white or soft off-white", "sub": "Bright and clean", "chips": ["#F7F6F3", "#ECEAE5", "#D3D0C9"], "tags": ["minimalist", "scandinavian", "coastal", "contemporary"], "v": {"color": 0, "mood": 0}}, {"label": "Warm oat, greige or mushroom", "sub": "A quiet, warm neutral", "chips": ["#E9E0D2", "#CFC8BD", "#9E9284"], "tags": ["modern-organic", "japandi", "contemporary", "transitional"], "v": {"color": 0.2, "warmth": 0.6, "mood": 0.25}}, {"label": "Limewash with a terracotta or blue wall", "sub": "Sunny and textured", "chips": ["#F5F0E6", "#B9603A", "#2F5F8A"], "tags": ["mediterranean", "bohemian"], "v": {"color": 0.55, "warmth": 0.8, "era": 0.5}}, {"label": "Deep emerald, navy or cobalt", "sub": "Dramatic and enveloping", "chips": ["#1F4D43", "#23407A", "#2F3E55"], "tags": [], "v": {"color": 0.9, "mood": 0.85}}], "tags": ["art-deco", "eclectic-maximalist"]}, {"q": "Pick the sofa you'd sink into.", "o": [{"label": "Curved, cream bouclé", "sub": "Soft and sculptural", "chips": ["#F3EEE6", "#E9E0D2", "#D9C9B0"], "tags": ["modern-organic", "contemporary", "japandi"], "v": {"decor": 0.25, "rustic": 0.4, "era": 0.2, "color": 0.15}}, {"label": "Worn cognac leather", "sub": "Built to last", "chips": ["#8E5733", "#7A5236", "#6B5643"], "tags": ["industrial", "rustic", "mid-century-modern"], "v": {"rustic": 0.85, "mood": 0.65, "era": 0.55}}, {"label": "Jewel-toned velvet", "sub": "Rich and glamorous", "chips": ["#1F4D43", "#B0305A", "#B8934A"], "tags": ["art-deco", "eclectic-maximalist"], "v": {"color": 0.9, "era": 0.8, "decor": 0.75, "rustic": 0.1}}, {"label": "Low linen with loose covers", "sub": "Relaxed and easy", "chips": ["#EDE3D6", "#DCCBAE", "#A9C6C1"], "tags": [], "v": {"rustic": 0.4, "color": 0.3, "mood": 0.1, "decor": 0.35}}], "tags": ["coastal", "farmhouse", "scandinavian", "mediterranean"]}, {"q": "Which wood or metal do you reach for?", "o": [{"label": "Pale oak or ash", "sub": "Light and natural", "chips": ["#D7C3A3", "#C8B194", "#F6F5F1"], "tags": ["scandinavian", "japandi", "minimalist", "coastal"], "v": {"rustic": 0.3, "mood": 0.05, "era": 0.2}}, {"label": "Teak or walnut on tapered legs", "sub": "Warm and retro", "chips": ["#9A5E34", "#5A3B26", "#D3A232"], "tags": ["mid-century-modern", "contemporary"], "v": {"era": 0.75, "warmth": 0.7, "rustic": 0.3}}, {"label": "Reclaimed timber and black steel", "sub": "Raw and honest", "chips": ["#7A5A3E", "#5D6063", "#2B2B2B"], "tags": ["industrial", "rustic", "farmhouse"], "v": {"rustic": 0.9, "mood": 0.7, "warmth": 0.4}}, {"label": "Lacquer, marble and polished brass", "sub": "Polished and luxe", "chips": ["#161616", "#C9C6C0", "#B8934A"], "tags": [], "v": {"rustic": 0.05, "era": 0.9, "mood": 0.8}}], "tags": ["art-deco", "transitional"]}, {"q": "How do you feel about pattern?", "o": [{"label": "None, texture is enough", "sub": "Plain weaves, no prints", "chips": ["#E6DFD3", "#D3D0C9", "#A9A69F"], "tags": ["minimalist", "japandi", "modern-organic", "contemporary"], "v": {"color": 0.1, "decor": 0.1}}, {"label": "A few subtle ones", "sub": "Stripes, checks, a quiet rug", "chips": ["#F5F1EA", "#2F3E55", "#C9C0B2"], "tags": ["transitional", "farmhouse", "coastal", "scandinavian"], "v": {"decor": 0.4, "color": 0.35, "era": 0.5}}, {"label": "One bold print I love", "sub": "Leafy, graphic or Moroccan", "chips": ["#2F5D3A", "#E07A5F", "#C9962E"], "tags": ["tropical", "mid-century-modern", "bohemian", "mediterranean"], "v": {"decor": 0.7, "color": 0.75, "green": 0.8}}, {"label": "Pattern on pattern", "sub": "The more the merrier", "chips": ["#B0305A", "#2E8A86", "#E0A22F"], "tags": [], "v": {"decor": 1, "color": 1}}], "tags": ["eclectic-maximalist", "bohemian"]}, {"q": "How many plants?", "o": [{"label": "One or two, max", "sub": "Low-maintenance", "chips": ["#F7F6F3", "#8C9093", "#A8B59B"], "tags": ["minimalist", "contemporary", "industrial", "art-deco"], "v": {"green": 0.2}}, {"label": "A few statement plants", "sub": "An olive tree, a fiddle leaf", "chips": ["#E9E0D2", "#6F7445", "#B98A5E"], "tags": ["modern-organic", "japandi", "mediterranean", "mid-century-modern"], "v": {"green": 0.5}}, {"label": "Lots. Bring on the jungle", "sub": "Hanging, trailing, everywhere", "chips": ["#2F5D3A", "#7FA36B", "#C9A46C"], "tags": ["tropical", "bohemian"], "v": {"green": 1}}, {"label": "I prefer flowers and branches", "sub": "Cut stems in a vase", "chips": ["#F5F1EA", "#D8A7A0", "#A8998A"], "tags": [], "v": {"green": 0.35, "era": 0.5}}], "tags": ["transitional", "farmhouse", "coastal", "scandinavian"]}, {"q": "Your dream getaway?", "o": [{"label": "A quiet retreat in Kyoto or Copenhagen", "sub": "Simple, beautiful, calm", "chips": ["#F2EEE6", "#B08A62", "#4A4642"], "tags": ["japandi", "scandinavian", "minimalist"], "v": {"color": 0.1, "mood": 0.2, "decor": 0.1, "warmth": 0.45}}, {"label": "A beach house with the doors open", "sub": "Sun, salt and breeze", "chips": ["#F4F2EC", "#A9C6C1", "#4F7184"], "tags": ["coastal", "tropical"], "v": {"warmth": 0.3, "mood": 0, "color": 0.4, "green": 0.3}}, {"label": "A Greek island or Spanish village", "sub": "Whitewash and blue doors", "chips": ["#F5F0E6", "#2F5F8A", "#B9603A"], "tags": ["mediterranean"], "v": {"warmth": 0.85, "color": 0.55, "era": 0.55}}, {"label": "A mountain lodge with a fire", "sub": "Stone, timber and wool", "chips": ["#A79C8C", "#7A5236", "#6E7A4F"], "tags": [], "v": {"rustic": 0.95, "mood": 0.6, "warmth": 0.75}}], "tags": ["rustic", "farmhouse"]}, {"q": "Which hotel would you book?", "o": [{"label": "A sleek design hotel", "sub": "Clean, gallery-like", "chips": ["#F4F3F0", "#5A5A58", "#232323"], "tags": ["contemporary", "minimalist", "modern-organic"], "v": {"era": 0, "mood": 0.5, "rustic": 0.1, "color": 0.2}}, {"label": "A converted warehouse loft", "sub": "Brick, steel, big windows", "chips": ["#9A4E35", "#B8B5AF", "#2B2B2B"], "tags": ["industrial"], "v": {"rustic": 0.85, "mood": 0.75}}, {"label": "A 1920s grand hotel", "sub": "Velvet, marble, chandeliers", "chips": ["#12505A", "#B8934A", "#161616"], "tags": ["art-deco", "transitional", "eclectic-maximalist"], "v": {"era": 0.9, "mood": 0.85, "color": 0.85}}, {"label": "A jungle lodge or safari tent", "sub": "Canvas, rattan, greenery", "chips": ["#4C7A47", "#C9A46C", "#8A5A34"], "tags": [], "v": {"green": 1, "rustic": 0.5, "color": 0.7, "warmth": 0.7}}], "tags": ["tropical", "bohemian"]}, {"q": "Choose the finishing touch.", "o": [{"label": "Brushed brass and a sculptural lamp", "sub": "Quiet luxury", "chips": ["#B08D57", "#F3EEE6", "#4A3B30"], "tags": ["modern-organic", "contemporary", "mid-century-modern", "transitional"], "v": {"era": 0.3, "warmth": 0.65, "rustic": 0.3}}, {"label": "Black iron and an Edison bulb", "sub": "Strong lines, warm glow", "chips": ["#2B2A28", "#C8913F", "#5D6063"], "tags": ["industrial", "farmhouse", "rustic"], "v": {"rustic": 0.85, "mood": 0.7}}, {"label": "Gold, mirrors and a chandelier", "sub": "Sparkle and drama", "chips": ["#B8934A", "#D9C39A", "#5C1F2B"], "tags": ["art-deco", "eclectic-maximalist"], "v": {"era": 0.9, "mood": 0.75}}, {"label": "Rattan, rope and woven lights", "sub": "Natural and handmade", "chips": ["#C9A46C", "#CDB28A", "#6E7445"], "tags": [], "v": {"green": 0.8, "rustic": 0.5, "warmth": 0.7, "color": 0.5}}], "tags": ["bohemian", "coastal", "tropical", "mediterranean"]}, {"q": "Which era feels like you?", "o": [{"label": "Brand new and current", "sub": "Latest, cleanest lines", "chips": ["#F4F3F0", "#CFC8BD", "#232323"], "tags": ["contemporary", "minimalist"], "v": {"era": 0}}, {"label": "Classic, but fresh", "sub": "Mouldings and modern art", "chips": ["#F5F1EA", "#C9C0B2", "#2F3E55"], "tags": ["transitional", "farmhouse"], "v": {"era": 0.55, "decor": 0.4}}, {"label": "Retro '50s and '60s", "sub": "Tapered legs, sunbursts", "chips": ["#D3A232", "#C4632D", "#2F6F73"], "tags": ["mid-century-modern"], "v": {"era": 0.75, "color": 0.65}}, {"label": "Old and collected over time", "sub": "Vintage finds, family pieces", "chips": ["#5A3E2B", "#B5562F", "#CDB28A"], "tags": [], "v": {"era": 0.65, "decor": 0.8, "rustic": 0.6}}], "tags": ["eclectic-maximalist", "bohemian", "rustic"]}, {"q": "Which colours are you drawn to?", "o": [{"label": "Soft whites, greys and pale wood", "sub": "Light and airy", "chips": ["#F6F5F1", "#D6D8D6", "#D7C3A3"], "tags": ["scandinavian", "minimalist", "japandi"], "v": {"color": 0.1, "warmth": 0.35, "mood": 0.05}}, {"label": "Sand and sea blues", "sub": "Fresh and breezy", "chips": ["#DCCBAE", "#B9CCD6", "#23384F"], "tags": ["coastal"], "v": {"color": 0.4, "warmth": 0.3, "mood": 0}}, {"label": "Rust, olive and terracotta", "sub": "Earthy and warm", "chips": ["#B5562F", "#6E7445", "#C0704B"], "tags": ["bohemian", "mediterranean", "mid-century-modern", "farmhouse"], "v": {"warmth": 0.85, "color": 0.55}}, {"label": "Emerald, sapphire and ruby", "sub": "Jewel tones", "chips": ["#1F6B4A", "#23407A", "#B0305A"], "tags": [], "v": {"color": 0.9, "mood": 0.8}}], "tags": ["art-deco", "eclectic-maximalist"]}, {"q": "Pick a word for your home.", "o": [{"label": "Calm", "sub": "A place to switch off", "chips": ["#F2EEE6", "#E4DCCF", "#A8A196"], "tags": ["japandi", "minimalist", "modern-organic", "scandinavian", "coastal"], "v": {"color": 0.1, "mood": 0.15, "decor": 0.15}}, {"label": "Cosy", "sub": "A place to curl up", "chips": ["#9A5B32", "#EFE8DA", "#6E7A4F"], "tags": ["rustic", "farmhouse", "scandinavian"], "v": {"warmth": 0.8, "mood": 0.6, "rustic": 0.7}}, {"label": "Lively", "sub": "A place full of life", "chips": ["#E07A5F", "#4C7A47", "#E3A23B"], "tags": ["bohemian", "tropical", "eclectic-maximalist", "mid-century-modern"], "v": {"color": 0.75, "decor": 0.7, "green": 0.7}}, {"label": "Glamorous", "sub": "A place to impress", "chips": ["#161616", "#B8934A", "#1F4D43"], "tags": [], "v": {"era": 0.85, "mood": 0.85, "color": 0.8, "rustic": 0.05}}], "tags": ["art-deco", "contemporary", "transitional"]}];
+const W_TAG = 0.75;
+const SCENES = {"japandi": {"wall": "#F2EEE6", "accent": null, "floor": "#C8B194", "floorT": "wood", "sofa": "#E4DCCF", "sofaT": "low", "cushions": ["#7C8466", "#E4DCCF", "#8C6B4F"], "chair": "#C8B194", "chairT": "lounge", "rug": "#D3C3A6", "rugT": "jute", "table": "#B08A62", "tableT": "rect", "metal": "#2B2926", "wood": "#B08A62", "art": "none", "light": "paper", "feature": "slats", "plants": 1, "cab": "#C8B194", "cab2": "#C8B194", "island": "#C8B194", "top": "#ECE7DE", "splash": "#A8A196", "splashT": "zellige", "stool": "#B08A62", "shelves": false, "bed": "#C8B194", "bedding": "#F2EEE6", "throw": "#7C8466", "headT": "slat", "bwall": "#E4DCCF", "btile": "#A8A196", "btileT": "slab", "bfloor": "#D9D2C6", "bfloorT": "tile", "vanity": "#C8B194", "mirrorT": "round", "towel": "#E4DCCF"}, "minimalist": {"wall": "#F7F6F3", "accent": null, "floor": "#D9C7AC", "floorT": "wood", "sofa": "#E6DFD3", "sofaT": "track", "cushions": ["#D3D0C9", "#E6DFD3", "#5E5D5A"], "chair": "#2A2A29", "chairT": "lounge", "rug": "#D3D0C9", "rugT": "plain", "table": "#ECEAE5", "tableT": "rect", "metal": "#8C9093", "wood": "#D9C7AC", "art": "abstract", "light": "linear", "feature": "none", "plants": 1, "cab": "#ECEAE5", "cab2": "#ECEAE5", "island": "#ECEAE5", "top": "#F2F1EE", "splash": "#F2F1EE", "splashT": "slab", "stool": "#D9C7AC", "shelves": false, "bed": "#F7F6F3", "bedding": "#F7F6F3", "throw": "#D3D0C9", "headT": "low", "bwall": "#F7F6F3", "btile": "#C9C6C0", "btileT": "slab", "bfloor": "#C9C6C0", "bfloorT": "tile", "vanity": "#F7F6F3", "mirrorT": "rect", "towel": "#F7F6F3"}, "scandinavian": {"wall": "#F6F5F1", "accent": "#A9B8C4", "floor": "#D7C3A3", "floorT": "wood", "sofa": "#B9BBB8", "sofaT": "leggy", "cushions": ["#A9B8C4", "#E4DED4", "#A8B59B"], "chair": "#E4DED4", "chairT": "lounge", "rug": "#E4DED4", "rugT": "plain", "table": "#F6F5F1", "tableT": "round", "metal": "#5C6166", "wood": "#D7C3A3", "art": "print", "light": "globe", "feature": "none", "plants": 2, "cab": "#F6F5F1", "cab2": "#F6F5F1", "island": "#F6F5F1", "top": "#D7C3A3", "splash": "#F6F5F1", "splashT": "subway", "stool": "#D7C3A3", "shelves": true, "bed": "#D7C3A3", "bedding": "#F6F5F1", "throw": "#A9B8C4", "headT": "spindle", "bwall": "#A9B8C4", "btile": "#F6F5F1", "btileT": "subway", "bfloor": "#D6D8D6", "bfloorT": "hex", "vanity": "#D7C3A3", "mirrorT": "round", "towel": "#A9B8C4"}, "modern-organic": {"wall": "#E9E0D2", "accent": null, "floor": "#B98A5E", "floorT": "wood", "sofa": "#F3EEE6", "sofaT": "curved", "cushions": ["#8E9B7E", "#CFC3B1", "#F3EEE6"], "chair": "#C08A6B", "chairT": "round", "rug": "#D9C9B0", "rugT": "jute", "table": "#B98A5E", "tableT": "drum", "metal": "#B08D57", "wood": "#B98A5E", "art": "abstract", "light": "paper", "feature": "fluted", "plants": 2, "cab": "#C9BFAF", "cab2": "#B98A5E", "island": "#EFE8DD", "top": "#EFE8DD", "splash": "#E3D9C9", "splashT": "stack", "stool": "#F3EEE6", "shelves": false, "bed": "#E9E0D2", "bedding": "#F3EEE6", "throw": "#8E9B7E", "headT": "panel", "bwall": "#E9E0D2", "btile": "#8E9B7E", "btileT": "zellige", "bfloor": "#D9C9B0", "bfloorT": "tile", "vanity": "#B98A5E", "mirrorT": "arch", "towel": "#F3EEE6"}, "contemporary": {"wall": "#F4F3F0", "accent": "#9E9284", "floor": "#B9B6B0", "floorT": "tile", "sofa": "#CFC8BD", "sofaT": "track", "cushions": ["#7A6E63", "#232323", "#CFC8BD"], "chair": "#7A6E63", "chairT": "lounge", "rug": "#9E9284", "rugT": "plain", "table": "#5A5A58", "tableT": "rect", "metal": "#C9B48E", "wood": "#6B4E3A", "art": "abstract", "light": "linear", "feature": "none", "plants": 1, "cab": "#5A5A58", "cab2": "#CFC8BD", "island": "#E6E3DD", "top": "#E6E3DD", "splash": "#E6E3DD", "splashT": "slab", "stool": "#7A6E63", "shelves": false, "bed": "#CFC8BD", "bedding": "#F4F3F0", "throw": "#9E9284", "headT": "panel", "bwall": "#CFC8BD", "btile": "#B9B6B0", "btileT": "slab", "bfloor": "#9E9B95", "bfloorT": "tile", "vanity": "#6B4E3A", "mirrorT": "rect", "towel": "#5A5A58"}, "transitional": {"wall": "#F5F1EA", "accent": "#E3DDD2", "floor": "#B98E5F", "floorT": "herring", "sofa": "#C9C0B2", "sofaT": "track", "cushions": ["#2F3E55", "#A8998A", "#F5F1EA"], "chair": "#2F3E55", "chairT": "arm", "rug": "#A8998A", "rugT": "border", "table": "#B98E5F", "tableT": "rect", "metal": "#B7B8B4", "wood": "#B98E5F", "art": "landscape", "light": "chandelier", "feature": "panelling", "plants": 1, "cab": "#E3DDD2", "cab2": "#E3DDD2", "island": "#2F3E55", "top": "#EDEAE4", "splash": "#F5F1EA", "splashT": "subway", "stool": "#C9C0B2", "shelves": false, "bed": "#C9C0B2", "bedding": "#F5F1EA", "throw": "#2F3E55", "headT": "wing", "bwall": "#E3DDD2", "btile": "#EDEAE4", "btileT": "subway", "bfloor": "#EDEAE4", "bfloorT": "tile", "vanity": "#2F3E55", "mirrorT": "rect", "towel": "#F5F1EA"}, "coastal": {"wall": "#F4F2EC", "accent": "#B9CCD6", "floor": "#B8A68C", "floorT": "wood", "sofa": "#EDE3D6", "sofaT": "slip", "cushions": ["#A9C6C1", "#23384F", "#B9CCD6"], "chair": "#C9A97A", "chairT": "rattan", "rug": "#DCCBAE", "rugT": "stripe", "table": "#F4F2EC", "tableT": "rect", "metal": "#B08D57", "wood": "#B8A68C", "art": "photo", "light": "woven", "feature": "none", "plants": 1, "cab": "#F4F2EC", "cab2": "#F4F2EC", "island": "#4F7184", "top": "#F1EEE8", "splash": "#A9C6C1", "splashT": "zellige", "stool": "#C9A97A", "shelves": true, "bed": "#B8A68C", "bedding": "#F4F2EC", "throw": "#4F7184", "headT": "rattan", "bwall": "#B9CCD6", "btile": "#A9C6C1", "btileT": "zellige", "bfloor": "#E8E2D6", "bfloorT": "tile", "vanity": "#B8A68C", "mirrorT": "round", "towel": "#4F7184"}, "farmhouse": {"wall": "#F2ECE0", "accent": null, "floor": "#A57C55", "floorT": "wood", "sofa": "#E7DFD0", "sofaT": "slip", "cushions": ["#6C7348", "#8F9A73", "#9C5A44"], "chair": "#8E5733", "chairT": "arm", "rug": "#DCCDB6", "rugT": "border", "table": "#8A6646", "tableT": "rect", "metal": "#2C2B29", "wood": "#A57C55", "art": "landscape", "light": "lantern", "feature": "beams", "plants": 2, "cab": "#8F9A73", "cab2": "#F2ECE0", "island": "#8F9A73", "top": "#B98A5E", "splash": "#F2ECE0", "splashT": "subway", "stool": "#A57C55", "shelves": true, "bed": "#A57C55", "bedding": "#F2ECE0", "throw": "#8F9A73", "headT": "spindle", "bwall": "#DCCDB6", "btile": "#F2ECE0", "btileT": "subway", "bfloor": "#9C978E", "bfloorT": "check", "vanity": "#8F9A73", "mirrorT": "rect", "towel": "#F2ECE0"}, "bohemian": {"wall": "#EFE6D8", "accent": "#1F5E63", "floor": "#8A6646", "floorT": "wood", "sofa": "#1F5E63", "sofaT": "low", "cushions": ["#B5562F", "#C9962E", "#6B3A4B"], "chair": "#C9A46C", "chairT": "rattan", "rug": "#B5562F", "rugT": "kilim", "table": "#5A3E2B", "tableT": "round", "metal": "#B08D57", "wood": "#5A3E2B", "art": "gallery", "light": "woven", "feature": "none", "plants": 3, "cab": "#1F5E63", "cab2": "#EFE6D8", "island": "#5A3E2B", "top": "#D9CDB8", "splash": "#C0704B", "splashT": "zellige", "stool": "#C9A46C", "shelves": true, "bed": "#C9A46C", "bedding": "#EFE6D8", "throw": "#C9962E", "headT": "rattan", "bwall": "#1F5E63", "btile": "#1F5E63", "btileT": "zellige", "bfloor": "#C0704B", "bfloorT": "pattern", "vanity": "#5A3E2B", "mirrorT": "sunburst", "towel": "#C9962E"}, "mid-century-modern": {"wall": "#F3EEE4", "accent": "#6F7A3A", "floor": "#5A3B26", "floorT": "herring", "sofa": "#6F7A3A", "sofaT": "leggy", "cushions": ["#D3A232", "#C4632D", "#2F6F73"], "chair": "#8A5A30", "chairT": "lounge", "rug": "#E6D9BF", "rugT": "geo", "table": "#9A5E34", "tableT": "round", "metal": "#B08D57", "wood": "#9A5E34", "art": "sunburst", "light": "sputnik", "feature": "none", "plants": 2, "cab": "#9A5E34", "cab2": "#9A5E34", "island": "#9A5E34", "top": "#E6D9BF", "splash": "#2F6F73", "splashT": "stack", "stool": "#D3A232", "shelves": false, "bed": "#9A5E34", "bedding": "#E6D9BF", "throw": "#D3A232", "headT": "low", "bwall": "#6F7A3A", "btile": "#2F6F73", "btileT": "stack", "bfloor": "#E6D9BF", "bfloorT": "terrazzo", "vanity": "#9A5E34", "mirrorT": "round", "towel": "#D3A232"}, "industrial": {"wall": "#D9D2C4", "accent": "#9A4E35", "floor": "#B8B5AF", "floorT": "concrete", "sofa": "#8E5733", "sofaT": "tufted", "cushions": ["#D9D2C4", "#5D6063", "#8E5733"], "chair": "#5D6063", "chairT": "arm", "rug": "#8E8B86", "rugT": "border", "table": "#7A5A3E", "tableT": "rect", "metal": "#2B2B2B", "wood": "#7A5A3E", "art": "photo", "light": "factory", "feature": "brick", "plants": 1, "cab": "#5D6063", "cab2": "#5D6063", "island": "#5D6063", "top": "#3A3A3A", "splash": "#F0EDE7", "splashT": "subway", "stool": "#2B2B2B", "shelves": true, "bed": "#2B2B2B", "bedding": "#8E8B86", "throw": "#8E5733", "headT": "metal", "bwall": "#9A4E35", "btile": "#F0EDE7", "btileT": "subway", "bfloor": "#8E8B86", "bfloorT": "hex", "vanity": "#7A5A3E", "mirrorT": "rect", "towel": "#5D6063"}, "rustic": {"wall": "#EFE8DA", "accent": "#A79C8C", "floor": "#6B5643", "floorT": "wood", "sofa": "#9A5B32", "sofaT": "tufted", "cushions": ["#6E7A4F", "#B5A897", "#EFE8DA"], "chair": "#B5A897", "chairT": "wing", "rug": "#9A5B32", "rugT": "kilim", "table": "#7A5236", "tableT": "rect", "metal": "#2B2A28", "wood": "#7A5236", "art": "landscape", "light": "chandelier", "feature": "stone", "plants": 1, "cab": "#6E7A4F", "cab2": "#EFE8DA", "island": "#6E7A4F", "top": "#B98A5E", "splash": "#EFE8DA", "splashT": "subway", "stool": "#7A5236", "shelves": true, "bed": "#7A5236", "bedding": "#EFE8DA", "throw": "#9A5B32", "headT": "tall", "bwall": "#B5A897", "btile": "#A79C8C", "btileT": "stone", "bfloor": "#5E5F5A", "bfloorT": "tile", "vanity": "#6B5643", "mirrorT": "round", "towel": "#9A5B32"}, "tropical": {"wall": "#F3EDE1", "accent": "#2F5D3A", "floor": "#8A5A34", "floorT": "wood", "sofa": "#C9A46C", "sofaT": "rattan", "cushions": ["#E07A5F", "#2F5D3A", "#E3A23B"], "chair": "#2F5D3A", "chairT": "round", "rug": "#C9A46C", "rugT": "jute", "table": "#8A5A34", "tableT": "round", "metal": "#B08D57", "wood": "#8A5A34", "art": "print", "light": "woven", "feature": "wallpaper", "plants": 3, "cab": "#2F5D3A", "cab2": "#F3EDE1", "island": "#8A5A34", "top": "#F0E8DA", "splash": "#3E8C8C", "splashT": "zellige", "stool": "#C9A46C", "shelves": true, "bed": "#C9A46C", "bedding": "#F3EDE1", "throw": "#E07A5F", "headT": "rattan", "bwall": "#2F5D3A", "btile": "#3E8C8C", "btileT": "zellige", "bfloor": "#F0E8DA", "bfloorT": "terrazzo", "vanity": "#8A5A34", "mirrorT": "round", "towel": "#E07A5F"}, "mediterranean": {"wall": "#F5F0E6", "accent": null, "floor": "#B9603A", "floorT": "terracotta", "sofa": "#CDB48E", "sofaT": "slip", "cushions": ["#2F5F8A", "#6F7445", "#8FB3CF"], "chair": "#5A3E2B", "chairT": "arm", "rug": "#CDB48E", "rugT": "stripe", "table": "#5A3E2B", "tableT": "rect", "metal": "#2B2A28", "wood": "#5A3E2B", "art": "none", "light": "lantern", "feature": "arch", "plants": 2, "cab": "#F5F0E6", "cab2": "#F5F0E6", "island": "#E3D5BE", "top": "#E3D5BE", "splash": "#2F5F8A", "splashT": "pattern", "stool": "#5A3E2B", "shelves": true, "bed": "#5A3E2B", "bedding": "#F5F0E6", "throw": "#8FB3CF", "headT": "arch", "bwall": "#F5F0E6", "btile": "#F5F0E6", "btileT": "plaster", "bfloor": "#2F5F8A", "bfloorT": "pattern", "vanity": "#E3D5BE", "mirrorT": "arch", "towel": "#2F5F8A"}, "art-deco": {"wall": "#D9C39A", "accent": "#12505A", "floor": "#3A2A20", "floorT": "herring", "sofa": "#1F4D43", "sofaT": "channel", "cushions": ["#B8934A", "#D8A7A0", "#5C1F2B"], "chair": "#D8A7A0", "chairT": "round", "rug": "#5C1F2B", "rugT": "border", "table": "#E9E6E0", "tableT": "round", "metal": "#B8934A", "wood": "#161616", "art": "sunburst", "light": "tiered", "feature": "none", "plants": 1, "cab": "#161616", "cab2": "#161616", "island": "#1F4D43", "top": "#E9E6E0", "splash": "#E9E6E0", "splashT": "slab", "stool": "#1F4D43", "shelves": false, "bed": "#12505A", "bedding": "#EFE8DA", "throw": "#B8934A", "headT": "fan", "bwall": "#D9C39A", "btile": "#1F4D43", "btileT": "herring", "bfloor": "#161616", "bfloorT": "check", "vanity": "#161616", "mirrorT": "scallop", "towel": "#D8A7A0"}, "eclectic-maximalist": {"wall": "#23407A", "ceil": "#F1E8D8", "accent": null, "floor": "#5A3E2B", "floorT": "herring", "sofa": "#B0305A", "sofaT": "channel", "cushions": ["#E0A22F", "#2E8A86", "#E07B62"], "chair": "#E0A22F", "chairT": "wing", "rug": "#5A2E5A", "rugT": "kilim", "table": "#1F6B4A", "tableT": "round", "metal": "#B08D57", "wood": "#5A3E2B", "art": "gallery", "light": "chandelier", "feature": "gallery", "plants": 2, "cab": "#1F6B4A", "cab2": "#1F6B4A", "island": "#B0305A", "top": "#F1E8D8", "splash": "#2E8A86", "splashT": "zellige", "stool": "#E0A22F", "shelves": true, "bed": "#2E8A86", "bedding": "#F1E8D8", "throw": "#E07B62", "headT": "tall", "bwall": "#5A2E5A", "btile": "#2E8A86", "btileT": "zellige", "bfloor": "#E0A22F", "bfloorT": "pattern", "vanity": "#B0305A", "mirrorT": "scallop", "towel": "#E0A22F"}, "olive-terracotta": {"wall": "#EFE6D6", "accent": null, "floor": "#8A6646", "floorT": "herring", "sofa": "#6B7A45", "sofaT": "track", "cushions": ["#B8643E", "#9EA878", "#D8C3A5"], "chair": "#B8643E", "chairT": "round", "rug": "#D8C3A5", "rugT": "jute", "table": "#5B3A29", "tableT": "round", "metal": "#B08D57", "wood": "#5B3A29", "art": "abstract", "light": "woven", "feature": "none", "plants": 2, "cab": "#6B7A45", "cab2": "#EFE6D6", "island": "#6B7A45", "top": "#EFE8DD", "splash": "#B8643E", "splashT": "zellige", "stool": "#C9A46C", "shelves": true, "bed": "#5B3A29", "bedding": "#EFE6D6", "throw": "#B8643E", "headT": "panel", "bwall": "#D8C3A5", "btile": "#9EA878", "btileT": "zellige", "bfloor": "#D8C3A5", "bfloorT": "tile", "vanity": "#5B3A29", "mirrorT": "arch", "towel": "#B8643E"}, "terracotta-beige": {"wall": "#E6D7C3", "accent": "#B5603A", "floor": "#D2C0A3", "floorT": "wood", "sofa": "#E6D7C3", "sofaT": "low", "cushions": ["#D49A7A", "#B5603A", "#CDB89C"], "chair": "#C49A6C", "chairT": "rattan", "rug": "#CDB89C", "rugT": "jute", "table": "#D8C8B0", "tableT": "drum", "metal": "#B08D57", "wood": "#D2C0A3", "art": "none", "light": "woven", "feature": "arch", "plants": 2, "cab": "#D2C0A3", "cab2": "#E6D7C3", "island": "#D8C8B0", "top": "#D8C8B0", "splash": "#B5603A", "splashT": "zellige", "stool": "#C49A6C", "shelves": true, "bed": "#C49A6C", "bedding": "#E6D7C3", "throw": "#D49A7A", "headT": "rattan", "bwall": "#B5603A", "btile": "#D8C8B0", "btileT": "slab", "bfloor": "#C0754F", "bfloorT": "tile", "vanity": "#D2C0A3", "mirrorT": "arch", "towel": "#CDB89C"}};
+/* Illustrated sample-home rooms, restyled per style. drawRoom(room, scene) -> SVG string.
+   Simple one-point perspective: x across the room (-1..1), z depth (0 = back wall, 1 = front edge), y height (0 floor .. 1 ceiling). */
+const ROOMS = (() => {
+  const W = 800, H = 500, VX = 400;
+  let CX = 0.17; const KZ = 0.84;
+  const k = z => 1 + KZ * z;
+  const P = (x, z, y) => [VX + 30 + (x - CX) * 230 * k(z), 330 + 170 * z - y * 260 * k(z)];
+  const pt = p => p[0].toFixed(1) + ',' + p[1].toFixed(1);
+  const hexRGB = h => { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+  const toHex = c => '#' + c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+  const mix = (a, b, t) => { const A = hexRGB(a), B = hexRGB(b); return toHex(A.map((v, i) => v + (B[i] - v) * t)); };
+  const sh = (h, t) => t < 0 ? mix(h, '#000000', -t) : mix(h, '#FFFFFF', t);
+  const lum = h => { const [r, g, b] = hexRGB(h); return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+  const line = c => lum(c) > 0.5 ? sh(c, -0.14) : sh(c, 0.16);
+  let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const poly = (pts, fill, extra = '') => `<polygon points="${pts.map(pt).join(' ')}" fill="${fill}" ${extra}/>`;
+  const rect0 = (x, y, w, h, fill, extra = '') => `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0, w).toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" fill="${fill}" ${extra}/>`;
+  const rect = (x, y, w, h, fill, extra = '') => rect0(x, y, w, h, fill, extra) + (/rx="[0-9]/.test(extra) && fill[0] === '#' && !/stroke|opacity/.test(extra) && h > 6 ? rect0(x, y, w, h, `url(#${pf}cu)`, extra.match(/rx="[^"]*"/)[0]) : '');
+  const ln = (a, b, c, w = 1, extra = '') => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" ${extra}/>`;
+
+  // a box: x0..x1, front face at z (depth d going back), height y0..y1
+  let pf = 'r0';
+  const U = n => `url(#${pf}${n})`;
+  const foot = (x, y, w) => `<ellipse cx="${(x + w / 2 + 1.5).toFixed(1)}" cy="${(y - 0.5).toFixed(1)}" rx="${(w * 0.62).toFixed(1)}" ry="2.6" fill="#1a1208" opacity="0.32" filter="url(#${pf}bs)"/>`;
+  function box(x0, x1, z, d, y0, y1, c, o = {}) {
+    let s = '';
+    if (z - d <= 0.035 && !o.nowall && y1 - y0 > 0.02) { const [wx, wy, ww, wh] = fr(x0 - 0.01, x1 + 0.035, 0.001, Math.max(0, y0 - 0.02), Math.min(1, y1 + 0.015)); s += rect0(wx, wy, ww, wh, '#1a1208', `opacity="0.2" filter="${U('b')}"`); }
+    if (y0 <= 0.05 && !o.noshadow) { const sx = Math.min(0.12, (y1 - y0) * 0.22); s += poly([P(x0 - 0.02, z + 0.04, 0.001), P(x1 + 0.02 + sx, z + 0.04, 0.001), P(x1 + 0.02 + sx * 1.6, z - d - 0.02, 0.001), P(x0 - 0.02 + sx * 0.6, z - d - 0.02, 0.001)], '#1a1208', `opacity="${0.22 + Math.min(0.14, (y1 - y0) * 0.3)}" filter="${U('b')}"`); }
+    const top = [P(x0, z, y1), P(x1, z, y1), P(x1, z - d, y1), P(x0, z - d, y1)];
+    const ink = `stroke="${sh(c, -0.4)}" stroke-width="0.8" stroke-linejoin="round"`;
+    if (x1 < CX) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.26), ink) + poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], U('fs'));
+    if (x0 > CX) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.12), ink) + poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], U('fs'));
+    if (!o.notop) s += poly(top, o.top || sh(c, 0.16), ink);
+    const a = P(x0, z, y1), b = P(x1, z, y0);
+    s += rect0(a[0], a[1], b[0] - a[0], b[1] - a[1], c, (o.rx ? `rx="${o.rx}" ` : '') + ink);
+    if (b[1] - a[1] > 3) s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], U('fs'), o.rx ? `rx="${o.rx}"` : '');
+    return s;
+  }
+  const fr = (x0, x1, z, y0, y1) => { const a = P(x0, z, y1), b = P(x1, z, y0); return [a[0], a[1], b[0] - a[0], b[1] - a[1]]; };
+
+  // ---------- shell ----------
+  function shell(wall, floor, floorT, ceil) {
+    let s = '';
+    const bw = [P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)];
+    s += poly([[0, 0], [W, 0], P(1, 0, 1), P(-1, 0, 1)], ceil || sh(wall, 0.35));
+    s += poly([[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]], sh(wall, -0.07));
+    s += poly([[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], sh(wall, -0.1));
+    s += poly(bw, wall);
+    s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], floor);
+    s += clipFloor(floorLines(floor, floorT));
+    s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], U('fl'));
+    // ambient occlusion in the corners and along the skirting, darker side walls toward the viewer
+    s += poly([[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]], U('wl'));
+    s += poly([[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], U('wr'));
+    s += ln(P(-1, 0, 0), P(1, 0, 0), '#000', 10, `opacity="0.22" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 0), P(-1, 1.2, 0), '#000', 10, `opacity="0.18" filter="${U('b')}"`) + ln(P(1, 0, 0), P(1, 1.2, 0), '#000', 10, `opacity="0.18" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 0), P(-1, 0, 1), '#000', 8, `opacity="0.14" filter="${U('b')}"`) + ln(P(1, 0, 0), P(1, 0, 1), '#000', 8, `opacity="0.14" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 1), P(1, 0, 1), '#000', 8, `opacity="0.10" filter="${U('b')}"`);
+    // skirting
+    s += ln(P(-1, 0, 0.015), P(1, 0, 0.015), sh(wall, -0.12), 2);
+    return s;
+  }
+  function floorLines(c, t) {
+    let s = '', lc = sh(c, -0.16), n, rows;
+    const along = (x, w = 0.8) => ln(P(x, 0, 0), P(x, 1, 0), lc, w);
+    const across = z => ln(P(-1.4, z, 0), P(1.4, z, 0), lc, 0.8);
+    if (t === 'wood' || t === 'herring') {
+      n = t === 'wood' ? 14 : 22;
+      seed = 19; for (let i = 0; i < n; i++) { const xa = -1.4 + 2.8 * i / n, xb = -1.4 + 2.8 * (i + 1) / n; s += poly([P(xa, 0, 0), P(xb, 0, 0), P(xb, 1.2, 0), P(xa, 1.2, 0)], sh(c, (rnd() - 0.5) * 0.12)); }
+      seed = 23; for (let i = 0; i < 60; i++) { const x = -1.4 + 2.8 * rnd(), z = rnd(); s += ln(P(x, z, 0), P(x + 0.002, z + 0.08, 0), sh(c, -0.1), 0.5, 'opacity="0.6"'); }
+      for (let i = 0; i <= n; i++) s += along(-1.4 + 2.8 * i / n, 0.7);
+      seed = 7;
+      for (let i = 0; i < n; i++) for (let j = 0; j < 5; j++) {
+        const x = -1.4 + 2.8 * (i + 0.5) / n, z = (j + rnd()) / 5;
+        if (t === 'herring') { const a = P(x - 1.4 / n, z, 0), b = P(x, z + 0.06, 0), c2 = P(x + 1.4 / n, z, 0); s += `<polyline points="${pt(a)} ${pt(b)} ${pt(c2)}" fill="none" stroke="${lc}" stroke-width="0.7"/>`; }
+        else s += ln(P(x - 1.4 / n, z, 0), P(x + 1.4 / n, z, 0), lc, 0.7);
+      }
+    } else {
+      const big = t === 'concrete';
+      n = big ? 6 : 10; rows = big ? 4 : 7;
+      if (t === 'terracotta') lc = sh(c, 0.25);
+      for (let i = 0; i <= n; i++) s += along(-1.4 + 2.8 * i / n, big ? 0.6 : 1);
+      for (let j = 1; j <= rows; j++) s += across(Math.pow(j / rows, 1.15));
+      if (big) { seed = 3; for (let i = 0; i < 40; i++) { const p = P(-1 + 2 * rnd(), rnd(), 0); s += `<circle cx="${p[0]}" cy="${p[1]}" r="${1 + rnd() * 2}" fill="${sh(c, -0.06)}"/>`; } }
+    }
+    return s;
+  }
+  let uid = 0;
+  function clipFloor(inner) { const id = 'fl' + (++uid) + Math.random().toString(36).slice(2, 6);
+    return `<clipPath id="${id}"><polygon points="${[P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]].map(pt).join(' ')}"/></clipPath><g clip-path="url(#${id})">${inner}</g>`; }
+  // back-wall features
+  function feature(f, wall, sc) {
+    let s = ''; const [x, y, w, h] = fr(-1, 1, 0, 0, 1), lc = sh(wall, -0.1);
+    if (f === 'slats') { const [a, b, cw, ch] = fr(-0.98, -0.38, 0.005, 0, 0.98); s += rect(a, b, cw, ch, sh(sc.wood, 0.05)); for (let i = 0; i < 22; i++) s += rect(a + i * cw / 22, b, 1.5, ch, sh(sc.wood, -0.25)); }
+    if (f === 'fluted') { const [a, b, cw, ch] = fr(-0.98, -0.42, 0.005, 0, 0.98); s += rect(a, b, cw, ch, sc.wood); for (let i = 0; i < 30; i++) s += rect(a + i * cw / 30, b, cw / 60, ch, sh(sc.wood, -0.12)); }
+    if (f === 'panelling') { for (let i = 0; i < 6; i++) { const px = x + 14 + i * (w - 28) / 6; s += rect(px + 6, y + 120, (w - 28) / 6 - 12, h - 136, 'none', `stroke="${lc}" stroke-width="1.5"`); s += rect(px + 6, y + 16, (w - 28) / 6 - 12, 92, 'none', `stroke="${lc}" stroke-width="1.5"`); } }
+    if (f === 'brick') { const bc = sc.accent || '#9A4E35'; s += rect(x, y, w, h, bc); for (let r = 0; r * 13 < h; r++) { s += ln([x, y + r * 13], [x + w, y + r * 13], sh(bc, 0.35), 1.2); for (let c = 0; c * 38 < w + 38; c++) { const bx = x + c * 38 + (r % 2) * 19; s += ln([bx, y + r * 13], [bx, y + r * 13 + 13], sh(bc, 0.35), 1.2); } } }
+    if (f === 'stone') { const [a, b, cw, ch] = fr(-0.98, -0.3, 0.005, 0, 1); const st = sc.accent || '#A79C8C'; s += rect(a, b, cw, ch, st); seed = 11; for (let r = 0; r < 14; r++) { let cx = a; while (cx < a + cw) { const ww = 18 + rnd() * 30; s += rect(cx + 1, b + r * ch / 14 + 1, Math.min(ww, a + cw - cx) - 2, ch / 14 - 2, sh(st, (rnd() - 0.5) * 0.25), 'rx="3"'); cx += ww; } } s += box(-0.98, -0.3, 0.06, 0.06, 0.42, 0.45, sc.wood); }
+    if (f === 'wallpaper') { const bg = sc.accent || '#2F5D3A'; s += rect(x, y, w, h, bg); seed = 5; for (let i = 0; i < 70; i++) { const cx = x + rnd() * w, cy = y + rnd() * h, r = 10 + rnd() * 16, a = rnd() * 180; s += `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r * 0.38}" transform="rotate(${a} ${cx} ${cy})" fill="${sh(bg, 0.2 + rnd() * 0.25)}"/>`; } }
+    if (f === 'beams') { for (let i = 0; i < 4; i++) { const zz = 0.15 + i * 0.27; s += poly([P(-1, zz, 1), P(1, zz, 1), P(1, zz + 0.06, 1), P(-1, zz + 0.06, 1)], sh(sc.wood, -0.25)); } }
+    if (f === 'arch') { const [a, b, cw, ch] = fr(0.55, 0.85, 0.002, 0.35, 0.82); s += `<path d="M${a} ${b + ch} V${b + cw / 2} A${cw / 2} ${cw / 2} 0 0 1 ${a + cw} ${b + cw / 2} V${b + ch} Z" fill="${sh(sc.accent || sc.wall, sc.accent ? 0 : -0.08)}"/>`; s += `<ellipse cx="${a + cw / 2}" cy="${b + ch - 8}" rx="12" ry="18" fill="${sc.cushions[0]}"/>`; }
+    return s;
+  }
+  function sunbeam(side, z0, z1, y0, y1) {
+    const xa = side * (1 - 0.5 * y0), xb = side * (1 - 0.5 * y1), sh1 = 0.12, sh2 = 0.3;
+    const q = [P(xa, z0 + sh1, 0.002), P(xb, z0 + sh2, 0.002), P(xb, z1 + sh2, 0.002), P(xa, z1 + sh1, 0.002)];
+    const zm = (z0 + z1) / 2;
+    return poly(q, '#FFF1CF', `opacity="0.5" filter="${U('bs')}"`) + ln(P(xa, zm + sh1, 0.003), P(xb, zm + sh2, 0.003), '#8a7a60', 4, `opacity="0.22" filter="${U('bs')}"`);
+  }
+  function windowLeft(z0, z1, y0, y1, frame, curtain) {
+    let s = sunbeam(-1, z0, z1, y0, y1) + poly([P(-1, z0, 0.002), P(-1, z1, 0.002), P(-0.15, z1 + 0.22, 0.002), P(-0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.22" filter="${U('b2')}"`);
+    s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], U('sky'));
+    s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
+    s += ln(P(-1, (z0 + z1) / 2, y0), P(-1, (z0 + z1) / 2, y1), frame, 3);
+    if (curtain) { s += poly([P(-1, z0 - 0.04, 0.02), P(-1, z0 + 0.03, 0.02), P(-1, z0 + 0.03, 0.97), P(-1, z0 - 0.04, 0.97)], curtain, 'opacity="0.92"'); s += poly([P(-1, z1 - 0.03, 0.02), P(-1, z1 + 0.05, 0.02), P(-1, z1 + 0.05, 0.97), P(-1, z1 - 0.03, 0.97)], curtain, 'opacity="0.92"'); }
+    return s;
+  }
+  function windowRight(z0, z1, y0, y1, frame) {
+    let s = sunbeam(1, z0, z1, y0, y1) + poly([P(1, z0, 0.002), P(1, z1, 0.002), P(0.15, z1 + 0.22, 0.002), P(0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.2" filter="${U('b2')}"`);
+    s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], U('sky'));
+    s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
+    return s;
+  }
+  function art(type, x0, x1, y0, y1, sc) {
+    if (type === 'none') return '';
+    const [x, y, w, h] = fr(x0, x1, 0.003, y0, y1); let s = rect0(x + 3, y + 5, w, h, '#1a1208', `opacity="0.22" filter="${U('bs')}"`);
+    if (type === 'gallery') { seed = 9; const fr2 = [[0, 0, .3, .55], [.34, 0, .28, .4], [.66, 0, .34, .62], [.34, .45, .28, .55], [0, .6, .3, .4], [.66, .66, .34, .34]];
+      fr2.forEach((f, i) => { s += rect(x + f[0] * w, y + f[1] * h, f[2] * w - 4, f[3] * h - 4, sc.cushions[i % 3], `stroke="${sc.metal}" stroke-width="3"`); }); return s; }
+    if (type === 'sunburst') { const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) / 2; for (let i = 0; i < 24; i++) { const a = i * Math.PI / 12; s += ln([cx, cy], [cx + Math.cos(a) * r, cy + Math.sin(a) * r], sc.metal, 2.5); } s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.35}" fill="${sh(sc.wall, 0.3)}" stroke="${sc.metal}" stroke-width="3"/>`; return s; }
+    s += rect(x, y, w, h, '#FAF8F4', `stroke="${type === 'print' ? sc.wood : sc.metal}" stroke-width="3"`);
+    const ix = x + 8, iy = y + 8, iw = w - 16, ih = h - 16;
+    if (type === 'abstract') { s += `<circle cx="${ix + iw * 0.38}" cy="${iy + ih * 0.5}" r="${ih * 0.3}" fill="${sc.cushions[0]}"/>`; s += rect(ix + iw * 0.5, iy + ih * 0.2, iw * 0.35, ih * 0.6, sc.cushions[1], 'opacity="0.85"'); }
+    if (type === 'landscape') { s += rect(ix, iy, iw, ih, sh(sc.wall, 0.2)); s += `<path d="M${ix} ${iy + ih} L${ix + iw * 0.3} ${iy + ih * 0.45} L${ix + iw * 0.55} ${iy + ih * 0.75} L${ix + iw * 0.8} ${iy + ih * 0.4} L${ix + iw} ${iy + ih} Z" fill="${sc.cushions[0]}"/>`; }
+    if (type === 'photo') { s += rect(ix, iy, iw, ih * 0.55, sh(sc.cushions[1], 0.45)); s += rect(ix, iy + ih * 0.55, iw, ih * 0.45, sh(sc.cushions[0], 0.1)); }
+    if (type === 'print') { for (let i = 0; i < 3; i++) s += `<ellipse cx="${ix + iw * (0.3 + i * 0.2)}" cy="${iy + ih * 0.5}" rx="${iw * 0.08}" ry="${ih * 0.32}" fill="${sc.cushions[i]}"/>`; }
+    return s;
+  }
+  function plant(x, z, size, pot) {
+    let s = box(x - 0.06 * size, x + 0.06 * size, z, 0.05, 0, 0.1 * size, pot);
+    const [cx, cy] = P(x, z - 0.02, 0.1 * size); seed = Math.round((x + 2) * 1000);
+    for (let i = 0; i < 13; i++) { const a = -160 + rnd() * 140, r = (34 + rnd() * 34) * size * k(z); const ex = cx + Math.cos(a * Math.PI / 180) * r, ey = cy + Math.sin(a * Math.PI / 180) * r;
+      s += `<ellipse cx="${(cx + ex) / 2}" cy="${(cy + ey) / 2}" rx="${r * 0.55}" ry="${r * 0.2}" transform="rotate(${a} ${(cx + ex) / 2} ${(cy + ey) / 2})" fill="${['#4C7A47', '#5E8A52', '#3E6B3C', '#6E9A5C'][i % 4]}" stroke="#2F4F2C" stroke-width="0.5" stroke-opacity="0.5"/>`; }
+    return s;
+  }
+  function blooms(cx, cy, r, sc, sd) { seed = sd || 77; let s = ''; const cols = ['#E8A3A9', '#F3C86E', '#FBF6EE', mix(sc.cushions[0], '#E07A6A', 0.4)];
+    for (let i = 0; i < 10; i++) { const a = rnd() * Math.PI * 2, rr = rnd() * r; s += `<ellipse cx="${cx + Math.cos(a) * rr * 1.3}" cy="${cy + Math.sin(a) * rr * 0.7}" rx="${r * 0.35}" ry="${r * 0.18}" transform="rotate(${rnd() * 180} ${cx + Math.cos(a) * rr * 1.3} ${cy + Math.sin(a) * rr * 0.7})" fill="${['#5E8A52', '#4C7A47'][i % 2]}"/>`; }
+    for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, rr = rnd() * r, x = cx + Math.cos(a) * rr * 1.2, y = cy + Math.sin(a) * rr * 0.65 - r * 0.15; s += `<circle cx="${x}" cy="${y}" r="${r * (0.14 + rnd() * 0.08)}" fill="${cols[i % cols.length]}" stroke="${sh(cols[i % cols.length], -0.3)}" stroke-width="0.5"/><circle cx="${x}" cy="${y}" r="${r * 0.05}" fill="#C98A2E"/>`; }
+    return s; }
+  function pendant(type, x, z, drop, sc) {
+    const top = P(x, z, 1), [cx, cy] = P(x, z, 1 - drop), r = 22 * k(z); let s = ln(top, [cx, cy], sh(sc.metal, 0), 1.5);
+    const m = sc.metal;
+    s = `<circle cx="${cx}" cy="${cy + r}" r="${r * 3.2}" fill="${U('glow')}"/>` + s;
+    if (type === 'paper') s += `<circle cx="${cx}" cy="${cy + r * 0.8}" r="${r}" fill="#FBF7EE" stroke="#E5DDCF"/>`;
+    else if (type === 'globe') s += `<circle cx="${cx}" cy="${cy + r * 0.7}" r="${r * 0.75}" fill="#FCFBF7" stroke="${m}"/>`;
+    else if (type === 'woven') s += `<path d="M${cx - r * 1.2} ${cy + r} Q${cx} ${cy - r * 0.6} ${cx + r * 1.2} ${cy + r} Z" fill="#C9A46C" stroke="${sh('#C9A46C', -0.2)}"/>`;
+    else if (type === 'factory') s += `<path d="M${cx - r} ${cy + r * 0.8} L${cx - r * 0.3} ${cy} L${cx + r * 0.3} ${cy} L${cx + r} ${cy + r * 0.8} Z" fill="${m}"/><circle cx="${cx}" cy="${cy + r * 0.85}" r="${r * 0.25}" fill="#F3C978"/>`;
+    else if (type === 'linear') { const a = P(x - 0.35, z, 1 - drop), b = P(x + 0.35, z, 1 - drop); s = ln(P(x - 0.3, z, 1), P(x - 0.3, z, 1 - drop), m, 1) + ln(P(x + 0.3, z, 1), P(x + 0.3, z, 1 - drop), m, 1) + rect(a[0], a[1], b[0] - a[0], 6 * k(z), m); }
+    else if (type === 'lantern') s += rect(cx - r * 0.5, cy, r, r * 1.4, '#F7EBD0', `stroke="${m}" stroke-width="3"`) + ln([cx, cy], [cx, cy + r * 1.4], m, 2);
+    else if (type === 'sputnik') { for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; s += ln([cx, cy + r], [cx + Math.cos(a) * r * 1.6, cy + r + Math.sin(a) * r * 1.6], m, 2) + `<circle cx="${cx + Math.cos(a) * r * 1.6}" cy="${cy + r + Math.sin(a) * r * 1.6}" r="3" fill="#FFF6DA"/>`; } }
+    else if (type === 'chandelier' || type === 'tiered') { const tiers = type === 'tiered' ? 3 : 1; for (let t = 0; t < tiers; t++) { const w2 = r * (1.6 - t * 0.4), yy = cy + r * 0.6 + t * r * 0.45; s += `<ellipse cx="${cx}" cy="${yy}" rx="${w2}" ry="${r * 0.18}" fill="none" stroke="${m}" stroke-width="2"/>`; for (let i = 0; i < 5; i++) s += `<circle cx="${cx - w2 + i * w2 / 2}" cy="${yy - 4}" r="3" fill="#FFF3C8"/>`; } }
+    return s;
+  }
+  function rug(x0, x1, z0, z1, c, t, sc) {
+    let s = poly([P(x0 - 0.01, z0, 0.001), P(x1 + 0.02, z0, 0.001), P(x1 + 0.02, z1 + 0.02, 0.001), P(x0 - 0.01, z1 + 0.02, 0.001)], '#1a1208', `opacity="0.16" filter="${U('bs')}"`) + poly([P(x0, z1, 0.0), P(x1, z1, 0.0), P(x1, z1, 0.008), P(x0, z1, 0.008)], sh(c, -0.3)) + poly([P(x0, z0, 0.008), P(x1, z0, 0.008), P(x1, z1, 0.008), P(x0, z1, 0.008)], c);
+    const inner = (m, col, w = 2) => poly([P(x0 + m, z0 + m * 0.6, 0.003), P(x1 - m, z0 + m * 0.6, 0.003), P(x1 - m, z1 - m * 0.6, 0.003), P(x0 + m, z1 - m * 0.6, 0.003)], 'none', `stroke="${col}" stroke-width="${w}"`);
+    if (t === 'border') s += inner(0.07, sh(c, -0.3), 3) + inner(0.12, sh(c, 0.3), 1.5);
+    if (t === 'stripe') for (let i = 1; i < 6; i++) { const zz = z0 + (z1 - z0) * i / 6; s += poly([P(x0, zz, 0.003), P(x1, zz, 0.003), P(x1, zz + 0.025, 0.003), P(x0, zz + 0.025, 0.003)], sc.cushions[i % 2 ? 1 : 0]); }
+    if (t === 'kilim') { for (let i = 1; i < 5; i++) { const zz = z0 + (z1 - z0) * i / 5; s += poly([P(x0, zz, 0.003), P(x1, zz, 0.003), P(x1, zz + 0.03, 0.003), P(x0, zz + 0.03, 0.003)], sc.cushions[i % 3]); }
+      for (let i = 0; i < 4; i++) { const xx = x0 + (x1 - x0) * (i + 0.5) / 4, zz = (z0 + z1) / 2; s += poly([P(xx, zz - 0.07, 0.004), P(xx + 0.08, zz, 0.004), P(xx, zz + 0.07, 0.004), P(xx - 0.08, zz, 0.004)], sc.cushions[(i + 1) % 3]); } }
+    if (t === 'geo') for (let i = 0; i < 5; i++) for (let j = 0; j < 3; j++) { const [cx, cy] = P(x0 + (x1 - x0) * (i + 0.5) / 5, z0 + (z1 - z0) * (j + 0.5) / 3, 0.003); s += `<ellipse cx="${cx}" cy="${cy}" rx="${10 * k(z0)}" ry="${4 * k(z0)}" fill="none" stroke="${sc.cushions[(i + j) % 3]}" stroke-width="3"/>`; }
+    if (t === 'jute') for (let i = 1; i < 18; i++) { const zz = z0 + (z1 - z0) * i / 18; s += ln(P(x0, zz, 0.003), P(x1, zz, 0.003), sh(c, -0.1), 0.8); }
+    return s;
+  }
+  function wallTile(x0, x1, y0, y1, c, t, zoff = 0.003) {
+    const [x, y, w, h] = fr(x0, x1, zoff, y0, y1); let s = rect(x, y, w, h, c); const lc = line(c); seed = 21;
+    if (t === 'subway') { for (let r = 0; r * 9 < h; r++) { s += ln([x, y + r * 9], [x + w, y + r * 9], lc, 0.8); for (let i = 0; i * 26 < w + 26; i++) { const bx = x + i * 26 + (r % 2) * 13; if (bx < x + w) s += ln([bx, y + r * 9], [bx, Math.min(y + h, y + r * 9 + 9)], lc, 0.8); } } }
+    if (t === 'zellige' || t === 'stack') { const tw = t === 'stack' ? 9 : 14, th = t === 'stack' ? 24 : 14; for (let r = 0; r * th < h; r++) for (let i = 0; i * tw < w; i++) s += rect(x + i * tw + 0.6, y + r * th + 0.6, Math.min(tw, x + w - (x + i * tw)) - 1.2, Math.min(th, y + h - (y + r * th)) - 1.2, sh(c, (rnd() - 0.5) * (t === 'zellige' ? 0.22 : 0.06))); }
+    if (t === 'slab') { s += ln([x + w / 2, y], [x + w / 2, y + h], lc, 0.8); s += `<path d="M${x} ${y + h * 0.3} C${x + w * 0.3} ${y + h * 0.2} ${x + w * 0.5} ${y + h * 0.6} ${x + w} ${y + h * 0.5}" fill="none" stroke="${sh(c, -0.12)}" stroke-width="1"/>`; }
+    if (t === 'herring') { for (let r = 0; r * 12 < h - 6; r++) for (let i = 0; i * 12 < w - 6; i++) { const bx = x + i * 12, by = y + r * 12; s += `<polyline points="${bx},${by + 6} ${bx + 6},${by} ${bx + 12},${by + 6}" fill="none" stroke="${lc}" stroke-width="0.8"/>`; } }
+    if (t === 'pattern') { for (let r = 0; r * 22 < h; r++) for (let i = 0; i * 22 < w; i++) { const cx = x + i * 22 + 11, cy = y + r * 22 + 11; if (cx < x + w && cy < y + h) s += `<path d="M${cx} ${cy - 8} L${cx + 8} ${cy} L${cx} ${cy + 8} L${cx - 8} ${cy} Z" fill="${sh(c, 0.45)}"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="${c}"/>`; } }
+    if (t === 'stone') { for (let r = 0; r * 18 < h; r++) { let cx = x; while (cx < x + w) { const ww = 20 + rnd() * 34; s += rect(cx + 1, y + r * 18 + 1, Math.min(ww, x + w - cx) - 2, Math.min(18, y + h - y - r * 18) - 2, sh(c, (rnd() - 0.5) * 0.25), 'rx="3"'); cx += ww; } } }
+    return s;
+  }
+  function floorTile(c, t) {
+    if (t === 'check' || t === 'pattern' || t === 'hex' || t === 'terrazzo') {
+      let s = ''; const n = 12, rows = 8, c2 = t === 'check' ? sh(c, lum(c) > 0.5 ? -0.5 : 0.75) : sh(c, 0.4);
+      for (let i = 0; i < n; i++) for (let j = 0; j < rows; j++) { const xa = -1.4 + 2.8 * i / n, xb = -1.4 + 2.8 * (i + 1) / n, za = Math.pow(j / rows, 1.15), zb = Math.pow((j + 1) / rows, 1.15);
+        if (t === 'check' && (i + j) % 2) s += poly([P(xa, za, 0), P(xb, za, 0), P(xb, zb, 0), P(xa, zb, 0)], c2);
+        if (t === 'pattern') s += poly([P((xa + xb) / 2, za, 0), P(xb, (za + zb) / 2, 0), P((xa + xb) / 2, zb, 0), P(xa, (za + zb) / 2, 0)], c2);
+        if (t === 'hex') s += poly([P(xa, za, 0), P(xb, za, 0), P(xb, zb, 0), P(xa, zb, 0)], 'none', `stroke="${sh(c, -0.18)}" stroke-width="0.8"`);
+        if (t === 'terrazzo') { seed = i * 31 + j; for (let q = 0; q < 3; q++) { const p = P(xa + (xb - xa) * rnd(), za + (zb - za) * rnd(), 0); s += `<circle cx="${p[0]}" cy="${p[1]}" r="${1.5 + rnd() * 2}" fill="${['#C4632D', '#2F6F73', '#D3A232', '#8A8178'][q % 4]}"/>`; } } }
+      return poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], c) + clipFloor(s);
+    }
+    return poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], c) + clipFloor(floorLines(c, 'tile'));
+  }
+
+  // ---------- rooms ----------
+  function armchair(x, z, sc, side) {
+    const ch = sc.chair; let s = '';
+    if (sc.chairT === 'rattan') { const [x0, y0, w, h] = fr(x - 0.15, x + 0.15, z - 0.12, 0.1, 0.44); s += `<path d="M${x0 + w / 2} ${y0 + h} L${x0} ${y0 + h * 0.35} Q${x0 + w / 2} ${y0 - h * 0.15} ${x0 + w} ${y0 + h * 0.35} Z" fill="${ch}" stroke="${sh(ch, -0.25)}" stroke-width="2"/>`; for (let i = 1; i < 7; i++) s += ln([x0 + w / 2, y0 + h], [x0 + i * w / 7, y0 + h * 0.15], sh(ch, -0.2), 1); s += box(x - 0.12, x + 0.12, z, 0.12, 0.05, 0.13, sc.cushions[0], { rx: 6 }); return s; }
+    if (sc.chairT === 'round') { const [x0, y0, w, h] = fr(x - 0.16, x + 0.16, z, 0.02, 0.27); s += poly([P(x - 0.16, z + 0.02, 0.001), P(x + 0.16, z + 0.02, 0.001), P(x + 0.16, z - 0.12, 0.001), P(x - 0.16, z - 0.12, 0.001)], '#000', `opacity="0.2" filter="${U('b')}"`); s += `<path d="M${x0} ${y0 + h} V${y0 + h * 0.4} Q${x0 + w / 2} ${y0 - h * 0.3} ${x0 + w} ${y0 + h * 0.4} V${y0 + h} Z" fill="${ch}"/>` + rect(x0 + w * 0.12, y0 + h * 0.55, w * 0.76, h * 0.45, sh(ch, 0.1), 'rx="10"'); return s; }
+    const tall = sc.chairT === 'wing' ? 0.38 : 0.3;
+    s += box(x - 0.15, x + 0.15, z - 0.13, 0.05, 0.05, tall, sh(ch, -0.06), { rx: 8 });
+    s += box(x - 0.15, x + 0.15, z, 0.15, 0.05, 0.15, ch, { rx: 8 });
+    s += box(x - 0.17, x - 0.13, z + 0.005, 0.17, 0.05, 0.2, sh(ch, -0.04), { rx: 6, noshadow: true }) + box(x + 0.13, x + 0.17, z + 0.005, 0.17, 0.05, 0.2, sh(ch, -0.04), { rx: 6, noshadow: true });
+    [x - 0.13, x + 0.13].forEach(xx => s += ln(P(xx, z, 0.05), P(xx, z, 0), sc.wood, 3));
+    { const [px, py, pw, ph] = fr(x - 0.07, x + 0.07, z - 0.09, 0.15, 0.26); s += rect(px, py, pw, ph, sc.cushions[side > 0 ? 1 : 0], 'rx="6"'); }
+    return s;
+  }
+  function living(sc) {
+    const wall = sc.wall; let s = shell(wall, sc.floor, sc.floorT, sc.ceil);
+    if (sc.accent && !['brick', 'stone', 'wallpaper'].includes(sc.feature)) s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], sc.accent);
+    if (sc.feature === 'wallpaper' || sc.feature === 'beams') s += feature(sc.feature, sc.accent || wall, sc);
+    // ceiling tray with cove light
+    { const [cx, cy] = P(0, 0.5, 1), rx = 0.62 * 230 * k(0.5); s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx + 10}" ry="${rx * 0.2 + 4}" fill="#FFE9B8" opacity="0.35" filter="${U('b')}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.2}" fill="${sh(sc.ceil || sh(wall, 0.35), 0.04)}" stroke="${sh(sc.ceil || sh(wall, 0.35), -0.08)}"/>`; }
+    // TV & fireplace build-out on the back wall, shelving recesses either side
+    const bm = sc.feature === 'stone' || sc.feature === 'brick' ? (sc.feature === 'brick' ? (sc.accent || '#9A4E35') : mix(wall, '#B9A98D', 0.6)) : (sc.feature === 'slats' || sc.feature === 'fluted' ? sc.wood : sh(sc.accent || wall, -0.05));
+    s += box(-0.55, 0.55, 0.09, 0.09, 0, 1, bm, { noshadow: true });
+    { const [x, y, w, h] = fr(-0.55, 0.55, 0.09, 0, 1); seed = 33;
+      if (sc.feature === 'stone') for (let r = 0; r * 13 < h; r++) { let cx = x; while (cx < x + w) { const ww = 16 + rnd() * 30; s += rect(cx + 1, y + r * 13 + 1, Math.min(ww, x + w - cx) - 2, 11, sh(bm, (rnd() - 0.5) * 0.25), 'rx="2"'); cx += ww; } }
+      if (sc.feature === 'brick') for (let r = 0; r * 11 < h; r++) { s += ln([x, y + r * 11], [x + w, y + r * 11], sh(bm, 0.3), 1); for (let c = 0; c * 30 < w; c++) s += ln([x + c * 30 + (r % 2) * 15, y + r * 11], [x + c * 30 + (r % 2) * 15, y + r * 11 + 11], sh(bm, 0.3), 1); }
+      if (sc.feature === 'slats' || sc.feature === 'fluted') for (let i = 0; i < 40; i++) s += rect(x + i * w / 40, y, 1.4, h, sh(bm, -0.22)); }
+    { const [x, y, w, h] = fr(-0.32, 0.32, 0.09, 0.44, 0.7); s += rect(x - 6, y - 6, w + 12, h + 12, sh(bm, -0.3)) + rect(x, y, w, h, '#1E1F21', 'rx="2"') + rect(x + 4, y + 4, w * 0.5, h * 0.3, '#FFFFFF', 'opacity="0.05"'); }
+    { const [x, y, w, h] = fr(-0.3, 0.3, 0.09, 0.07, 0.22); s += rect(x, y, w, h, '#1A1512') + `<ellipse cx="${x + w / 2}" cy="${y + h * 0.75}" rx="${w * 0.4}" ry="${h * 0.3}" fill="#F2A65A" opacity="0.85" filter="${U('b')}"/>` + `<ellipse cx="${x + w / 2}" cy="${y + h * 0.78}" rx="${w * 0.3}" ry="${h * 0.12}" fill="#FFD27A"/>`; s += box(-0.38, 0.38, 0.1, 0.01, 0.22, 0.245, sh(bm, 0.1), { noshadow: true }); }
+    const shelfC = sh(sc.wood, -0.08), cols = neutrals(sc);
+    [[-0.92, -0.6], [0.6, 0.92]].forEach(([a, b2], si) => { s += box(a, b2, 0.06, 0.06, 0, 0.3, sc.cab2 === wall ? sh(sc.wood, 0.05) : sc.cab2); const [x, y, w, h] = fr(a, b2, 0.005, 0.32, 0.92); s += rect(x, y, w, h, sh(sc.accent || wall, -0.12));
+      [0.32, 0.47, 0.62, 0.77, 0.92].forEach((yy, r) => { s += box(a, b2, 0.06, 0.06, yy - 0.012, yy, shelfC, { noshadow: true }); if (r < 4) { seed = r * 7 + si; for (let i = 0; i < 4; i++) { const xx = a + 0.03 + i * (b2 - a - 0.06) / 4; const [ox, oy, ow, oh] = fr(xx, xx + 0.04 + rnd() * 0.03, 0.03, yy, yy + 0.05 + rnd() * 0.06); s += foot(ox, oy + oh, ow) + rect(ox, oy, ow, oh, cols[(i + r) % cols.length], i % 2 ? 'rx="3"' : 'rx="8"'); } } }); });
+    s += windowLeft(0.2, 0.62, 0.15, 0.92, sc.metal, sh(sc.sofa, 0.3));
+    s += rug(-0.7, 0.7, 0.3, 1.05, sc.rug, sc.rugT, sc);
+    // armchairs either side of a round coffee table, side tables, plants
+    s += roundTable(-0.86, 0.48, 0.06, 0.17, sc.wood, sc.metal) + roundTable(0.86, 0.48, 0.06, 0.17, sc.wood, sc.metal);
+    [-1, 1].forEach(sx => { const cane = sc.chairT === 'rattan'; s += seat(sx * 0.64, 0.66, { ori: sx < 0 ? 'right' : 'left', frame: sc.wood, seatC: sh(sc.chair, -0.04), backC: sc.chair, cane, w: 0.14, d: 0.17, seatY: 0.17, backY: sc.chairT === 'wing' ? 0.44 : 0.36, t: 0.05, rx: 8, legW: 3, cushion: sc.chair, backCushion: sc.cushions[sx < 0 ? 0 : 1] }); });
+    { const tb = sc.table, tz = 0.66, [cx, cy] = P(0, tz - 0.08, 0.13), rx = 0.26 * 230 * k(tz), ry = rx * 0.28, [, fy] = P(0, tz - 0.08, 0);
+      s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${ry}" fill="#000" opacity="0.18" filter="${U('b')}"/>`;
+      if (sc.tableT === 'rect') { s += box(-0.28, 0.28, tz, 0.16, 0.08, 0.12, tb); s += box(-0.26, -0.23, tz, 0.02, 0, 0.08, sh(tb, -0.2)) + box(0.23, 0.26, tz, 0.02, 0, 0.08, sh(tb, -0.2)); }
+      else { s += rect(cx - rx, cy, rx * 2, fy - cy, sh(tb, -0.15)) + `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.15)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.08)}"/>`; }
+      s += foot(cx - 6, cy, 12) + foot(cx + 14, cy, 26) + rect(cx - 6, cy - 22, 12, 22, sc.cushions[1], 'rx="5"') + rect(cx + 14, cy - 8, 26, 6, sh(sc.wood, -0.2), 'rx="2"'); }
+    if (sc.plants >= 1) s += plant(-0.94, 0.12, 0.85, potC(sc));
+    if (sc.plants >= 2) s += plant(0.94, 0.12, 0.75, potC(sc));
+    s += pendant(sc.light, 0, 0.5, 0.2, sc);
+    // the sofa, seen from behind, facing the TV wall
+    { const so = sc.sofa, z = 1.16; s += box(-0.6, 0.6, z, 0.18, 0, 0.24, sh(so, -0.06), { rx: 10 });
+      sc.cushions.slice(0, 3).forEach((c, i) => { const xx = -0.36 + i * 0.36; const [x, y, w, h] = fr(xx - 0.1, xx + 0.1, z - 0.15, 0.22, 0.33); s += rect(x, y, w, h, c, 'rx="8"'); });
+      s += box(-0.6, 0.6, z, 0.04, 0.0, 0.24, sh(so, -0.06), { rx: 10, noshadow: true }); }
+    return s;
+  }
+  function shakerRun(x0, x1, z, y0, y1, c, n, metal) {
+    let s = ''; const [x, y, w, h] = fr(x0, x1, z, y0, y1);
+    for (let i = 0; i < n; i++) { const dx = x + i * w / n; s += ln([dx, y], [dx, y + h], sh(c, -0.25), 1.2) + rect(dx + 4, y + 4, w / n - 8, h - 8, 'none', `stroke="${sh(c, -0.14)}" stroke-width="1.2"`) + rect(dx + w / n / 2 - 2, y + 7, 4, 4, metal, 'rx="2"'); }
+    return s;
+  }
+  function kitchen(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
+    const wallU = sh(sc.wood, -0.05);
+    // window over the sink, splashback, plaster range hood over the hob
+    s += wallTile(-0.86, 0.72, 0.34, 0.62, sc.splash, sc.splashT);
+    { const [x, y, w, h] = fr(-0.5, -0.05, 0.002, 0.4, 0.86); s += rect(x - 5, y - 5, w + 10, h + 10, sh(sc.wall, -0.1)) + rect(x, y, w, h, U('sky')) + rect(x, y, w, h * 0.35, sh(sc.bedding || sc.wall, -0.02)) + ln([x + w / 2, y + h * 0.35], [x + w / 2, y + h], sc.metal, 3); }
+    { const [x, y, w, h] = fr(0.12, 0.52, 0.06, 0.62, 1); const hc = sh(sc.wall, lum(sc.wall) > 0.6 ? -0.07 : 0.08); s += `<path d="M${x + w * 0.2} ${y} H${x + w * 0.8} V${y + h * 0.45} Q${x + w} ${y + h * 0.8} ${x + w} ${y + h} H${x} Q${x} ${y + h * 0.8} ${x + w * 0.2} ${y + h * 0.45} Z" fill="${hc}"/>` + rect(x, y + h - 4, w, 4, sh(hc, -0.15)) + `<path d="M${x + w} ${y + h * 0.82} Q${x + w * 0.85} ${y + h * 0.6} ${x + w * 0.8} ${y + h * 0.45} V${y} H${x + w * 0.8}" fill="${sh(hc, -0.08)}"/>`; }
+    // wall units to the ceiling, or open shelves
+    if (sc.shelves) [0.7, 0.85].forEach(y => { s += box(-0.86, -0.56, 0.06, 0.06, y, y + 0.015, sc.wood, { noshadow: true }); seed = 4; for (let i = 0; i < 3; i++) { const xx = -0.83 + i * 0.09; const [x, yy, w, h] = fr(xx, xx + 0.06, 0.04, y + 0.015, y + 0.07 + rnd() * 0.04); s += foot(x, yy + h, w) + rect(x, yy, w, h, neutrals(sc)[i], 'rx="3"'); } });
+    else { s += box(-0.86, -0.56, 0.1, 0.1, 0.62, 1, wallU, { noshadow: true }); s += shakerRun(-0.86, -0.56, 0.1, 0.62, 1, wallU, 2, sc.metal); }
+    s += box(0.56, 0.72, 0.1, 0.1, 0.62, 1, wallU, { noshadow: true }) + shakerRun(0.56, 0.72, 0.1, 0.62, 1, wallU, 1, sc.metal);
+    // tall fridge / oven tower
+    s += box(0.72, 0.98, 0.14, 0.14, 0, 1, wallU); { const [x, y, w, h] = fr(0.72, 0.98, 0.14, 0, 1); s += rect(x + 6, y + h * 0.38, w - 12, h * 0.2, '#2A2A2A', 'rx="3"') + rect(x + 10, y + h * 0.4, w - 20, 3, sc.metal) + ln([x, y + h * 0.36], [x + w, y + h * 0.36], sh(wallU, -0.25), 1.2) + ln([x, y + h * 0.6], [x + w, y + h * 0.6], sh(wallU, -0.25), 1.2) + rect(x + w / 2 - 2, y + 12, 4, h * 0.2, sc.metal); }
+    // base run with sink and hob
+    s += box(-0.92, 0.72, 0.14, 0.13, 0, 0.32, sc.cab) + shakerRun(-0.92, 0.72, 0.14, 0.03, 0.31, sc.cab, 9, sc.metal);
+    s += box(-0.93, 0.72, 0.145, 0.14, 0.32, 0.34, sc.top, { noshadow: true });
+    { const [sx, sy] = P(-0.28, 0.07, 0.34); s += `<ellipse cx="${sx}" cy="${sy}" rx="30" ry="6" fill="${sh(sc.top, -0.2)}"/><path d="M${sx} ${sy - 4} V${sy - 30} Q${sx} ${sy - 38} ${sx + 10} ${sy - 34} V${sy - 26}" fill="none" stroke="${sc.metal}" stroke-width="3"/>`; }
+    { const [hx, hy] = P(0.32, 0.07, 0.34); s += `<ellipse cx="${hx}" cy="${hy}" rx="40" ry="7" fill="#2A2A2A"/>`; }
+    // island with seating side towards us, three stools
+    s += box(-0.5, 0.5, 0.62, 0.22, 0, 0.33, sc.island) + shakerRun(-0.5, 0.5, 0.62, 0.03, 0.31, sc.island, 4, sc.metal);
+    s += box(-0.55, 0.55, 0.65, 0.27, 0.33, 0.355, sc.top);
+    { const [x, y, w] = fr(-0.5, 0.5, 0.64, 0.3, 0.33); s += rect(x, y, w, 4, sh(sc.wood, -0.1)); }
+    { const [bx, by] = P(-0.3, 0.52, 0.355); s += foot(bx - 34, by, 68) + `<path d="M${bx - 34} ${by - 6} Q${bx} ${by + 10} ${bx + 34} ${by - 6} Z" fill="#F4F1EA" stroke="#BDB6A8" stroke-width="0.8"/>`; seed = 12; for (let i = 0; i < 5; i++) s += `<ellipse cx="${bx - 18 + i * 9}" cy="${by - 9 - (i % 2) * 4}" rx="7" ry="5.5" fill="#EBC94A" stroke="#B8962A" stroke-width="0.6"/>`; }
+    { const [cx, cy] = P(0.05, 0.55, 0.355); s += foot(cx - 40, cy, 80) + `<rect x="${cx - 40}" y="${cy - 5}" width="80" height="6" rx="3" fill="${sh(sc.wood, 0.05)}" stroke="${sh(sc.wood, -0.35)}" stroke-width="0.7"/>`; s += `<ellipse cx="${cx - 12}" cy="${cy - 9}" rx="14" ry="7" fill="#D9B07A" stroke="#9C7443" stroke-width="0.6"/>`; }
+    { const [vx, vy] = P(0.36, 0.6, 0.355); s += foot(vx - 9, vy, 18) + `<path d="M${vx - 9} ${vy} Q${vx - 13} ${vy - 14} ${vx - 5} ${vy - 22} H${vx + 5} Q${vx + 13} ${vy - 14} ${vx + 9} ${vy} Z" fill="${mix(sc.cushions[0], '#8E9B7E', 0.5)}" stroke="#4F5A42" stroke-width="0.7"/>` + blooms(vx, vy - 38, 22, sc, 33); }
+    [-0.32, 0, 0.32].forEach(xx => s += seat(xx, 0.82, { ori: 'away', frame: sh(sc.wood, -0.2), seatC: sc.stool, backC: isCane(sc) || sc.chairT === 'lounge' ? '#C9A46C' : sc.stool, cane: true, w: 0.07, d: 0.07, seatY: 0.27, backY: 0.39, t: 0.018, rx: 4, legW: 2.4 }));
+    s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? 'globe' : 'linear', 0, 0.55, 0.26, sc);
+    return s;
+  }
+  function bedroom(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil || sh(sc.wall, 0.4)); if (sc.bwall && sc.bwall !== sc.wall) s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], sc.bwall);
+    s += windowLeft(0.2, 0.55, 0.25, 0.85, sc.metal, sh(sc.bedding, -0.08));
+    s += rug(-0.7, 0.7, 0.1, 0.85, sc.rug, sc.rugT, sc);
+    const hb = sc.bed, t = sc.headT; let hbTop = 0.42;
+    if (t === 'panel') { s += box(-0.75, 0.75, 0.02, 0.02, 0, 0.62, sc.bed === sc.bwall ? sh(hb, -0.06) : hb, { rx: 4 }); hbTop = 0.62; const [x, y, w, h] = fr(-0.75, 0.75, 0.02, 0, 0.62); for (let i = 1; i < 6; i++) s += ln([x + i * w / 6, y + 4], [x + i * w / 6, y + h - 4], sh(hb, -0.12), 1); }
+    else if (t === 'slat') { const [x, y, w, h] = fr(-0.5, 0.5, 0.02, 0.1, 0.5); s += rect(x, y, w, h, hb); for (let i = 1; i < 14; i++) s += rect(x + i * w / 14, y, 2, h, sh(hb, -0.25)); }
+    else if (t === 'wing') { const [x, y, w, h] = fr(-0.52, 0.52, 0.03, 0.1, 0.55); s += `<path d="M${x} ${y + h} V${y + h * 0.2} Q${x} ${y} ${x + 20} ${y} H${x + w - 20} Q${x + w} ${y} ${x + w} ${y + h * 0.2} V${y + h} Z" fill="${hb}"/>`; hbTop = 0.55; }
+    else if (t === 'rattan' || t === 'arch') { const [x, y, w, h] = fr(-0.5, 0.5, 0.02, 0.1, 0.6); s += `<path d="M${x} ${y + h} V${y + w * 0.35} A${w / 2} ${w * 0.35} 0 0 1 ${x + w} ${y + w * 0.35} V${y + h} Z" fill="${t === 'arch' ? sh(sc.bwall || sc.wall, -0.1) : hb}" ${t === 'rattan' ? `stroke="${sh(hb, -0.25)}" stroke-width="3"` : ''}/>`; if (t === 'rattan') for (let i = 1; i < 12; i++) s += ln([x + i * w / 12, y + h * 0.15], [x + i * w / 12, y + h], sh(hb, -0.2), 1); hbTop = 0.6; }
+    else if (t === 'fan') { const [x, y, w, h] = fr(-0.52, 0.52, 0.02, 0.1, 0.62); const cx = x + w / 2, cy = y + h; for (let i = 0; i < 9; i++) { const a0 = Math.PI + i * Math.PI / 9, a1 = a0 + Math.PI / 9; s += `<path d="M${cx} ${cy} L${cx + Math.cos(a0) * w / 2} ${cy + Math.sin(a0) * h} A${w / 2} ${h} 0 0 1 ${cx + Math.cos(a1) * w / 2} ${cy + Math.sin(a1) * h} Z" fill="${sh(hb, i % 2 ? -0.08 : 0.04)}" stroke="${sc.metal}" stroke-width="1.5"/>`; } hbTop = 0.62; }
+    else if (t === 'spindle' || t === 'metal') { const [x, y, w, h] = fr(-0.5, 0.5, 0.02, 0.1, 0.45); s += rect(x, y, w, 7, hb) + rect(x, y, 7, h, hb) + rect(x + w - 7, y, 7, h, hb); for (let i = 1; i < 10; i++) s += rect(x + i * w / 10, y, t === 'metal' ? 2.5 : 5, h, hb); }
+    else if (t === 'tall') { s += box(-0.52, 0.52, 0.02, 0.02, 0.1, 0.72, hb, { rx: 6 }); hbTop = 0.72; const [x, y, w, h] = fr(-0.52, 0.52, 0.02, 0.1, 0.72); for (let i = 1; i < 6; i++) s += ln([x + i * w / 6, y + 6], [x + i * w / 6, y + h - 6], sh(hb, -0.15), 1.5); }
+    else { s += box(-0.5, 0.5, 0.02, 0.02, 0.1, 0.3, hb); hbTop = 0.3; }
+    if (hbTop < 0.65) s += art(sc.art === 'gallery' ? 'gallery' : (sc.art === 'none' ? 'print' : sc.art), -0.22, 0.22, hbTop + 0.08, Math.min(0.92, hbTop + 0.3), sc);
+    // side tables + lamps
+    [-0.68, 0.68].forEach(xx => { s += box(xx - 0.1, xx + 0.1, 0.18, 0.14, 0, 0.2, sc.wood); const [lx, ly] = P(xx, 0.11, 0.2); s += foot(lx - 8, ly, 16) + rect(lx - 3, ly - 26, 6, 26, sc.metal) + `<path d="M${lx - 16} ${ly - 26} L${lx - 10} ${ly - 44} H${lx + 10} L${lx + 16} ${ly - 26} Z" fill="#F7F1E4" stroke="${sh('#F7F1E4', -0.15)}"/>`; });
+    // bed
+    s += box(-0.5, 0.5, 0.62, 0.58, 0, 0.12, hb);
+    s += box(-0.5, 0.5, 0.63, 0.59, 0.12, 0.2, sc.bedding, { top: sh(sc.bedding, 0.06), rx: 4 });
+    [-0.24, 0.24].forEach(xx => { const [x, y, w, h] = fr(xx - 0.19, xx + 0.19, 0.12, 0.2, 0.3); s += rect(x, y, w, h, sh(sc.bedding, -0.04), 'rx="8"'); });
+    const [cx, cy, cw, chh] = fr(-0.28, 0.28, 0.12, 0.2, 0.27); s += rect(cx + cw * 0.15, cy + 3, cw * 0.7, chh, sc.cushions[0], 'rx="7"');
+    s += poly([P(-0.505, 0.48, 0.205), P(0.505, 0.48, 0.205), P(0.505, 0.6, 0.205), P(-0.505, 0.6, 0.205)], sc.throw);
+    { const a = P(-0.505, 0.6, 0.205), b = P(0.505, 0.6, 0.12); s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], sh(sc.throw, -0.08)); }
+    s += box(-0.36, 0.36, 0.76, 0.1, 0, 0.13, sc.cushions[0] === sc.throw ? sh(sc.chair, 0) : sc.cushions[0], { rx: 6 });
+    [-0.33, 0.33].forEach(xx => s += ln(P(xx, 0.76, 0.03), P(xx, 0.76, 0), sc.wood, 3));
+    if (sc.plants >= 1) s += plant(0.88, 0.45, 1.1, potC(sc));
+    s += pendant(sc.light === 'linear' ? 'globe' : sc.light, 0, 0.55, 0.15, sc);
+    return s;
+  }
+  function bathroom(sc) {
+    const full = sc.btileT === 'plaster' || sc.btileT === 'stone';
+    let s = shell(sc.wall, sc.bfloor, 'tile', sc.ceil);
+    s += floorTile(sc.bfloor, sc.bfloorT);
+    if (full) s += wallTile(-1, 1, 0, 1, sc.btile, sc.btileT === 'plaster' ? 'none' : 'stone', 0.001);
+    else { s += wallTile(-1, -0.05, 0, 1, sc.btile, sc.btileT); s += wallTile(-0.05, 1, 0, 0.42, sc.btile, sc.btileT); }
+    // shower glass + head
+    s += poly([P(-0.05, 0, 0), P(-0.05, 0.38, 0), P(-0.05, 0.38, 0.8), P(-0.05, 0, 0.8)], 'rgba(200,225,235,0.35)', `stroke="${sc.metal}" stroke-width="2"`);
+    const [hx, hy] = P(-0.55, 0.005, 0.78); s += ln([hx, hy - 26], [hx, hy + 8], sc.metal, 3) + rect(hx - 16, hy + 6, 32, 5, sc.metal, 'rx="2"');
+    const [mx, my] = P(-0.75, 0.005, 0.4); s += `<circle cx="${mx}" cy="${my}" r="6" fill="${sc.metal}"/>`;
+    // vanity
+    s += box(0.15, 0.85, 0.16, 0.15, 0.17, 0.32, sc.vanity);
+    s += box(0.14, 0.86, 0.165, 0.155, 0.32, 0.335, sc.top || '#ECE7DE');
+    const [bx, by] = P(0.5, 0.09, 0.335); s += `<path d="M${bx - 30} ${by - 18} Q${bx - 28} ${by} ${bx} ${by} Q${bx + 28} ${by} ${bx + 30} ${by - 18} Z" fill="${potC(sc)}"/><ellipse cx="${bx}" cy="${by - 18}" rx="30" ry="7" fill="${sh(potC(sc), -0.2)}"/>`;
+    s += ln(P(-0.9, 0.3, 0.002), P(-0.15, 0.3, 0.002), sc.metal, 3);
+    const [tx, ty] = P(0.5, 0.01, 0.38); s += `<path d="M${tx} ${ty} H${tx} V${ty + 14}" stroke="${sc.metal}" stroke-width="3" fill="none"/>` + rect(tx - 2, ty - 4, 4, 18, sc.metal);
+    // mirror
+    const [x, y, w, h] = fr(0.3, 0.7, 0.003, 0.45, 0.85), mf = sc.metal, mg = '#DDE7EA';
+    if (sc.mirrorT === 'round') s += `<circle cx="${x + w / 2}" cy="${y + h / 2}" r="${Math.min(w, h) / 2}" fill="${mg}" stroke="${mf}" stroke-width="4"/>`;
+    else if (sc.mirrorT === 'arch') s += `<path d="M${x + w * 0.15} ${y + h} V${y + w * 0.35} A${w * 0.35} ${w * 0.35} 0 0 1 ${x + w * 0.85} ${y + w * 0.35} V${y + h} Z" fill="${mg}" stroke="${mf}" stroke-width="4"/>`;
+    else if (sc.mirrorT === 'scallop') { s += `<circle cx="${x + w / 2}" cy="${y + h / 2}" r="${Math.min(w, h) / 2}" fill="${mf}"/>`; for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; s += `<circle cx="${x + w / 2 + Math.cos(a) * Math.min(w, h) / 2}" cy="${y + h / 2 + Math.sin(a) * Math.min(w, h) / 2}" r="8" fill="${mf}"/>`; } s += `<circle cx="${x + w / 2}" cy="${y + h / 2}" r="${Math.min(w, h) / 2 - 6}" fill="${mg}"/>`; }
+    else if (sc.mirrorT === 'sunburst') { const cx = x + w / 2, cy = y + h / 2, r = Math.min(w, h) / 2; for (let i = 0; i < 20; i++) { const a = i * Math.PI / 10; s += ln([cx, cy], [cx + Math.cos(a) * r * 1.2, cy + Math.sin(a) * r * 1.2], mf, 3); } s += `<circle cx="${cx}" cy="${cy}" r="${r * 0.75}" fill="${mg}" stroke="${mf}" stroke-width="3"/>`; }
+    else s += rect(x + w * 0.1, y, w * 0.8, h, mg, `stroke="${mf}" stroke-width="4"`);
+    // towel on rail
+    { const [rx, ry] = P(0.93, 0.003, 0.72); for (let i = 0; i < 6; i++) s += ln([rx - 34, ry + i * 14], [rx + 4, ry + i * 14], sc.metal, 2.5); s += ln([rx - 34, ry - 4], [rx - 34, ry + 76], sc.metal, 3) + ln([rx + 4, ry - 4], [rx + 4, ry + 76], sc.metal, 3) + rect(rx - 30, ry + 10, 30, 46, sc.towel, 'rx="3"'); }
+    { const [wx, wy] = P(0.05, 0.08, 0.28); { const [sx, sy] = P(0.05, 0.003, 0.28); s += rect0(sx - 18, sy - 2, 44, 46, '#1a1208', `opacity="0.22" filter="${U('b')}"`); } s += `<path d="M${wx - 20} ${wy} H${wx + 20} V${wy + 10} Q${wx + 20} ${wy + 34} ${wx} ${wy + 36} Q${wx - 20} ${wy + 34} ${wx - 20} ${wy + 10} Z" fill="#FBFAF7" stroke="${sh('#FBFAF7', -0.15)}"/>`; const [fx, fy] = P(0.05, 0.003, 0.5); s += rect(fx - 10, fy, 20, 12, sc.metal, 'rx="2"'); }
+    s += plant(0.75, 0.06, 0.45, '#F2EFEA');
+    return s;
+  }
+
+  // ---------- helpers for the extra rooms ----------
+  const pal = sc => [sc.cushions[0], sc.cushions[1], sc.cushions[2], sc.throw, sc.bedding, sc.sofa, sc.chair].filter(Boolean);
+  const joinery = sc => (Math.abs(lum(sc.cab2) - lum(sc.wall)) < 0.04 ? sh(sc.wood, 0.05) : sc.cab2);
+  function diningChair(x, z, sc, backOnly) {
+    const c = sc.chair, w = 0.09, t = sc.chairT; let s = '';
+    const backH = t === 'wing' || t === 'arm' ? 0.46 : 0.42;
+    if (t === 'rattan') { const [bx, by, bw, bh] = fr(x - w, x + w, z - 0.07, 0.24, backH); s += rect(bx, by, bw, bh, c, `rx="6" stroke="${sh(c, -0.25)}" stroke-width="1.5"`); for (let i = 1; i < 6; i++) s += ln([bx + i * bw / 6, by + 3], [bx + i * bw / 6, by + bh - 3], sh(c, -0.22), 1); }
+    else s += box(x - w, x + w, z - 0.07, 0.02, 0.24, backH, t === 'wing' || t === 'arm' || t === 'round' ? c : sh(sc.wood, -0.05), { rx: t === 'round' ? 8 : 3 });
+    if (backOnly) return s;
+    s += box(x - w, x + w, z, 0.08, 0.2, 0.24, c, { rx: 3 });
+    [[x - w + 0.01, z], [x + w - 0.01, z]].forEach(([xx, zz]) => s += ln(P(xx, zz, 0.2), P(xx, zz, 0), sh(sc.wood, -0.15), 2.5));
+    return s;
+  }
+  function garments(x0, x1, zz, yTop, yLen, cols, sd) {
+    let s = '', cx = x0; seed = sd;
+    const [ra, rb] = [P(x0, zz, yTop), P(x1, zz, yTop)]; s += ln(ra, rb, '#9A9590', 2);
+    while (cx < x1 - 0.03) { const gw = 0.035 + rnd() * 0.035, len = yLen * (0.55 + rnd() * 0.45); const g = Math.min(gw, x1 - cx);
+      const [x, y, w, h] = fr(cx, cx + g, zz, yTop - len, yTop - 0.02); s += rect(x, y, w - 1, h, cols[Math.floor(rnd() * cols.length)], 'rx="2"'); cx += g; }
+    return s;
+  }
+
+  // ---- shared bits for the sample-home rooms ----
+  const potC = sc => mix(sc.cushions[0], '#B5653F', 0.55);
+  function oliveTree(x, z, size, pot) {
+    let s = box(x - 0.07 * size, x + 0.07 * size, z, 0.07 * size, 0, 0.17 * size, pot);
+    const [tx, ty] = P(x, z - 0.035 * size, 0.17 * size), [, topY] = P(x, z - 0.035 * size, 0.55 * size), kk = k(z) * size;
+    s += `<path d="M${tx} ${ty} C${tx - 4 * kk} ${ty - 30 * kk} ${tx + 6 * kk} ${topY + 40 * kk} ${tx} ${topY + 18 * kk}" stroke="#5B4A3A" stroke-width="${4 * kk}" fill="none"/>`;
+    seed = Math.round((x + 3) * 977);
+    for (let i = 0; i < 26; i++) { const ang = rnd() * Math.PI * 2, rr = rnd() * 34 * kk, cx = tx + Math.cos(ang) * rr * 1.2, cy = topY + 14 * kk + Math.sin(ang) * rr * 0.8;
+      s += `<ellipse cx="${cx}" cy="${cy}" rx="${(9 + rnd() * 8) * kk}" ry="${(6 + rnd() * 5) * kk}" fill="${['#7D8F5E', '#8FA06F', '#6E8052', '#9AAA7E'][i % 4]}"/>`; }
+    return s;
+  }
+  function roundTable(x, z, r, h, c, metal) {
+    const [cx, cy] = P(x, z, h), rx = r * 230 * k(z), [, fy] = P(x, z, 0);
+    return poly([P(x - r, z + 0.02, 0.001), P(x + r, z + 0.02, 0.001), P(x + r, z - 0.06, 0.001), P(x - r, z - 0.06, 0.001)], '#000', `opacity="0.18" filter="${U('b')}"`) +
+      rect(cx - 2.5 * k(z), cy, 5 * k(z), fy - cy, metal) + `<ellipse cx="${cx}" cy="${cy + 3}" rx="${rx}" ry="${rx * 0.28}" fill="${sh(c, -0.15)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.28}" fill="${c}"/>`;
+  }
+  const sideQuad = (x, z0, z1, y0, y1, fill, extra = '') => poly([P(x, z0, y0), P(x, z1, y0), P(x, z1, y1), P(x, z0, y1)], fill, extra);
+  const baseAO = (x, z0, z1) => ln(P(x, z0, 0), P(x, z1, 0), '#1a1208', 7, `opacity="0.25" filter="${U('b')}"`) + ln(P(x, z0, 0), P(x, z0, 1), '#1a1208', 6, `opacity="0.14" filter="${U('b')}"`);
+  const neutrals = sc => { const c = [sc.bedding, sc.sofa, sh(sc.wall, -0.12), sc.throw, sc.cushions[1], sc.cushions[0], sh(sc.wood, -0.1)].filter(Boolean); return c.sort((a, b) => lum(b) - lum(a)); };
+
+  // one seat drawn in a given direction: 'front' (faces you), 'away', 'left', 'right'
+  function seat(x, z, o) {
+    const w = o.w || 0.09, d = o.d || 0.09, sy = o.seatY || 0.2, by = o.backY || 0.46, t = o.t || 0.022, ori = o.ori || 'front';
+    const frame = o.frame, sc0 = o.seatC, bc = o.backC || o.seatC, cane = o.cane, rx = o.rx || 3; let s = '';
+    s += poly([P(x - w - 0.02, z + 0.02, 0.001), P(x + w + 0.05, z + 0.02, 0.001), P(x + w + 0.07, z - d - 0.02, 0.001), P(x - w + 0.01, z - d - 0.02, 0.001)], '#1a1208', `opacity="0.2" filter="${U('b')}"`);
+    const legs = zz => [x - w + 0.012, x + w - 0.012].map(xx => ln(P(xx, zz, sy - 0.03), P(xx, zz, 0), frame, o.legW || 2.4)).join('');
+    const caneLines = (x0, x1, zz) => { if (!cane) return ''; const [bx, byy, bw, bh] = fr(x0, x1, zz, sy + 0.02, by - 0.02); let q = ''; for (let i = 1; i < 6; i++) q += ln([bx + i * bw / 6, byy + 2], [bx + i * bw / 6, byy + bh - 2], sh(bc, -0.22), 0.8) + ln([bx + 2, byy + i * bh / 6], [bx + bw - 2, byy + i * bh / 6], sh(bc, -0.22), 0.8); return q; };
+    const sideCane = (xx) => { if (!cane) return ''; let q = ''; for (let i = 1; i < 6; i++) { const zz = z - d + i * d / 6; q += ln(P(xx, zz, sy + 0.02), P(xx, zz, by - 0.02), sh(bc, -0.22), 0.8); } for (let i = 1; i < 5; i++) { const yy = sy + i * (by - sy) / 5; q += ln(P(xx, z - d + 0.01, yy), P(xx, z - 0.01, yy), sh(bc, -0.22), 0.8); } return q; };
+    s += legs(z - d);
+    if (ori === 'front') s += box(x - w, x + w, z - d + t, t, sy, by, bc, { rx, noshadow: true }) + caneLines(x - w + 0.015, x + w - 0.015, z - d + t);
+    if (ori === 'right') s += box(x - w, x - w + t, z, d, sy, by, bc, { noshadow: true }) + sideCane(x - w + t);
+    if (ori === 'left') s += box(x + w - t, x + w, z, d, sy, by, bc, { noshadow: true }) + sideCane(x + w - t);
+    s += box(x - w, x + w, z, d, sy - 0.035, sy, sc0, { rx, noshadow: true });
+    if (o.cushion) s += box(x - w + 0.012, x + w - 0.012, z - 0.004, d - 0.01, sy, sy + 0.03, o.cushion, { rx: 5, noshadow: true });
+    s += legs(z);
+    if (ori === 'away') s += box(x - w, x + w, z, t, sy, by, bc, { rx, noshadow: true }) + caneLines(x - w + 0.015, x + w - 0.015, z);
+    if (o.backCushion && ori !== 'away') { const bcx = ori === 'right' ? x - w + t + 0.01 : ori === 'left' ? x + w - t - 0.03 : x - w + 0.03; if (ori === 'front') { const [px, py, pw, ph] = fr(x - w + 0.03, x + w - 0.03, z - d + t + 0.012, sy + 0.025, by - 0.04); s += rect(px, py, pw, ph, o.backCushion, 'rx="7"'); } else s += box(bcx, bcx + 0.02, z - 0.015, d - 0.03, sy + 0.025, by - 0.05, o.backCushion, { rx: 5, noshadow: true }); }
+    return s;
+  }
+  const isCane = sc => ['rattan', 'lounge', 'round'].includes(sc.chairT);
+  function caneChair(x, z, sc, ori) {
+    const cane = isCane(sc); return seat(x, z, { ori: ori === true ? 'away' : (ori || 'front'), frame: sh(sc.wood, -0.1), seatC: sc.cushions[0], backC: cane ? '#C9A46C' : sc.chair, cane, w: 0.085, d: 0.09, seatY: 0.22, backY: 0.48 });
+  }
+  function loungeChair(x, z, sc, ori) {
+    const cane = isCane(sc); return seat(x, z, { ori, frame: sh(sc.wood, -0.15), seatC: sc.chair, backC: sc.chair, cane, w: 0.11, d: 0.12, seatY: 0.15, backY: 0.38, t: 0.03, rx: 6, legW: 3, cushion: sc.cushions[1] || sc.cushions[0], backCushion: sc.cushions[0] });
+  }
+
+  // ---------- entry porch (sample home: covered entrance terrace, straight-on and symmetrical) ----------
+  function wreath(cx, cy, r, sc) { let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#4F7A45" stroke-width="${r * 0.42}"/>`; seed = 91;
+    for (let i = 0; i < 22; i++) { const a = i / 22 * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; s += `<ellipse cx="${x}" cy="${y}" rx="${r * 0.22}" ry="${r * 0.1}" transform="rotate(${a * 57 + 40} ${x} ${y})" fill="${['#6E9A5C', '#3E6B3C', '#7D8F5E'][i % 3]}"/>`; }
+    for (let i = 0; i < 7; i++) { const a = (i / 7 + 0.05) * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r; s += `<circle cx="${x}" cy="${y}" r="${r * 0.13}" fill="${['#E8A3A9', '#FBF6EE', '#F3C86E'][i % 3]}" stroke="#9c6b6b" stroke-width="0.4"/>`; }
+    return s + `<path d="M${cx - r * 0.25} ${cy + r * 0.95} q${r * 0.25} ${r * 0.25} ${r * 0.5} 0" stroke="${sc.cushions[0]}" stroke-width="3" fill="none"/>`; }
+  function lantern(x, y, sz, metal) { return `<circle cx="${x}" cy="${y + sz * 0.9}" r="${sz * 2.2}" fill="${U('glow')}"/>` + `<path d="M${x - sz * 0.5} ${y} H${x + sz * 0.5} L${x + sz * 0.75} ${y + sz * 0.35} V${y + sz * 1.6} H${x - sz * 0.75} V${y + sz * 0.35} Z" fill="#FFF1CC" stroke="${metal}" stroke-width="2.2"/>` + ln([x, y + sz * 0.35], [x, y + sz * 1.6], metal, 1.4) + `<path d="M${x - sz * 0.9} ${y + sz * 1.6} H${x + sz * 0.9} L${x + sz * 0.6} ${y + sz * 1.85} H${x - sz * 0.6} Z" fill="${metal}"/><path d="M${x - sz * 0.6} ${y} L${x} ${y - sz * 0.45} L${x + sz * 0.6} ${y} Z" fill="${metal}"/>`; }
+  function porch(sc) {
+    // flat front view of the entrance: boarded wall, glazed door with sidelights + transom, lanterns, potted plants, steps
+    let s = '';
+    const wall = sc.feature === 'brick' ? (sc.accent || '#9A4E35') : sc.wall, line = sh(wall, -0.09), hi = sh(wall, 0.06);
+    const trim = lum(sc.wall) > 0.85 ? '#F2EFE8' : '#FAF8F3', trimS = '#D9D4CA', glass = U('sky');
+    const door = sc.accent && lum(sc.accent) < 0.7 ? sc.accent : sh(sc.wood, -0.05), doorD = sh(door, -0.3);
+    const stone = mix(sc.bfloor, '#B9B3A8', 0.5), stoneD = sh(stone, -0.18), pave = mix(sc.bfloor, '#C9C6C0', 0.6);
+    const ground = 416, landing = 352;
+    // wall with boards (or brick), eave shadow
+    s += rect0(0, 0, W, landing, wall);
+    if (sc.feature === 'brick') { for (let r = 0; r * 13 < landing; r++) { s += ln([0, r * 13], [W, r * 13], sh(wall, 0.3), 1); for (let c = 0; c * 34 < W + 34; c++) s += ln([c * 34 + (r % 2) * 17, r * 13], [c * 34 + (r % 2) * 17, r * 13 + 13], sh(wall, 0.3), 1); } }
+    else for (let y = 26; y < landing; y += 15) s += ln([0, y], [W, y], line, 1.4) + ln([0, y + 1.5], [W, y + 1.5], hi, 1);
+    s += rect0(0, 0, W, 16, sh(sc.wood, 0.1)) + rect0(0, 16, W, 18, '#1a1208', `opacity="0.18" filter="${U('b')}"`);
+    // lanterns
+    [182, 618].forEach(x => { s += rect0(x - 3, 118, 6, 12, sc.metal) + lantern(x, 132, 15, sc.metal); });
+    // door surround: trim, transom, sidelights
+    const L = 250, R = 550, T = 70, B = landing;
+    s += rect0(L + 6, T + 8, R - L, B - T, '#1a1208', `opacity="0.22" filter="${U('b')}"`);
+    s += rect0(L, T, R - L, B - T, trim, `stroke="${trimS}" stroke-width="1.2"`);
+    s += rect0(L + 10, T + 10, R - L - 20, 14, sh(trim, -0.03));
+    [[L + 18, 340 - 6, 0], [345, 455, 1], [460, R - 18, 2]].forEach(([x0, x1]) => s += rect0(x0, T + 32, x1 - x0, 44, glass, `stroke="${trimS}" stroke-width="1.5"`) + rect0(x0, T + 32, x1 - x0, 20, '#fff', 'opacity="0.18"'));
+    [[L + 18, 334], [466, R - 18]].forEach(([x0, x1]) => { const w = x1 - x0;
+      s += rect0(x0, 158, w, 150, glass, `stroke="${trimS}" stroke-width="1.5"`) + ln([x0 + w / 2, 158], [x0 + w / 2, 308], trim, 4) + ln([x0, 233], [x1, 233], trim, 4) + rect0(x0 + 3, 160, w * 0.3, 145, '#fff', 'opacity="0.16"');
+      s += rect0(x0, 316, w, B - 322, trim, `stroke="${trimS}" stroke-width="1.2"`) + rect0(x0 + 8, 322, w - 16, B - 336, 'none', `stroke="${trimS}" stroke-width="1"`); });
+    // the door
+    const dl = 342, dr = 458, dt = 150; s += rect0(dl - 4, dt - 4, dr - dl + 8, B - dt + 4, sh(trim, -0.12));
+    s += rect0(dl, dt, dr - dl, B - dt, door, `stroke="${doorD}" stroke-width="1"`) + rect0(dl, dt, dr - dl, B - dt, U('fs'));
+    { const gx = dl + 16, gy = dt + 14, gw = dr - dl - 32, gh = 98; s += rect0(gx - 3, gy - 3, gw + 6, gh + 6, doorD) + rect0(gx, gy, gw, gh, glass);
+      for (let i = 1; i < 3; i++) s += ln([gx + i * gw / 3, gy], [gx + i * gw / 3, gy + gh], door, 3) + ln([gx, gy + i * gh / 3], [gx + gw, gy + i * gh / 3], door, 3);
+      s += rect0(gx + 3, gy + 3, gw * 0.35, gh - 6, '#fff', 'opacity="0.18"'); }
+    [[dt + 128, dt + 158], [dt + 168, B - 12]].forEach(([y0, y1]) => s += rect0(dl + 14, y0, dr - dl - 28, y1 - y0, 'none', `stroke="${doorD}" stroke-width="2"`) + rect0(dl + 16, y0 + 2, dr - dl - 32, y1 - y0 - 4, 'none', `stroke="${sh(door, 0.12)}" stroke-width="1"`));
+    s += `<circle cx="${dl + 12}" cy="${dt + 118}" r="5" fill="${sc.metal}"/>` + rect0(dl + 8, dt + 126, 8, 26, sc.metal, 'rx="3"');
+    // landing, plinth and three steps
+    s += rect0(140, landing, 520, 10, stone, `stroke="${stoneD}" stroke-width="0.8"`) + rect0(140, landing + 10, 520, ground - landing - 10, sh(sc.wall, -0.22));
+    s += rect0(0, landing, 140, ground - landing, sh(sc.wall, -0.18)) + rect0(660, landing, 140, ground - landing, sh(sc.wall, -0.18));
+    [[292, 508, landing + 10], [278, 522, landing + 28], [264, 536, landing + 46]].forEach(([x0, x1, y]) => { s += rect0(x0 + 4, y + 4, x1 - x0, 18, '#1a1208', `opacity="0.25" filter="${U('bs')}"`) + rect0(x0, y, x1 - x0, 5, sh(stone, 0.08), `stroke="${stoneD}" stroke-width="0.8"`) + rect0(x0, y + 5, x1 - x0, 13, stoneD); });
+    // paved ground
+    s += rect0(0, ground, W, H - ground, sh(pave, -0.15));
+    seed = 13; for (let r = 0; r * 16 < H - ground; r++) { let x = -(r % 2) * 18; while (x < W) { const w = 30 + rnd() * 22; s += rect0(x + 2, ground + r * 16 + 2, w - 4, 12, sh(pave, (rnd() - 0.5) * 0.12), 'rx="6"'); x += w; } }
+    s += rect0(0, ground, W, 14, '#1a1208', `opacity="0.18" filter="${U('b')}"`);
+    // mat
+    s += rect0(352, landing - 9, 96, 10, sh(sc.rug, -0.35), 'rx="3"') + `<text x="400" y="${landing - 2}" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="8" fill="${sh(sc.rug, 0.4)}">Welcome</text>`;
+    // potted plants either side of the door: a round shrub in a dark pot and a leafy plant in a tall pot
+    const potA = sh(potC(sc), -0.3), potB = mix(potC(sc), '#E3C78E', 0.55);
+    const pot = (x, w, h, c) => `<path d="M${x - w / 2} ${landing - h} H${x + w / 2} L${x + w / 2 - 6} ${landing} H${x - w / 2 + 6} Z" fill="${c}" stroke="${sh(c, -0.35)}" stroke-width="0.8"/>` + rect0(x - w / 2 - 2, landing - h - 6, w + 4, 7, sh(c, 0.08), `stroke="${sh(c, -0.35)}" stroke-width="0.8"`) + rect0(x - w / 2, landing - 4, w, 8, '#1a1208', `opacity="0.25" filter="${U('bs')}"`);
+    const shrub = (x, y, r, sd) => { seed = sd; let q = `<circle cx="${x}" cy="${y}" r="${r}" fill="#3E6B3C"/>`; for (let i = 0; i < 40; i++) { const a = rnd() * Math.PI * 2, rr = rnd() * r * 0.95, cx = x + Math.cos(a) * rr, cy = y + Math.sin(a) * rr; q += `<ellipse cx="${cx}" cy="${cy}" rx="7" ry="4.5" transform="rotate(${rnd() * 180} ${cx} ${cy})" fill="${['#5E8A52', '#4C7A47', '#7FA36F', '#6E9A5C'][i % 4]}" stroke="#2F4F2C" stroke-width="0.4"/>`; } return q; };
+    const leafy = (x, y, h, sd) => { seed = sd; let q = ''; for (let i = 0; i < 9; i++) { const a = -150 + i * 15 + rnd() * 8, len = h * (0.6 + rnd() * 0.4), ex = x + Math.cos(a * Math.PI / 180) * len, ey = y + Math.sin(a * Math.PI / 180) * len; q += `<path d="M${x} ${y} Q${(x + ex) / 2 + 6} ${(y + ey) / 2} ${ex} ${ey} Q${(x + ex) / 2 - 6} ${(y + ey) / 2} ${x} ${y}" fill="${i % 3 === 1 ? mix(potC(sc), '#5E8A52', 0.4) : ['#4C7A47', '#6E9A5C'][i % 2]}" stroke="#2F4F2C" stroke-width="0.5"/>`; } return q; };
+    [-1, 1].forEach(sx => { const near = 400 + sx * 182, far = 400 + sx * 232;
+      s += leafy(far, landing - 42, 70, 4 + sx) + pot(far, 42, 42, potB);
+      s += shrub(near, landing - 72, 34, 8 + sx) + pot(near, 50, 44, potA); });
+    return s;
+  }
+
+  // ---------- rear dining room (sample home: oval table, glazed doors to rear terrace) ----------
+  function dining(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
+    // glazed sliding doors across the back wall, curtains stacked in pockets, rear terrace beyond
+    { const [x, y, w, h] = fr(-0.62, 0.62, 0.002, 0, 0.88);
+      s += rect(x, y, w, h, U('sky')) + rect(x, y + h * 0.62, w, h * 0.38, '#7E9C69') + rect(x, y + h * 0.82, w, h * 0.18, mix(sc.bfloor, sc.wall, 0.35));
+      seed = 41; for (let i = 0; i < 16; i++) s += `<circle cx="${x + rnd() * w}" cy="${y + h * (0.55 + rnd() * 0.12)}" r="${10 + rnd() * 14}" fill="${sh('#6F8F5E', (rnd() - 0.5) * 0.3)}"/>`;
+      [0.25, 0.75].forEach(f => { const cx = x + w * f; s += `<path d="M${cx - 18} ${y + h} V${y + h * 0.84} Q${cx} ${y + h * 0.74} ${cx + 18} ${y + h * 0.84} V${y + h} Z" fill="#C9A46C" opacity="0.9"/>`; });
+      s += rect(x - 5, y - 5, w + 10, h + 5, 'none', `stroke="${sc.metal}" stroke-width="5"`) + ln([x + w / 2, y], [x + w / 2, y + h], sc.metal, 4) + ln([x + w / 4, y], [x + w / 4, y + h], sc.metal, 2) + ln([x + w * 0.75, y], [x + w * 0.75, y + h], sc.metal, 2); }
+    const cur = mix(sc.bedding, sc.wall, 0.3);
+    [[-0.86, -0.64], [0.64, 0.86]].forEach(([a, b2]) => { const [x, y, w, h] = fr(a, b2, 0.02, 0.01, 0.99); s += rect(x, y, w, h, cur); for (let i = 1; i < 5; i++) s += ln([x + i * w / 5, y], [x + i * w / 5, y + h], sh(cur, -0.1), 2); });
+    { const [x, y, w] = fr(-1, 1, 0.03, 0.99, 1); s += rect(x, y - 2, w, 6, sh(sc.ceil || sc.wall, -0.15)); }
+    // built-in utensil cabinet on the left wall
+    const J = joinery(sc);
+    s += sideQuad(-0.995, 0.15, 0.55, 0, 0.8, J) + sideQuad(-0.995, 0.15, 0.55, 0, 0.8, U('wl')) + baseAO(-0.99, 0.15, 0.55);
+    for (let i = 0; i <= 2; i++) s += ln(P(-0.99, 0.15 + i * 0.2, 0), P(-0.99, 0.15 + i * 0.2, 0.8), sh(J, -0.18), 1.5);
+    s += ln(P(-0.99, 0.15, 0.4), P(-0.99, 0.55, 0.4), sh(J, -0.18), 1.5) + ln(P(-0.99, 0.33, 0.25), P(-0.99, 0.33, 0.33), sc.metal, 3) + ln(P(-0.99, 0.37, 0.25), P(-0.99, 0.37, 0.33), sc.metal, 3);
+    s += plant(0.9, 0.2, 1.1, potC(sc));
+    // rug, oval pedestal table, six cane-back chairs
+    s += rug(-0.78, 0.78, 0.32, 1.0, sc.rug, sc.rugT === 'plain' ? 'border' : sc.rugT, sc);
+    const tb = Math.abs(lum(sc.table) - lum(sc.floor)) < 0.08 ? sh(sc.table, -0.18) : sc.table, tz = 0.62;
+    [-0.2, 0.2].forEach(xx => s += caneChair(xx, tz - 0.2, sc));
+    { const [cx, cy] = P(0, tz, 0.29), rx = 0.5 * 230 * k(tz), ry = rx * 0.3, [, fy] = P(0, tz, 0);
+      s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx * 0.7}" ry="${ry * 0.5}" fill="#000" opacity="0.18" filter="${U('b')}"/>`;
+      s += `<path d="M${cx - 10} ${cy + 8} L${cx - 22} ${fy} H${cx + 22} L${cx + 10} ${cy + 8} Z" fill="${sh(tb, -0.2)}"/><ellipse cx="${cx}" cy="${fy}" rx="28" ry="7" fill="${sh(tb, -0.25)}"/>`;
+      s += `<ellipse cx="${cx}" cy="${cy + 5}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.18)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.04)}"/>`;
+      s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.75}" ry="${ry * 0.32}" fill="${sc.cushions[1] || sc.bedding}" opacity="0.9"/>`;
+      [[-30, 18, 0], [0, 26, 1], [28, 14, 2]].forEach(([dx, hh, i]) => s += foot(cx + dx - 8, cy + 1, 16) + `<path d="M${cx + dx - 8} ${cy} Q${cx + dx - 11} ${cy - hh * 0.6} ${cx + dx - 4} ${cy - hh} H${cx + dx + 4} Q${cx + dx + 11} ${cy - hh * 0.6} ${cx + dx + 8} ${cy} Z" fill="${sh(potC(sc), [0, -0.12, 0.12][i])}" stroke="${sh(potC(sc), -0.4)}" stroke-width="0.7"/>`);
+      s += blooms(cx, cy - 40, 26, sc, 21); }
+    s += caneChair(-0.66, tz + 0.06, sc, 'right') + caneChair(0.66, tz + 0.06, sc, 'left');
+    [-0.3, 0.3].forEach(xx => s += caneChair(xx, tz + 0.36, sc, 'away'));
+    s += pendant(['chandelier', 'tiered', 'sputnik'].includes(sc.light) ? sc.light : 'linear', 0, tz - 0.02, 0.28, sc);
+    return s;
+  }
+
+  // ---------- walk-in closet (sample home: cane-door hanging wall, open shoe wall, make-up table) ----------
+  function closet(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
+    const J = joinery(sc), Jd = sh(J, -0.2), cane = sc.chairT === 'rattan' || sc.chairT === 'lounge' || sc.chairT === 'round' || sc.headT === 'rattan' ? '#C9A46C' : sh(J, 0.08), cols = neutrals(sc), walnut = sh(sc.wood, -0.12);
+    const LX = -0.58, RX = 0.68, zs = [0, 0.2, 0.42, 0.66, 0.92, 1.25, 1.8];
+    // make-up table with lit mirror on the end wall, window with roller blind
+    { const [wx, wy, ww, wh] = fr(0.3, 0.6, 0.002, 0.45, 0.92); s += rect(wx, wy, ww, wh, U('sky')) + rect(wx, wy, ww, wh * 0.55, sh(sc.bedding || sc.wall, -0.04)) + rect(wx - 3, wy - 3, ww + 6, wh + 6, 'none', `stroke="${sc.metal}" stroke-width="3"`); }
+    { const [mx, my, mw, mh] = fr(-0.32, 0.18, 0.003, 0.42, 0.9); s += rect(mx - 10, my - 10, mw + 20, mh + 20, '#FFF2D0', `opacity="0.5" filter="${U('b')}"`) + rect(mx, my, mw, mh, '#DDE7EA', `rx="${mw / 2}" stroke="${sc.metal}" stroke-width="4"`) + rect(mx + 4, my + mh * 0.15, mw - 8, mh * 0.5, '#FFFFFF', `rx="${mw / 3}" opacity="0.25"`); }
+    s += box(-0.42, 0.28, 0.2, 0.2, 0.12, 0.31, J); { const [x, y, w, h] = fr(-0.42, 0.28, 0.2, 0.12, 0.29); s += ln([x + w / 2, y], [x + w / 2, y + h], Jd, 1.2) + rect(x + w * 0.25 - 10, y + h / 2, 20, 3, sc.metal) + rect(x + w * 0.75 - 10, y + h / 2, 20, 3, sc.metal); }
+    { const [tx, ty] = P(-0.25, 0.08, 0.31); s += foot(tx - 4, ty, 22) + rect(tx - 4, ty - 14, 8, 14, sc.cushions[0], 'rx="3"') + rect(tx + 8, ty - 9, 10, 9, sc.metal, 'rx="2"'); }
+    // open walnut shoe wall / shelves on the right
+    s += sideQuad(0.995, 0, 1.8, 0, 1, sh(walnut, -0.15));
+    for (let r = 0; r < 7; r++) { const yy = 0.04 + r * 0.14; s += poly([P(RX, 0, yy), P(RX, 1.8, yy), P(1, 1.8, yy), P(1, 0, yy)], walnut) + ln(P(RX, 0, yy), P(RX, 1.8, yy), sh(walnut, 0.15), 1.5); seed = 60 + r;
+      for (let i = 0; i < 10; i++) { const z0 = 0.05 + i * 0.13; if (r < 3) { s += sideQuad(RX + 0.06, z0, z0 + 0.05, yy, yy + 0.05, cols[(i + r) % cols.length]) + sideQuad(RX + 0.06, z0 + 0.06, z0 + 0.11, yy, yy + 0.05, cols[(i + r) % cols.length]); }
+        else if (r < 6) { const c = cols[(r + Math.floor(i / 2)) % cols.length]; s += sideQuad(RX + 0.05, z0, z0 + 0.1, yy, yy + 0.08 + (i % 2) * 0.02, c); }
+        else s += sideQuad(RX + 0.05, z0, z0 + 0.11, yy, yy + 0.1, sh(J, 0.05)); } }
+    s += sideQuad(RX, 0, 1.8, 0, 1, 'none', `stroke="${sh(walnut, -0.2)}" stroke-width="2"`);
+    // floor-to-ceiling hanging + drawers wall with cane doors on the left; one bay open
+    s += sideQuad(LX, 0, 1.8, 0, 1, J);
+    zs.slice(0, -1).forEach((z0, i) => { const z1 = zs[i + 1], open = i === 1 || i === 2;
+      if (open) { s += sideQuad(LX, z0 + 0.01, z1 - 0.01, 0.38, 0.97, sh(J, -0.3));
+        const n = 9; for (let g = 0; g < n; g++) { const za = z0 + 0.02 + g * (z1 - z0 - 0.04) / n, zb = za + (z1 - z0 - 0.04) / n * 0.8, len = i === 1 ? 0.35 : 0.5; s += sideQuad(LX - 0.005, za, zb, 0.92 - len, 0.92, cols[Math.floor(g * cols.length / n)]); }
+        s += ln(P(LX, z0, 0.93), P(LX, z1, 0.93), '#FFF2D0', 3, `filter="${U('b')}"`);
+        for (let d = 0; d < 3; d++) { const y0 = 0.02 + d * 0.12; s += sideQuad(LX + 0.002, z0 + 0.01, z1 - 0.01, y0, y0 + 0.11, sh(J, 0.04)) + ln(P(LX + 0.003, (z0 + z1) / 2 - 0.03, y0 + 0.06), P(LX + 0.003, (z0 + z1) / 2 + 0.03, y0 + 0.06), sc.metal, 2.5); } }
+      else { s += sideQuad(LX + 0.002, z0 + 0.012, z1 - 0.012, 0.02, 0.97, sh(J, 0.03)) + sideQuad(LX + 0.003, z0 + 0.04, z1 - 0.04, 0.08, 0.9, cane);
+        if (cane === '#C9A46C') for (let q = 1; q < 10; q++) { const zz = z0 + 0.04 + q * (z1 - z0 - 0.08) / 10; s += ln(P(LX + 0.004, zz, 0.08), P(LX + 0.004, zz, 0.9), sh(cane, -0.18), 0.7); }
+        s += ln(P(LX + 0.005, z1 - 0.03, 0.42), P(LX + 0.005, z1 - 0.03, 0.56), sc.metal, 3); } });
+    s += sideQuad(LX, 0, 1.8, 0, 1, U('wl')) + baseAO(LX, 0, 1.8) + baseAO(RX, 0, 1.8);
+    // runner, make-up stool, ceiling
+    s += rug(-0.4, 0.5, 0.3, 1.05, sc.rug, sc.rugT === 'plain' ? 'border' : sc.rugT, sc);
+    { const [cx, cy] = P(-0.07, 0.4, 0.2), rx = 0.1 * 230 * k(0.4), [, fy] = P(-0.07, 0.4, 0); s += `<ellipse cx="${cx}" cy="${fy}" rx="${rx}" ry="${rx * 0.3}" fill="#000" opacity="0.2" filter="${U('b')}"/>` + rect(cx - rx, cy, rx * 2, fy - cy - 4, sh(sc.chair, -0.15), 'rx="6"') + `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${rx * 0.3}" fill="${sh(sc.chair, 0.1)}"/>` + rect(cx - 3, fy - 6, 6, 6, sc.metal); }
+    [0.3, 0.7].forEach(zz => { const [dx, dy] = P(0.05, zz, 1); s += `<circle cx="${dx}" cy="${dy}" r="22" fill="${U('glow')}"/><ellipse cx="${dx}" cy="${dy}" rx="6" ry="2.5" fill="#FFF5DC"/>`; });
+    return s;
+  }
+
+  function guest(sc) {
+    const bedding = sh(sc.cushions[1] || sc.bedding, 0.35), throwC = sc.cushions[0];
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil || sh(sc.wall, 0.4));
+    // built-in wardrobe with sliding doors on the left wall
+    const J = joinery(sc); s += sideQuad(-0.995, 0.12, 0.62, 0, 0.98, J) + baseAO(-0.99, 0.12, 0.62);
+    [0.12, 0.37, 0.62].forEach(zz => s += ln(P(-0.99, zz, 0), P(-0.99, zz, 0.98), sh(J, -0.22), 2));
+    s += sideQuad(-0.99, 0.37, 0.39, 0.4, 0.6, sc.metal);
+    // window with curtains on the right
+    s += windowRight(0.25, 0.62, 0.3, 0.86, sc.metal);
+    [[0.2, 0.28], [0.6, 0.68]].forEach(([z0, z1]) => s += sideQuad(0.995, z0, z1, 0.02, 0.97, mix(sc.bedding, sc.wall, 0.4), 'opacity="0.95"'));
+    s += rug(-0.6, 0.55, 0.35, 0.95, sc.rug, sc.rugT === 'plain' ? 'jute' : sc.rugT, sc);
+    // daybed, long side to the back wall, with storage drawers
+    s += art(sc.art === 'gallery' ? 'gallery' : 'print', -0.62, -0.2, 0.5, 0.8, sc);
+    s += box(-0.85, 0.05, 0.3, 0.26, 0, 0.13, sc.bed);
+    { const [x, y, w, h] = fr(-0.85, 0.05, 0.3, 0.02, 0.12); for (let i = 1; i < 3; i++) s += ln([x + i * w / 3, y], [x + i * w / 3, y + h], sh(sc.bed, -0.22), 1.2); for (let i = 0; i < 3; i++) s += rect(x + i * w / 3 + w / 6 - 9, y + h / 2 - 1, 18, 3, sc.metal); }
+    s += box(-0.84, 0.04, 0.3, 0.25, 0.13, 0.2, bedding, { rx: 4, noshadow: true });
+    [-0.66, -0.4, -0.14].forEach((xx, i) => { const [x, y, w, h] = fr(xx - 0.11, xx + 0.11, 0.08, 0.2, 0.36); s += rect(x, y, w, h, [sh(bedding, -0.06), sc.cushions[2] || throwC, sh(bedding, -0.06)][i], 'rx="9"'); });
+    { const a2 = P(-0.3, 0.3, 0.2), b2 = P(0.05, 0.3, 0.06); s += rect(a2[0], a2[1], b2[0] - a2[0], b2[1] - a2[1], throwC); for (let i = 1; i < 6; i++) s += rect(a2[0], a2[1] + i * (b2[1] - a2[1]) / 6, b2[0] - a2[0], 2.5, sc.cushions[1] || bedding, 'opacity="0.8"'); }
+    // full-length mirror, desk + cane chair, desk lamp, shelf
+    { const [x, y, w, h] = fr(0.12, 0.24, 0.004, 0.04, 0.8); s += rect(x, y, w, h, '#DDE7EA', `stroke="${sh(sc.wood, -0.3)}" stroke-width="5" rx="3"`) + rect(x + 4, y + 6, w * 0.3, h - 12, '#fff', 'opacity="0.25"'); }
+    [0.62, 0.76].forEach(yy => { s += box(0.32, 0.86, 0.05, 0.05, yy, yy + 0.015, sc.wood, { noshadow: true }); seed = Math.round(yy * 50); for (let i = 0; i < 6; i++) { const xx = 0.35 + i * 0.08; const [x, y, w, h] = fr(xx, xx + 0.05, 0.03, yy + 0.015, yy + 0.08 + rnd() * 0.04); s += foot(x, y + h, w) + rect(x, y, w, h, neutrals(sc)[i % neutrals(sc).length], 'rx="2"'); } });
+    s += box(0.32, 0.88, 0.2, 0.17, 0.27, 0.3, sc.wood);
+    [0.35, 0.85].forEach(xx => s += box(xx - 0.02, xx + 0.02, 0.2, 0.02, 0, 0.27, sh(sc.wood, -0.2)));
+    { const [lx, ly] = P(0.8, 0.1, 0.3); s += `<circle cx="${lx - 12}" cy="${ly - 36}" r="22" fill="${U('glow')}"/>` + ln([lx, ly], [lx - 8, ly - 36], sc.metal, 2.5) + `<path d="M${lx - 22} ${ly - 30} L${lx - 14} ${ly - 46} L${lx + 2} ${ly - 40} Z" fill="${sc.metal}"/>`; }
+    { const [bx, by] = P(0.5, 0.12, 0.3); s += foot(bx - 26, by, 52) + rect(bx - 26, by - 4, 52, 4, '#3A3A3A') + rect(bx - 22, by - 30, 44, 26, '#4A4A4A', 'rx="2"'); }
+    s += caneChair(0.6, 0.4, sc, true);
+    if (sc.plants >= 2) s += plant(0.12, 0.62, 0.8, potC(sc));
+    s += pendant(sc.light === 'linear' || sc.light === 'chandelier' || sc.light === 'tiered' ? 'globe' : sc.light, -0.1, 0.55, 0.15, sc);
+    return s;
+  }
+
+  const LABELS = { living: 'Living room', porch: 'Entry porch', dining: 'Rear dining room', kitchen: 'Kitchen', bedroom: 'Master bedroom', guest: 'Bedroom', closet: 'Walk-in closet', bathroom: 'Bathroom' };
+  function draw(room, sc) {
+    pf = 'r' + (++uid) + Math.random().toString(36).slice(2, 5);
+    CX = room === 'porch' ? 0 : 0.17;
+    const body = { living, porch, dining, kitchen, bedroom, guest, closet, bathroom }[room](sc);
+    const defs = `<clipPath id="${pf}c"><rect width="${W}" height="${H}"/></clipPath>
+      <filter id="${pf}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+      <filter id="${pf}bs" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+      <filter id="${pf}b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+      <filter id="${pf}grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0.09 0"/></filter>
+      <linearGradient id="${pf}fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.28"/></linearGradient>
+      <linearGradient id="${pf}wl" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.02"/><stop offset="1" stop-color="#000" stop-opacity="0.16"/></linearGradient>
+      <linearGradient id="${pf}wr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.04"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
+      <linearGradient id="${pf}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F9FB"/><stop offset="0.7" stop-color="#CFE2EA"/><stop offset="1" stop-color="#B9D3C2"/></linearGradient>
+      <linearGradient id="${pf}fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.06"/></linearGradient><radialGradient id="${pf}cu" cx="0.38" cy="0.3" r="0.8"><stop offset="0" stop-color="#fff" stop-opacity="0.28"/><stop offset="0.55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></radialGradient><radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${pf}lx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF6E2" stop-opacity="0.10"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
+      <linearGradient id="${pf}ly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1208" stop-opacity="0.10"/><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="0.8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
+      <radialGradient id="${pf}vig" cx="0.5" cy="0.48" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>`;
+    const light = rect(0, 0, W, H, U('lx')) + rect(0, 0, W, H, U('ly')) + rect(0, 0, W, H, U('vig')) + rect(0, 0, W, H, '#000', `filter="${U('grain')}" opacity="0.6"`);
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${LABELS[room]}, illustrated"><defs>${defs}</defs><g clip-path="url(#${pf}c)">${body}${light}</g></svg>`;
+  }
+  return { draw, LABELS };
+})();
+
+
+
+const AXES = DATA.axes, ALL = DATA.styles;
+const CORE = ALL.filter(s => !s.signature), SIG = ALL.filter(s => s.signature);
+const byId = Object.fromEntries(ALL.map(s => [s.id, s]));
+const $ = id => document.getElementById(id);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let i = 0; const answers = new Array(QUESTIONS.length).fill(null);
+
+function chips(cols){ return '<div class="chips" aria-hidden="true">' + cols.map(c=>`<span style="background:${c}"></span>`).join('') + '</div>'; }
+function accent(s){ // darkest mid-tone from the palette, readable with white text
+  const lum = h => { const n=parseInt(h.slice(1),16), r=(n>>16)/255, g=(n>>8&255)/255, b=(n&255)/255; return .2126*r+.7152*g+.0722*b; };
+  const c = s.palette.map(p=>p.hex).filter(h => lum(h) < .42 && lum(h) > .06).sort((a,b)=>lum(b)-lum(a));
+  return c[0] || s.palette[s.palette.length-1].hex;
+}
+
+/* ---------- scoring: profile similarity + explicit style signals ---------- */
+function scores(ch){
+  const acc = Object.fromEntries(AXES.map(a=>[a,[]])), votes = {}; let n = 0;
+  ch.forEach((k,qi)=>{ if(k===null) return; const o = QUESTIONS[qi].o[k]; n++;
+    for(const a in o.v) acc[a].push(o.v[a]);
+    o.tags.forEach(t => votes[t] = (votes[t]||0) + 1/Math.sqrt(o.tags.length)); });
+  const u = {}; for(const a of AXES) if(acc[a].length) u[a] = acc[a].reduce((x,y)=>x+y,0)/acc[a].length;
+  const keys = Object.keys(u), out = {};
+  for(const s of CORE){
+    const d = Math.sqrt(keys.reduce((t,a)=>t+(u[a]-s.profile[a])**2,0)/Math.max(keys.length,1));
+    out[s.id] = W_TAG*((votes[s.id]||0)/Math.max(n,1)) + (1-W_TAG)*Math.max(0,1-d/0.5);
+  }
+  return out;
+}
+
+/* ---------- views ---------- */
+function gallery(){
+  $('gallery').innerHTML = CORE.map(s=>`<button class="tile" data-id="${s.id}">${chips(s.palette.filter((_,k)=>k%2===0).map(p=>p.hex))}<span class="n"><i>${s.num}.</i>${esc(s.name)}</span></button>`).join('');
+  $('gallery').querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{ location.hash = b.dataset.id; }));
+}
+
+function renderQ(){
+  const item = QUESTIONS[i];
+  $('step').textContent = `Question ${i+1} of ${QUESTIONS.length}`;
+  $('prog').style.width = (i/QUESTIONS.length*100) + '%';
+  $('qtext').textContent = item.q;
+  $('opts').setAttribute('aria-label', item.q);
+  $('opts').innerHTML = item.o.map((o,k)=>`<button class="opt" id="opt-${k}" aria-pressed="${answers[i]===k}">${chips(o.chips)}<b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`).join('');
+  item.o.forEach((o,k)=> $('opt-'+k).addEventListener('click', ()=>{ answers[i]=k; if(i < QUESTIONS.length-1){ i++; renderQ(); $('opt-0').focus(); } else { renderQ(); $('next').focus(); } }));
+  $('back').disabled = i===0;
+  $('next').disabled = answers[i]===null;
+  $('next').textContent = i===QUESTIONS.length-1 ? 'See my style' : 'Next';
+}
+
+function show(view){ ['intro','quiz','result'].forEach(v=>$(v).hidden = v!==view); window.scrollTo(0,0); }
+
+function renderStyle(s, sc){
+  const acc = accent(s), link = SHOP.guides[s.id], lib = SHOP.library;
+  const sig = s.signature ? null : SIG.find(g => (g.pair_with||[]).includes(s.id));
+  let match = '';
+  if(sc){
+    const order = Object.keys(sc).sort((a,b)=>sc[b]-sc[a]).slice(0,3), top = sc[order[0]] || 1;
+    match = `<div class="card"><h3>Your closest styles</h3><div class="match">${order.map(k=>{const pc=Math.round(sc[k]/top*100);return `<div class="mrow"><span>${esc(byId[k].name)}</span><div class="t"><i style="width:${pc}%;background:${accent(byId[k])}"></i></div><span>${pc}%</span></div>`}).join('')}</div>
+      <p class="lede" style="font-size:14px">Your second style is <a href="#${order[1]}">${esc(byId[order[1]].name)}</a>. Borrowing one or two of its pieces makes the look your own.</p></div>`;
+  }
+  $('step').textContent = sc ? 'Your result' : (s.signature ? 'Signature colour story' : `Style ${s.num} of 16`);
+  const r = $('result');
+  r.innerHTML = `
+    <div class="hero">
+      <div class="strip" aria-hidden="true">${s.palette.map(p=>`<span style="background:${p.hex}"></span>`).join('')}</div>
+      <div class="body">
+        <div class="kicker">${sc ? 'Your home style' : (s.signature ? 'enidsdigitalhub signature' : 'Interior style ' + s.num)}</div>
+        <h1>${esc(s.name)}</h1>
+        <p style="font-family:var(--display);font-size:19px;color:${acc}">${esc(s.tagline)}</p>
+        <p>${esc(s.blurb)}</p>
+        <div class="words">${s.words.map(w=>`<span class="pill">${esc(w)}</span>`).join('')}</div>
+        <p class="lede" style="font-size:14px"><b>Best for:</b> ${esc(s.best_for)}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="nav" style="align-items:baseline"><h3>The 9-colour palette</h3><button class="btn" id="copy">Copy HEX codes</button></div>
+      <div class="pal">${s.palette.map(p=>`<div class="sw"><div style="background:${p.hex}"></div><p><b>${esc(p.name)}</b><br><code>${p.hex}</code><br>${esc(p.use)}</p></div>`).join('')}</div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+    ${SCENES[s.id] ? `<div class="card home">
+      <div><div class="kicker">See it in a real home</div><h3 style="margin-top:4px">${esc(s.name)}, room by room</h3></div>
+      <div class="tabs" role="tablist" aria-label="Rooms">${Object.entries(ROOMS.LABELS).map(([k,v],n)=>`<button class="tab" role="tab" data-room="${k}" aria-selected="${n===0}">${v}</button>`).join('')}</div>
+      <div class="view" id="view">${ROOMS.draw('living', SCENES[s.id])}</div>
+      <p class="note">Illustrated sample home based on a real 3-bedroom bungalow (details changed for privacy). Want your own rooms designed in this style? Ask about the design-my-home service at enidsdigitalhub.</p>
+    </div>` : ''}
+    <div class="card cols">
+      <div><h3 style="margin-bottom:10px">Pieces to look for</h3><ul>${s.pieces.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Key materials</h3><ul>${s.materials.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Do</h3><ul>${s.dos.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+      <div><h3 style="margin-bottom:10px">Avoid</h3><ul>${s.avoid.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+    </div>
+    ${match}
+    ${sig ? `<div class="card sig">${chips(sig.palette.map(p=>p.hex))}<div style="flex:1;min-width:220px"><div class="kicker">Pairs well with</div><p><a href="#${sig.id}"><b>${esc(sig.name)}</b></a>, an enidsdigitalhub signature colour story. ${esc(sig.tagline)}.</p></div></div>` : ''}
+    <div class="cta" style="background:${acc}">
+      <div class="kicker" style="color:rgba(255,255,255,.8)">Take it further</div>
+      <h2 style="color:#fff">The ${esc(s.name)} Home Style Guide</h2>
+      <p>18 pages: the full palette with HEX, RGB and CMYK codes, material boards, room-by-room styling with real furniture sizes, a lighting guide, a sizing cheat sheet and a shopping checklist.</p>
+      <div class="row">
+        ${link ? `<a class="btn solid" style="color:${acc}" href="${link}" target="_blank" rel="noopener">Get this guide</a>` : `<span class="btn solid" style="color:${acc};cursor:default">Coming soon at enidsdigitalhub</span>`}
+        ${lib ? `<a class="btn" href="${lib}" target="_blank" rel="noopener">Get all 16 styles</a>` : ''}
+        <button class="btn" id="share">Copy link to this style</button>
+        <button class="btn" id="again">${sc ? 'Retake the quiz' : 'Take the quiz'}</button>
+      </div>
+    </div>`;
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x===b));
+    $('view').innerHTML = ROOMS.draw(b.dataset.room, SCENES[s.id]);
+  }));
+  $('copy').addEventListener('click', async ()=>{
+    const txt = s.name + ' palette\n' + s.palette.map(p=>`${p.name}: ${p.hex}`).join('\n');
+    try{ await navigator.clipboard.writeText(txt); $('toast').textContent='Copied. Paste the codes into Canva or take them to your paint shop.'; }
+    catch(e){ $('toast').textContent='Your browser blocked copying. Select the codes above and copy them by hand.'; }
+  });
+  $('share').addEventListener('click', async e=>{
+    const url = location.href.split('#')[0] + '#' + s.id;
+    try{ await navigator.clipboard.writeText(url); e.target.textContent='Link copied'; } catch(err){ e.target.textContent = url; }
+  });
+  $('again').addEventListener('click', ()=>{ answers.fill(null); i=0; history.replaceState(null,'',location.pathname+location.search); show('quiz'); renderQ(); });
+  show('result');
+}
+
+function route(){
+  const id = location.hash.slice(1);
+  if(byId[id]) renderStyle(byId[id], null);
+  else { show('intro'); $('step').textContent = '12 questions · about 2 minutes'; }
+}
+
+$('start').addEventListener('click', ()=>{ show('quiz'); renderQ(); $('opt-0').focus(); });
+$('back').addEventListener('click', ()=>{ if(i>0){ i--; renderQ(); } });
+$('next').addEventListener('click', ()=>{
+  if(answers[i]===null) return;
+  if(i < QUESTIONS.length-1){ i++; renderQ(); return; }
+  $('prog').style.width='100%';
+  const sc = scores(answers), top = Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0];
+  renderStyle(byId[top], sc);
+});
+window.addEventListener('hashchange', route);
+gallery(); route();
+</script>
+</body>
+</html>
