@@ -288,9 +288,163 @@ const ROOMS = (() => {
     return s;
   }
 
-  const LABELS = { living: 'Living room', kitchen: 'Kitchen', bedroom: 'Main bedroom', bathroom: 'Bathroom' };
+  // ---------- helpers for the extra rooms ----------
+  const pal = sc => [sc.cushions[0], sc.cushions[1], sc.cushions[2], sc.throw, sc.bedding, sc.sofa, sc.chair].filter(Boolean);
+  const joinery = sc => (Math.abs(lum(sc.cab2) - lum(sc.wall)) < 0.04 ? sh(sc.wood, 0.05) : sc.cab2);
+  function diningChair(x, z, sc, backOnly) {
+    const c = sc.chair, w = 0.09, t = sc.chairT; let s = '';
+    const backH = t === 'wing' || t === 'arm' ? 0.46 : 0.42;
+    if (t === 'rattan') { const [bx, by, bw, bh] = fr(x - w, x + w, z - 0.07, 0.24, backH); s += rect(bx, by, bw, bh, c, `rx="6" stroke="${sh(c, -0.25)}" stroke-width="1.5"`); for (let i = 1; i < 6; i++) s += ln([bx + i * bw / 6, by + 3], [bx + i * bw / 6, by + bh - 3], sh(c, -0.22), 1); }
+    else s += box(x - w, x + w, z - 0.07, 0.02, 0.24, backH, t === 'wing' || t === 'arm' || t === 'round' ? c : sh(sc.wood, -0.05), { rx: t === 'round' ? 8 : 3 });
+    if (backOnly) return s;
+    s += box(x - w, x + w, z, 0.08, 0.2, 0.24, c, { rx: 3 });
+    [[x - w + 0.01, z], [x + w - 0.01, z]].forEach(([xx, zz]) => s += ln(P(xx, zz, 0.2), P(xx, zz, 0), sh(sc.wood, -0.15), 2.5));
+    return s;
+  }
+  function garments(x0, x1, zz, yTop, yLen, cols, sd) {
+    let s = '', cx = x0; seed = sd;
+    const [ra, rb] = [P(x0, zz, yTop), P(x1, zz, yTop)]; s += ln(ra, rb, '#9A9590', 2);
+    while (cx < x1 - 0.03) { const gw = 0.035 + rnd() * 0.035, len = yLen * (0.55 + rnd() * 0.45); const g = Math.min(gw, x1 - cx);
+      const [x, y, w, h] = fr(cx, cx + g, zz, yTop - len, yTop - 0.02); s += rect(x, y, w - 1, h, cols[Math.floor(rnd() * cols.length)], 'rx="2"'); cx += g; }
+    return s;
+  }
+
+  function porch(sc) {
+    let s = '';
+    const sky = '#D7E7EE', hedge = '#5E8A52', ceil = sh(sc.wood, 0.18), door = sc.accent && lum(sc.accent) < 0.75 ? sc.accent : sh(sc.wood, -0.18);
+    // ceiling boards, open sides with garden, facade
+    s += poly([[0, 0], [W, 0], P(1, 0, 1), P(-1, 0, 1)], ceil);
+    for (let i = 1; i < 10; i++) s += ln(P(-1 + 2 * i / 10, 0, 1), P(-1.4 + 2.8 * i / 10, 1, 1), sh(ceil, -0.12), 0.8);
+    s += poly([[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]], sky) + poly([[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], sky);
+    [-1, 1].forEach(sx => { s += poly([P(sx, 0, 0), P(sx, 0, 0.3), P(sx, 1, 0.3), P(sx, 1, 0)], hedge); seed = sx > 0 ? 17 : 13;
+      for (let i = 0; i < 18; i++) { const p = P(sx, rnd(), 0.28 + rnd() * 0.04); s += `<circle cx="${p[0]}" cy="${p[1]}" r="${6 + rnd() * 8}" fill="${sh(hedge, (rnd() - 0.5) * 0.3)}"/>`; }
+      // railing
+      s += ln(P(sx, 0, 0.36), P(sx, 1, 0.36), sh(sc.wall, -0.05), 4);
+      for (let i = 0; i <= 14; i++) s += ln(P(sx, i / 14, 0.02), P(sx, i / 14, 0.36), sh(sc.wall, -0.05), 2); });
+    s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], sc.wall);
+    if (sc.feature === 'brick') s += feature('brick', sc.wall, sc);
+    s += floorTile(sc.bfloor, sc.bfloorT);
+    // facade windows
+    [[-0.85, -0.5], [0.5, 0.85]].forEach(([a, b]) => { const [x, y, w, h] = fr(a, b, 0.002, 0.3, 0.78);
+      s += rect(x - 5, y - 5, w + 10, h + 10, sh(sc.wall, -0.12)) + rect(x, y, w, h, '#DCE8EE') + rect(x, y, w, h * 0.45, sh(sc.cushions[1], 0.3), 'opacity="0.8"') + ln([x + w / 2, y], [x + w / 2, y + h], sc.metal, 3) + rect(x - 8, y + h + 5, w + 16, 5, sh(sc.wall, -0.15)); });
+    // front door with sidelights
+    { const [x, y, w, h] = fr(-0.17, 0.17, 0.002, 0, 0.74); s += rect(x - 10, y - 10, w + 20, h + 10, sh(sc.wall, -0.18)) + rect(x, y, w, h, door);
+      s += rect(x + w * 0.12, y + h * 0.08, w * 0.76, h * 0.38, sh(door, -0.12), 'rx="2"') + rect(x + w * 0.12, y + h * 0.54, w * 0.76, h * 0.38, sh(door, -0.12), 'rx="2"');
+      s += `<circle cx="${x + w * 0.85}" cy="${y + h * 0.52}" r="4" fill="${sc.metal}"/>`;
+      [[-0.25, -0.19], [0.19, 0.25]].forEach(([a, b]) => { const [sx2, sy, sw, shh] = fr(a, b, 0.002, 0.08, 0.7); s += rect(sx2, sy, sw, shh, '#DCE8EE', `stroke="${sc.metal}" stroke-width="2"`); }); }
+    // wall lanterns
+    [-0.33, 0.33].forEach(xx => { const [lx, ly] = P(xx, 0.003, 0.62); s += rect(lx - 7, ly - 14, 14, 22, '#FFF0C9', `stroke="${sc.metal}" stroke-width="2.5"`) + rect(lx - 9, ly - 17, 18, 4, sc.metal); });
+    // doormat, planters
+    s += rug(-0.22, 0.22, 0.04, 0.2, sh(sc.rug, -0.1), 'jute', sc);
+    s += plant(-0.32, 0.16, 1.05, sc.cushions[0]) + plant(0.32, 0.16, 1.05, sc.cushions[0]);
+    // bench under left window
+    s += box(-0.88, -0.48, 0.24, 0.1, 0.24, 0.42, sh(sc.wood, -0.05));
+    s += box(-0.88, -0.48, 0.34, 0.14, 0.15, 0.18, sc.wood);
+    [-0.86, -0.5].forEach(xx => s += box(xx - 0.015, xx + 0.015, 0.34, 0.02, 0, 0.15, sh(sc.wood, -0.2)));
+    sc.cushions.slice(0, 2).forEach((c, i) => { const xx = -0.78 + i * 0.2; const [x, y, w, h] = fr(xx - 0.07, xx + 0.07, 0.26, 0.18, 0.3); s += rect(x, y, w, h, c, 'rx="6"'); });
+    // chair + side table on the right
+    s += box(0.52, 0.8, 0.46, 0.04, 0.16, 0.44, sh(sc.chair, -0.06), { rx: 6 }) + box(0.52, 0.8, 0.58, 0.14, 0.12, 0.17, sc.chair, { rx: 6 });
+    s += box(0.84, 0.95, 0.56, 0.08, 0, 0.2, sc.metal === '#2B2926' ? sc.wood : sc.metal);
+    // columns
+    s += box(-1.0, -0.9, 0.97, 0.06, 0, 1, sh(sc.wall, 0.12)) + box(0.9, 1.0, 0.97, 0.06, 0, 1, sh(sc.wall, 0.12));
+    s += pendant({ lantern: 'lantern', factory: 'factory', woven: 'woven', globe: 'globe' }[sc.light] || 'globe', 0, 0.5, 0.18, sc);
+    return s;
+  }
+
+  function dining(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
+    if (sc.accent && !['brick', 'stone', 'wallpaper'].includes(sc.feature)) s += poly([P(-1, 0, 1), P(1, 0, 1), P(1, 0, 0), P(-1, 0, 0)], sc.accent);
+    if (['panelling', 'wallpaper', 'brick', 'beams'].includes(sc.feature)) s += feature(sc.feature, sc.accent || sc.wall, sc);
+    // garden doors on the right
+    s += windowRight(0.12, 0.7, 0.02, 0.86, sc.metal);
+    s += poly([P(1, 0.12, 0.02), P(1, 0.7, 0.02), P(1, 0.7, 0.3), P(1, 0.12, 0.3)], '#7FA36F', 'opacity="0.7"');
+    s += ln(P(1, 0.41, 0.02), P(1, 0.41, 0.86), sc.metal, 3);
+    // sideboard + art + decor
+    const sb = joinery(sc);
+    s += box(-0.62, 0.62, 0.12, 0.1, 0.03, 0.3, sb);
+    { const [x, y, w, h] = fr(-0.62, 0.62, 0.12, 0.05, 0.28); for (let i = 1; i < 4; i++) s += ln([x + i * w / 4, y], [x + i * w / 4, y + h], sh(sb, -0.2), 1.2); for (let i = 0; i < 4; i++) s += rect(x + i * w / 4 + w / 8 - 7, y + h * 0.4, 14, 2.5, sc.metal); }
+    s += art(sc.art === 'none' ? 'print' : sc.art === 'gallery' ? 'gallery' : sc.art, -0.36, 0.36, 0.44, 0.82, sc);
+    { const [lx, ly] = P(-0.45, 0.06, 0.3); s += rect(lx - 3, ly - 30, 6, 30, sc.metal) + `<path d="M${lx - 18} ${ly - 30} L${lx - 11} ${ly - 50} H${lx + 11} L${lx + 18} ${ly - 30} Z" fill="#F7F1E4"/>`; }
+    { const [vx, vy] = P(0.42, 0.06, 0.3); s += rect(vx - 7, vy - 26, 14, 26, sc.cushions[0], 'rx="6"'); }
+    // rug, table, chairs
+    s += rug(-0.8, 0.8, 0.28, 0.98, sc.rug, sc.rugT === 'plain' ? 'border' : sc.rugT, sc);
+    const tb = sc.table === sc.floor ? sh(sc.table, -0.15) : sc.table, tz = 0.72;
+    [-0.28, 0, 0.28].forEach(xx => s += diningChair(xx, tz - 0.3, sc));
+    if (sc.tableT === 'round' || sc.tableT === 'drum') {
+      const [cx, cy] = P(0, tz - 0.15, 0.28), rx = 0.46 * 230 * k(tz), ry = rx * 0.3, [, fy] = P(0, tz - 0.15, 0);
+      s += rect(cx - 10, cy, 20, fy - cy, sh(tb, -0.2)) + `<ellipse cx="${cx}" cy="${fy}" rx="${rx * 0.3}" ry="${ry * 0.3}" fill="${sh(tb, -0.2)}"/>`;
+      s += `<ellipse cx="${cx}" cy="${cy + 5}" rx="${rx}" ry="${ry}" fill="${sh(tb, -0.12)}"/><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${sh(tb, 0.06)}"/>`;
+    } else {
+      s += box(-0.5, 0.5, tz, 0.32, 0.26, 0.29, tb);
+      [-0.46, 0.46].forEach(xx => s += box(xx - 0.025, xx + 0.025, tz - 0.01, 0.03, 0, 0.26, sh(tb, -0.2)));
+    }
+    { const [rx2, ry2] = P(0, tz - 0.16, 0.29); s += `<ellipse cx="${rx2}" cy="${ry2 - 2}" rx="26" ry="7" fill="${sc.cushions[1]}"/>`; s += rect(rx2 - 30, ry2 - 18, 4, 16, '#F7F1E4') + rect(rx2 + 26, ry2 - 18, 4, 16, '#F7F1E4'); }
+    [-0.62, 0.62].forEach(xx => s += diningChair(xx, tz - 0.06, sc));
+    if (sc.plants >= 1) s += plant(-0.88, 0.3, 1.2, sh(sc.wall, -0.25));
+    s += pendant(sc.light === 'paper' || sc.light === 'globe' ? sc.light : sc.light, 0, 0.56, 0.24, sc);
+    return s;
+  }
+
+  function closet(sc) {
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil);
+    const J = joinery(sc), Jd = sh(J, -0.14), cols = pal(sc);
+    // back wall units: hanging | shelves over drawers | hanging
+    s += box(-0.98, 0.98, 0.1, 0.1, 0, 0.96, J);
+    const bays = [[-0.94, -0.36], [-0.32, 0.32], [0.36, 0.94]];
+    bays.forEach(([a, b], i) => { const [x, y, w, h] = fr(a, b, 0.1, 0.04, 0.92); s += rect(x, y, w, h, Jd);
+      if (i !== 1) { s += garments(a + 0.01, b - 0.01, 0.1, 0.86, i === 0 ? 0.42 : 0.62, cols, 30 + i); s += garments(a + 0.01, b - 0.01, 0.1, 0.42, 0.3, cols, 50 + i);
+        seed = 70 + i; for (let j = 0; j < 5; j++) { const xx = a + 0.04 + j * (b - a - 0.08) / 5; const [px, py, pw, ph] = fr(xx, xx + 0.07, 0.1, 0.04, 0.08); s += rect(px, py, pw, ph, cols[(j + i) % cols.length], 'rx="3"'); } }
+      else { [0.62, 0.76].forEach(yy => { s += rect(x, fr(a, b, 0.1, yy, yy)[1], w, 3, J); seed = Math.round(yy * 100); for (let j = 0; j < 4; j++) { const xx = a + 0.03 + j * (b - a - 0.06) / 4; for (let q = 0; q < 3; q++) { const [fx, fy, fw, fh] = fr(xx, xx + 0.12, 0.1, yy + q * 0.03, yy + q * 0.03 + 0.028); s += rect(fx, fy, fw, fh, cols[(j + q) % cols.length], 'rx="2"'); } } });
+        s += box(a, b, 0.11, 0.01, 0.04, 0.5, J); const [dx, dy, dw, dh] = fr(a, b, 0.11, 0.04, 0.5); for (let j = 1; j < 4; j++) s += ln([dx, dy + j * dh / 4], [dx + dw, dy + j * dh / 4], Jd, 1.2); for (let j = 0; j < 4; j++) s += rect(dx + dw / 2 - 12, dy + j * dh / 4 + dh / 8 - 1, 24, 3, sc.metal); } });
+    // left wall: closed doors + full-length mirror
+    s += poly([P(-1, 0.1, 0), P(-1, 0.85, 0), P(-1, 0.85, 0.96), P(-1, 0.1, 0.96)], sh(J, -0.05));
+    for (let i = 0; i <= 5; i++) { const zz = 0.1 + i * 0.15; s += ln(P(-1, zz, 0), P(-1, zz, 0.96), Jd, 1.5); if (i < 5) s += ln(P(-1, zz + 0.12, 0.42), P(-1, zz + 0.12, 0.56), sc.metal, 3); }
+    s += poly([P(-1, 0.42, 0.06), P(-1, 0.53, 0.06), P(-1, 0.53, 0.9), P(-1, 0.42, 0.9)], '#DDE7EA', `stroke="${sc.metal}" stroke-width="3"`);
+    // right wall: open shelves with bags and shoes
+    s += poly([P(1, 0.1, 0), P(1, 0.7, 0), P(1, 0.7, 0.96), P(1, 0.1, 0.96)], Jd);
+    [0.12, 0.3, 0.5, 0.7].forEach((yy, r) => { s += poly([P(1, 0.1, yy), P(1, 0.7, yy), P(0.92, 0.7, yy), P(0.92, 0.1, yy)], J); seed = 90 + r;
+      for (let j = 0; j < 4; j++) { const z0 = 0.14 + j * 0.13; s += poly([P(0.995, z0, yy + 0.01), P(0.995, z0 + 0.08, yy + 0.01), P(0.995, z0 + 0.08, yy + (r === 0 ? 0.05 : 0.11)), P(0.995, z0, yy + (r === 0 ? 0.05 : 0.11))], cols[(j + r) % cols.length]); } });
+    // runner + island
+    s += rug(-0.32, 0.32, 0.3, 0.98, sc.rug, sc.rugT === 'plain' ? 'border' : sc.rugT, sc);
+    s += box(-0.3, 0.3, 0.68, 0.24, 0, 0.3, sh(J, lum(J) > 0.45 ? -0.12 : 0.06));
+    { const [x, y, w, h] = fr(-0.3, 0.3, 0.68, 0.02, 0.28); for (let j = 1; j < 3; j++) s += ln([x, y + j * h / 3], [x + w, y + j * h / 3], Jd, 1.2); for (let j = 0; j < 3; j++) s += rect(x + w / 2 - 14, y + j * h / 3 + h / 6, 28, 3, sc.metal); }
+    s += box(-0.31, 0.31, 0.69, 0.26, 0.3, 0.32, sc.top);
+    { const [tx, ty] = P(0.08, 0.56, 0.32); s += `<ellipse cx="${tx}" cy="${ty}" rx="30" ry="8" fill="${sc.metal}"/>`; const [bx, by] = P(-0.14, 0.58, 0.32); s += rect(bx - 22, by - 20, 44, 20, sc.cushions[2] || sc.cushions[0], 'rx="5"'); }
+    s += pendant(sc.light === 'linear' ? 'linear' : sc.light, 0, 0.5, 0.18, sc);
+    return s;
+  }
+
+  function guest(sc) {
+    const bedding = sh(sc.cushions[1], 0.35), throwC = sc.cushions[0], pillow = sc.cushions[2] || sc.cushions[0];
+    let s = shell(sc.wall, sc.floor, sc.floorT, sc.ceil || sh(sc.wall, 0.4));
+    s += windowRight(0.25, 0.6, 0.3, 0.85, sc.metal);
+    s += poly([P(1, 0.22, 0.02), P(1, 0.3, 0.02), P(1, 0.3, 0.95), P(1, 0.22, 0.95)], sh(bedding, -0.1), 'opacity="0.92"');
+    s += rug(-0.75, 0.3, 0.3, 0.92, sc.rug, sc.rugT, sc);
+    // shelves + desk on the right of the back wall
+    [0.6, 0.76].forEach(yy => { s += box(0.3, 0.88, 0.05, 0.05, yy, yy + 0.015, sc.wood); seed = Math.round(yy * 50); for (let i = 0; i < 7; i++) { const xx = 0.33 + i * 0.075; const [x, y, w, h] = fr(xx, xx + 0.05, 0.03, yy + 0.015, yy + 0.08 + rnd() * 0.04); s += rect(x, y, w, h, pal(sc)[i % pal(sc).length], 'rx="2"'); } });
+    s += box(0.3, 0.9, 0.2, 0.18, 0.27, 0.3, sc.wood);
+    [0.33, 0.87].forEach(xx => s += box(xx - 0.02, xx + 0.02, 0.2, 0.02, 0, 0.27, sh(sc.wood, -0.2)));
+    { const [lx, ly] = P(0.8, 0.1, 0.3); s += ln([lx, ly], [lx - 8, ly - 36], sc.metal, 2.5) + `<path d="M${lx - 22} ${ly - 30} L${lx - 14} ${ly - 46} L${lx + 2} ${ly - 40} Z" fill="${sc.metal}"/>`; }
+    { const [bx, by] = P(0.5, 0.12, 0.3); s += rect(bx - 26, by - 4, 52, 4, '#3A3A3A') + rect(bx - 22, by - 30, 44, 26, '#4A4A4A', 'rx="2"'); }
+    s += diningChair(0.6, 0.38, sc);
+    // bed against the left of the back wall
+    s += art(sc.art === 'gallery' ? 'gallery' : 'print', -0.66, -0.3, 0.5, 0.78, sc);
+    s += box(-0.85, -0.15, 0.02, 0.02, 0.08, 0.4, sh(sc.bed, -0.04), { rx: 5 });
+    s += box(-0.05, 0.15, 0.2, 0.14, 0, 0.2, sc.wood);
+    { const [lx, ly] = P(0.05, 0.13, 0.2); s += rect(lx - 3, ly - 22, 6, 22, sc.metal) + `<path d="M${lx - 14} ${ly - 22} L${lx - 9} ${ly - 38} H${lx + 9} L${lx + 14} ${ly - 22} Z" fill="#F7F1E4"/>`; }
+    s += box(-0.85, -0.15, 0.62, 0.58, 0, 0.11, sc.bed);
+    s += box(-0.85, -0.15, 0.63, 0.59, 0.11, 0.19, bedding, { top: sh(bedding, 0.06), rx: 4 });
+    { const [x, y, w, h] = fr(-0.72, -0.28, 0.12, 0.19, 0.29); s += rect(x, y, w, h, sh(bedding, -0.05), 'rx="8"') + rect(x + w * 0.2, y + 4, w * 0.6, h * 0.8, pillow, 'rx="7"'); }
+    s += poly([P(-0.855, 0.42, 0.195), P(-0.145, 0.42, 0.195), P(-0.145, 0.6, 0.195), P(-0.855, 0.6, 0.195)], throwC);
+    { const a = P(-0.855, 0.6, 0.195), b = P(-0.145, 0.6, 0.11); s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], sh(throwC, -0.08)); }
+    if (sc.plants >= 2) s += plant(-0.92, 0.75, 0.9, sh(sc.wall, -0.25));
+    s += pendant(sc.light === 'linear' || sc.light === 'chandelier' || sc.light === 'tiered' ? 'globe' : sc.light, -0.1, 0.55, 0.15, sc);
+    return s;
+  }
+
+  const LABELS = { living: 'Living room', porch: 'Entry porch', dining: 'Rear dining room', kitchen: 'Kitchen', bedroom: 'Master bedroom', guest: 'Bedroom', closet: 'Walk-in closet', bathroom: 'Bathroom' };
   function draw(room, sc) {
-    const body = { living, kitchen, bedroom, bathroom }[room](sc);
+    const body = { living, porch, dining, kitchen, bedroom, guest, closet, bathroom }[room](sc);
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${LABELS[room]}, illustrated"><defs><clipPath id="c"><rect width="${W}" height="${H}"/></clipPath></defs><g clip-path="url(#c)">${body}</g></svg>`;
   }
   return { draw, LABELS };
