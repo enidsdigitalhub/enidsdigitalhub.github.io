@@ -17,14 +17,18 @@ const ROOMS = (() => {
   const ln = (a, b, c, w = 1, extra = '') => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" ${extra}/>`;
 
   // a box: x0..x1, front face at z (depth d going back), height y0..y1
+  let pf = 'r0';
+  const U = n => `url(#${pf}${n})`;
   function box(x0, x1, z, d, y0, y1, c, o = {}) {
     let s = '';
+    if (y0 <= 0.05 && !o.noshadow) s += poly([P(x0 - 0.03, z + 0.035, 0.001), P(x1 + 0.03, z + 0.035, 0.001), P(x1 + 0.03, z - d - 0.01, 0.001), P(x0 - 0.03, z - d - 0.01, 0.001)], '#000', `opacity="${0.16 + Math.min(0.12, (y1 - y0) * 0.25)}" filter="${U('b')}"`);
     const top = [P(x0, z, y1), P(x1, z, y1), P(x1, z - d, y1), P(x0, z - d, y1)];
     if (x1 < 0) s += poly([P(x1, z, y0), P(x1, z - d, y0), P(x1, z - d, y1), P(x1, z, y1)], sh(c, -0.18));
     if (x0 > 0) s += poly([P(x0, z, y0), P(x0, z - d, y0), P(x0, z - d, y1), P(x0, z, y1)], sh(c, -0.18));
     if (!o.notop) s += poly(top, o.top || sh(c, 0.12));
     const a = P(x0, z, y1), b = P(x1, z, y0);
     s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], c, o.rx ? `rx="${o.rx}"` : '');
+    if (b[1] - a[1] > 3) s += rect(a[0], a[1], b[0] - a[0], b[1] - a[1], U('fs'), o.rx ? `rx="${o.rx}"` : '');
     return s;
   }
   const fr = (x0, x1, z, y0, y1) => { const a = P(x0, z, y1), b = P(x1, z, y0); return [a[0], a[1], b[0] - a[0], b[1] - a[1]]; };
@@ -39,6 +43,13 @@ const ROOMS = (() => {
     s += poly(bw, wall);
     s += poly([P(-1, 0, 0), P(1, 0, 0), [W, H], [0, H]], floor);
     s += clipFloor(floorLines(floor, floorT));
+    // ambient occlusion in the corners and along the skirting, darker side walls toward the viewer
+    s += poly([[0, 0], P(-1, 0, 1), P(-1, 0, 0), [0, H]], U('wl'));
+    s += poly([[W, 0], P(1, 0, 1), P(1, 0, 0), [W, H]], U('wr'));
+    s += ln(P(-1, 0, 0), P(1, 0, 0), '#000', 10, `opacity="0.22" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 0), P(-1, 1.2, 0), '#000', 10, `opacity="0.18" filter="${U('b')}"`) + ln(P(1, 0, 0), P(1, 1.2, 0), '#000', 10, `opacity="0.18" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 0), P(-1, 0, 1), '#000', 8, `opacity="0.14" filter="${U('b')}"`) + ln(P(1, 0, 0), P(1, 0, 1), '#000', 8, `opacity="0.14" filter="${U('b')}"`);
+    s += ln(P(-1, 0, 1), P(1, 0, 1), '#000', 8, `opacity="0.10" filter="${U('b')}"`);
     // skirting
     s += ln(P(-1, 0, 0.015), P(1, 0, 0.015), sh(wall, -0.12), 2);
     return s;
@@ -49,6 +60,8 @@ const ROOMS = (() => {
     const across = z => ln(P(-1.4, z, 0), P(1.4, z, 0), lc, 0.8);
     if (t === 'wood' || t === 'herring') {
       n = t === 'wood' ? 14 : 22;
+      seed = 19; for (let i = 0; i < n; i++) { const xa = -1.4 + 2.8 * i / n, xb = -1.4 + 2.8 * (i + 1) / n; s += poly([P(xa, 0, 0), P(xb, 0, 0), P(xb, 1.2, 0), P(xa, 1.2, 0)], sh(c, (rnd() - 0.5) * 0.12)); }
+      seed = 23; for (let i = 0; i < 60; i++) { const x = -1.4 + 2.8 * rnd(), z = rnd(); s += ln(P(x, z, 0), P(x + 0.002, z + 0.08, 0), sh(c, -0.1), 0.5, 'opacity="0.6"'); }
       for (let i = 0; i <= n; i++) s += along(-1.4 + 2.8 * i / n, 0.7);
       seed = 7;
       for (let i = 0; i < n; i++) for (let j = 0; j < 5; j++) {
@@ -83,14 +96,16 @@ const ROOMS = (() => {
     return s;
   }
   function windowLeft(z0, z1, y0, y1, frame, curtain) {
-    let s = poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], '#DCE8EE');
+    let s = poly([P(-1, z0, 0.002), P(-1, z1, 0.002), P(-0.15, z1 + 0.22, 0.002), P(-0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.22" filter="${U('b2')}"`);
+    s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], U('sky'));
     s += poly([P(-1, z0, y0), P(-1, z1, y0), P(-1, z1, y1), P(-1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
     s += ln(P(-1, (z0 + z1) / 2, y0), P(-1, (z0 + z1) / 2, y1), frame, 3);
     if (curtain) { s += poly([P(-1, z0 - 0.04, 0.02), P(-1, z0 + 0.03, 0.02), P(-1, z0 + 0.03, 0.97), P(-1, z0 - 0.04, 0.97)], curtain, 'opacity="0.92"'); s += poly([P(-1, z1 - 0.03, 0.02), P(-1, z1 + 0.05, 0.02), P(-1, z1 + 0.05, 0.97), P(-1, z1 - 0.03, 0.97)], curtain, 'opacity="0.92"'); }
     return s;
   }
   function windowRight(z0, z1, y0, y1, frame) {
-    let s = poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], '#DCE8EE');
+    let s = poly([P(1, z0, 0.002), P(1, z1, 0.002), P(0.15, z1 + 0.22, 0.002), P(0.15, z0 + 0.22, 0.002)], '#FFF8E8', `opacity="0.2" filter="${U('b2')}"`);
+    s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], U('sky'));
     s += poly([P(1, z0, y0), P(1, z1, y0), P(1, z1, y1), P(1, z0, y1)], 'none', `stroke="${frame}" stroke-width="5"`);
     return s;
   }
@@ -118,6 +133,7 @@ const ROOMS = (() => {
   function pendant(type, x, z, drop, sc) {
     const top = P(x, z, 1), [cx, cy] = P(x, z, 1 - drop), r = 22 * k(z); let s = ln(top, [cx, cy], sh(sc.metal, 0), 1.5);
     const m = sc.metal;
+    s = `<circle cx="${cx}" cy="${cy + r}" r="${r * 3.2}" fill="${U('glow')}"/>` + s;
     if (type === 'paper') s += `<circle cx="${cx}" cy="${cy + r * 0.8}" r="${r}" fill="#FBF7EE" stroke="#E5DDCF"/>`;
     else if (type === 'globe') s += `<circle cx="${cx}" cy="${cy + r * 0.7}" r="${r * 0.75}" fill="#FCFBF7" stroke="${m}"/>`;
     else if (type === 'woven') s += `<path d="M${cx - r * 1.2} ${cy + r} Q${cx} ${cy - r * 0.6} ${cx + r * 1.2} ${cy + r} Z" fill="#C9A46C" stroke="${sh('#C9A46C', -0.2)}"/>`;
@@ -444,8 +460,22 @@ const ROOMS = (() => {
 
   const LABELS = { living: 'Living room', porch: 'Entry porch', dining: 'Rear dining room', kitchen: 'Kitchen', bedroom: 'Master bedroom', guest: 'Bedroom', closet: 'Walk-in closet', bathroom: 'Bathroom' };
   function draw(room, sc) {
+    pf = 'r' + (++uid) + Math.random().toString(36).slice(2, 5);
     const body = { living, porch, dining, kitchen, bedroom, guest, closet, bathroom }[room](sc);
-    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${LABELS[room]}, illustrated"><defs><clipPath id="c"><rect width="${W}" height="${H}"/></clipPath></defs><g clip-path="url(#c)">${body}</g></svg>`;
+    const defs = `<clipPath id="${pf}c"><rect width="${W}" height="${H}"/></clipPath>
+      <filter id="${pf}b" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+      <filter id="${pf}b2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+      <filter id="${pf}grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0.09 0"/></filter>
+      <linearGradient id="${pf}fs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.13"/><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
+      <linearGradient id="${pf}wl" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.02"/><stop offset="1" stop-color="#000" stop-opacity="0.16"/></linearGradient>
+      <linearGradient id="${pf}wr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0.04"/><stop offset="1" stop-color="#000" stop-opacity="0.2"/></linearGradient>
+      <linearGradient id="${pf}sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4F9FB"/><stop offset="0.7" stop-color="#CFE2EA"/><stop offset="1" stop-color="#B9D3C2"/></linearGradient>
+      <radialGradient id="${pf}glow"><stop offset="0" stop-color="#FFE9B8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE9B8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="${pf}lx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFF6E2" stop-opacity="0.10"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
+      <linearGradient id="${pf}ly" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1208" stop-opacity="0.10"/><stop offset="0.35" stop-color="#000" stop-opacity="0"/><stop offset="0.8" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#1a1208" stop-opacity="0.10"/></linearGradient>
+      <radialGradient id="${pf}vig" cx="0.5" cy="0.48" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></radialGradient>`;
+    const light = rect(0, 0, W, H, U('lx')) + rect(0, 0, W, H, U('ly')) + rect(0, 0, W, H, U('vig')) + rect(0, 0, W, H, '#000', `filter="${U('grain')}" opacity="0.6"`);
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${LABELS[room]}, illustrated"><defs>${defs}</defs><g clip-path="url(#${pf}c)">${body}${light}</g></svg>`;
   }
   return { draw, LABELS };
 })();
